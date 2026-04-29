@@ -135,626 +135,368 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MCP: O USB-C da IA — Rafael Veloso</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap');
 
-:root {
-  --cyan: #00D4FF;
-  --purple: #7B2FBE;
-  --bg: #080C12;
-  --surface: #0D1117;
-  --surface2: #161b22;
-  --border: #21262d;
-  --text: #E6EDF3;
-  --muted: #8B949E;
-  --dim: #C9D1D9;
+:root{
+  --c:#00D4FF; --p:#7B2FBE; --acc:#a78bfa;
+  --bg:#06090f; --s1:#0D1117; --s2:#161b22;
+  --bd:#21262d; --tx:#E6EDF3; --mu:#8B949E; --di:#C9D1D9;
 }
 
-* { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior: smooth; }
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);overflow-x:hidden;cursor:none}
 
-body {
-  font-family: 'Inter', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  overflow-x: hidden;
+/* CURSOR */
+#cur,#cur2{position:fixed;border-radius:50%;pointer-events:none;z-index:9999;transition:transform .15s ease,opacity .3s}
+#cur{width:10px;height:10px;background:var(--c);top:-5px;left:-5px;mix-blend-mode:screen}
+#cur2{width:36px;height:36px;border:1px solid rgba(0,212,255,.4);top:-18px;left:-18px;transition:width .3s,height .3s,border-color .3s,top .1s,left .1s}
+body:hover #cur2{opacity:1}
+.hover-target:hover~#cur2{width:60px;height:60px;border-color:var(--c)}
+
+/* PROGRESS */
+#pb{position:fixed;top:0;left:0;z-index:1000;height:2px;width:0%;background:linear-gradient(90deg,var(--c),var(--p),var(--acc));transition:width .05s}
+
+/* GRAIN */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");opacity:.4;pointer-events:none;z-index:9998;animation:grain 8s steps(10) infinite}
+@keyframes grain{0%,100%{transform:translate(0,0)}10%{transform:translate(-2%,-3%)}20%{transform:translate(3%,2%)}30%{transform:translate(-1%,4%)}40%{transform:translate(4%,-1%)}50%{transform:translate(-3%,2%)}60%{transform:translate(2%,-4%)}70%{transform:translate(-4%,1%)}80%{transform:translate(1%,3%)}90%{transform:translate(-2%,-1%)}}
+
+/* TOC */
+#toc{position:fixed;left:20px;top:50%;transform:translateY(-50%);z-index:900;display:flex;flex-direction:column;gap:10px}
+.td{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.15);cursor:pointer;transition:all .4s;position:relative}
+.td::before{content:'';position:absolute;left:-3px;top:-3px;width:12px;height:12px;border-radius:50%;border:1px solid transparent;transition:border-color .3s}
+.td::after{content:attr(data-l);position:absolute;left:20px;top:50%;transform:translateY(-50%);background:var(--s2);border:1px solid var(--bd);color:var(--mu);font-size:11px;font-weight:500;padding:4px 12px;border-radius:20px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s}
+.td:hover::after{opacity:1}
+.td.on{background:var(--c);transform:scale(1.6)}
+.td.on::before{border-color:rgba(0,212,255,.3)}
+
+/* BADGE */
+#rbadge{position:fixed;top:16px;right:16px;z-index:900;background:rgba(6,9,15,.85);border:1px solid var(--bd);backdrop-filter:blur(16px);padding:6px 16px;border-radius:20px;font-size:11px;color:var(--mu);display:flex;align-items:center;gap:6px}
+#rbadge b{color:var(--c)}
+
+/* SECTIONS */
+.sec{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:80px 40px 80px 80px;position:relative;overflow:hidden}
+.si{max-width:780px;width:100%}
+
+/* HERO */
+#hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:60px 40px;overflow:hidden;position:relative}
+.mesh{position:absolute;inset:0;z-index:0}
+.blob{position:absolute;border-radius:50%;filter:blur(80px);animation:float 12s ease-in-out infinite}
+.b1{width:600px;height:600px;background:radial-gradient(circle,rgba(0,212,255,.08),transparent 70%);top:-100px;left:-100px;animation-delay:0s}
+.b2{width:500px;height:500px;background:radial-gradient(circle,rgba(123,47,190,.1),transparent 70%);bottom:-80px;right:-80px;animation-delay:-4s}
+.b3{width:300px;height:300px;background:radial-gradient(circle,rgba(167,139,250,.06),transparent 70%);top:50%;left:50%;animation-delay:-8s}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-30px) scale(1.05)}66%{transform:translate(-20px,20px) scale(.95)}}
+
+.hi{position:relative;z-index:1;max-width:860px}
+
+.hbadge{display:inline-flex;align-items:center;gap:8px;background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.15);color:var(--c);padding:8px 20px;border-radius:30px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:40px;animation:fd .8s ease both}
+.pdot{width:7px;height:7px;border-radius:50%;background:var(--c);animation:pdot 2s ease infinite}
+@keyframes pdot{0%,100%{box-shadow:0 0 0 0 rgba(0,212,255,.5)}50%{box-shadow:0 0 0 10px transparent}}
+
+.htitle{font-size:clamp(36px,6.5vw,72px);font-weight:900;line-height:1.05;margin-bottom:28px;animation:fd .8s .15s ease both}
+.htitle .glit{display:inline-block;background:linear-gradient(135deg,#fff 0%,var(--c) 40%,var(--p) 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;position:relative;cursor:pointer}
+.htitle .glit:hover{animation:glitch .3s steps(2) forwards}
+@keyframes glitch{
+  0%{text-shadow:2px 0 var(--c),-2px 0 var(--p)}
+  20%{text-shadow:-3px 0 var(--c),3px 0 var(--p);transform:translate(2px,0) skew(-1deg)}
+  40%{text-shadow:3px 0 var(--c),-3px 0 var(--p);transform:translate(-2px,0) skew(1deg)}
+  60%{text-shadow:-2px 0 var(--c),2px 0 var(--p);transform:translate(1px,0)}
+  80%{text-shadow:2px 0 var(--c),-2px 0 var(--p);transform:translate(-1px,0)}
+  100%{text-shadow:none;transform:translate(0)}
 }
-
-/* ── PROGRESS BAR ── */
-#progress-bar {
-  position: fixed; top:0; left:0; z-index:1000;
-  height: 3px; width: 0%;
-  background: linear-gradient(90deg, var(--cyan), var(--purple));
-  transition: width .1s linear;
-}
-
-/* ── FLOATING NAV ── */
-#toc {
-  position: fixed; left: 24px; top: 50%;
-  transform: translateY(-50%);
-  z-index: 900;
-  display: flex; flex-direction: column; gap: 8px;
-}
-
-.toc-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--border);
-  cursor: pointer;
-  transition: all .3s ease;
-  position: relative;
-}
-
-.toc-dot::after {
-  content: attr(data-label);
-  position: absolute; left: 18px; top: 50%;
-  transform: translateY(-50%);
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  color: var(--muted);
-  font-size: 11px; font-weight: 500;
-  padding: 4px 10px;
-  border-radius: 20px;
-  white-space: nowrap;
-  opacity: 0; pointer-events: none;
-  transition: opacity .2s;
-}
-
-.toc-dot:hover::after { opacity: 1; }
-.toc-dot.active { background: var(--cyan); transform: scale(1.4); }
-
-/* ── READING TIME ── */
-#reading-badge {
-  position: fixed; top: 16px; right: 16px; z-index: 900;
-  background: rgba(13,17,23,.9);
-  border: 1px solid var(--border);
-  backdrop-filter: blur(12px);
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 12px; color: var(--muted);
-  display: flex; align-items: center; gap: 6px;
-}
-
-#reading-badge span { color: var(--cyan); font-weight: 600; }
-
-/* ── SECTIONS ── */
-.section {
-  min-height: 100vh;
-  display: flex; align-items: center; justify-content: center;
-  padding: 80px 40px 80px 100px;
-  position: relative;
-}
-
-.section-inner {
-  max-width: 760px; width: 100%;
-  opacity: 0; transform: translateY(40px);
-  transition: opacity .7s ease, transform .7s ease;
-}
-
-.section-inner.visible { opacity: 1; transform: translateY(0); }
-
-/* ── HERO ── */
-#hero {
-  min-height: 100vh;
-  background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(0,212,255,.06) 0%, transparent 70%),
-              radial-gradient(ellipse 60% 40% at 80% 60%, rgba(123,47,190,.06) 0%, transparent 70%),
-              var(--bg);
-  display: flex; align-items: center; justify-content: center;
-  text-align: center; padding: 60px 40px;
-  overflow: hidden;
-}
-
-#hero canvas {
-  position: absolute; inset: 0; opacity: .4; pointer-events: none;
-}
-
-.hero-inner { position: relative; max-width: 800px; }
-
-.badge {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: rgba(0,212,255,.08);
-  border: 1px solid rgba(0,212,255,.2);
-  color: var(--cyan);
-  padding: 8px 18px; border-radius: 30px;
-  font-size: 12px; font-weight: 700;
-  letter-spacing: 1.5px; text-transform: uppercase;
-  margin-bottom: 32px;
-  animation: fadeDown .8s ease both;
-}
-
-.pulse-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--cyan);
-  animation: pulse 2s ease infinite;
-}
-
-@keyframes pulse {
-  0%,100% { box-shadow: 0 0 0 0 rgba(0,212,255,.4); }
-  50% { box-shadow: 0 0 0 8px rgba(0,212,255,0); }
-}
-
-h1 {
-  font-size: clamp(32px, 6vw, 64px);
-  font-weight: 900; line-height: 1.1;
-  background: linear-gradient(135deg, #fff 0%, var(--cyan) 45%, var(--purple) 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 24px;
-  animation: fadeDown .8s .2s ease both;
-}
-
-.hero-sub {
-  font-size: 18px; color: var(--muted);
-  max-width: 580px; margin: 0 auto 40px; line-height: 1.7;
-  animation: fadeDown .8s .4s ease both;
-}
-
-.author-row {
-  display: inline-flex; align-items: center; gap: 12px;
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.08);
-  padding: 12px 24px; border-radius: 50px;
-  animation: fadeDown .8s .6s ease both;
-}
-
-.author-avatar {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--cyan), var(--purple));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 700; color: white;
-}
-
-.author-info { text-align: left; }
-.author-name { font-size: 13px; font-weight: 600; color: var(--text); }
-.author-role { font-size: 11px; color: var(--muted); }
-
-.scroll-hint {
-  position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
-  display: flex; flex-direction: column; align-items: center; gap: 8px;
-  color: var(--muted); font-size: 11px; letter-spacing: 2px;
-  text-transform: uppercase; animation: fadeDown 1s 1s ease both;
-}
-
-.scroll-arrow {
-  width: 24px; height: 24px;
-  border-right: 2px solid var(--muted);
-  border-bottom: 2px solid var(--muted);
-  transform: rotate(45deg);
-  animation: bounce 2s ease infinite;
-}
-
-@keyframes bounce {
-  0%,100% { transform: rotate(45deg) translateY(0); }
-  50% { transform: rotate(45deg) translateY(6px); }
-}
-
-@keyframes fadeDown {
-  from { opacity:0; transform: translateY(-20px); }
-  to { opacity:1; transform: translateY(0); }
-}
-
-/* ── SECTION LABELS ── */
-.sec-label {
-  font-size: 11px; font-weight: 700; letter-spacing: 2px;
-  text-transform: uppercase; color: var(--cyan);
-  margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
-}
-
-.sec-label::before {
-  content: ''; display: block;
-  width: 24px; height: 2px; background: var(--cyan);
-}
-
-h2 {
-  font-size: clamp(24px, 4vw, 40px);
-  font-weight: 800; color: #fff;
-  line-height: 1.2; margin-bottom: 24px;
-}
-
-.lead-text {
-  font-size: 19px; color: var(--dim); line-height: 1.8;
-  border-left: 2px solid var(--cyan); padding-left: 20px;
-  margin-bottom: 32px;
-}
-
-p { color: var(--muted); font-size: 16px; line-height: 1.8; margin-bottom: 20px; }
-
-/* ── STATS ── */
-.stats-row {
-  display: grid; grid-template-columns: repeat(3,1fr); gap: 16px;
-  margin: 40px 0;
-}
-
-.stat {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 16px; padding: 28px 20px;
-  text-align: center;
-  transition: border-color .3s, transform .3s;
-  cursor: default;
-}
-
-.stat:hover { border-color: var(--cyan); transform: translateY(-4px); }
-
-.stat-num {
-  font-size: 40px; font-weight: 900;
-  background: linear-gradient(135deg, var(--cyan), var(--purple));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text; display: block;
-}
-
-.stat-label { font-size: 13px; color: var(--muted); margin-top: 6px; display: block; }
-
-/* ── CHECKLIST ── */
-.check-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin: 28px 0; }
-
-.check-item {
-  display: flex; align-items: center; gap: 16px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 12px; padding: 16px 20px;
-  font-size: 15px; color: var(--dim);
-  transition: border-color .3s, background .3s;
-}
-
-.check-item:hover { border-color: rgba(0,212,255,.3); background: rgba(0,212,255,.04); }
-
-.check-icon {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--cyan), var(--purple));
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; font-size: 13px;
-}
-
-/* ── ARCH ── */
-.arch {
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 20px; padding: 40px; margin: 32px 0;
-  display: flex; align-items: center; justify-content: center;
-  gap: 0; flex-wrap: wrap;
-}
-
-.arch-node {
-  background: rgba(0,212,255,.06);
-  border: 1px solid rgba(0,212,255,.2);
-  border-radius: 14px; padding: 20px 28px; text-align: center;
-  transition: transform .3s, border-color .3s;
-}
-
-.arch-node:hover { transform: scale(1.05); border-color: var(--cyan); }
-.arch-node-title { font-size: 15px; font-weight: 700; color: var(--cyan); }
-.arch-node-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
-
-.arch-connector {
-  padding: 0 16px;
-  display: flex; align-items: center; flex-direction: column; gap: 4px;
-}
-
-.arch-line {
-  width: 48px; height: 2px;
-  background: linear-gradient(90deg, var(--cyan), var(--purple));
-  position: relative;
-}
-
-.arch-line::after {
-  content: ''; position: absolute; right: -6px; top: -4px;
-  border-left: 8px solid var(--purple);
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-}
-
-.arch-tag { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
-
-/* ── ROADMAP ── */
-.roadmap { display: flex; flex-direction: column; gap: 16px; margin: 28px 0; }
-
-.roadmap-item {
-  display: flex; gap: 20px; align-items: flex-start;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 16px; padding: 24px;
-  transition: border-color .3s;
-}
-
-.roadmap-item:hover { border-color: var(--purple); }
-
-.roadmap-num {
-  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--cyan), var(--purple));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; font-weight: 800; color: white;
-}
-
-.roadmap-body h4 { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 8px; }
-.roadmap-body p { font-size: 14px; color: var(--muted); margin: 0; line-height: 1.6; }
-
-/* ── CODE ── */
-.code-wrap {
-  background: #0d1117; border: 1px solid var(--border);
-  border-radius: 16px; overflow: hidden; margin: 28px 0;
-  font-family: 'Fira Code','Courier New', monospace;
-}
-
-.code-top {
-  background: var(--surface2); padding: 12px 16px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-
-.dots { display: flex; gap: 6px; }
-.d { width: 12px; height: 12px; border-radius: 50%; }
-.d.r { background: #ff5f57; } .d.y { background: #ffbd2e; } .d.g { background: #28ca41; }
-
-.file-name { font-size: 12px; color: var(--muted); }
-
-.copy-btn {
-  background: none; border: 1px solid var(--border);
-  color: var(--muted); padding: 4px 12px; border-radius: 6px;
-  font-size: 11px; cursor: pointer; transition: all .2s;
-  font-family: inherit;
-}
-
-.copy-btn:hover { border-color: var(--cyan); color: var(--cyan); }
-
-.code-body {
-  padding: 24px; font-size: 14px; line-height: 1.7;
-  overflow-x: auto; color: var(--dim);
-}
-
-.ck { color: #79c0ff; } .cs { color: #a5d6ff; } .cc { color: var(--muted); }
-
-/* ── STEPS ── */
-.steps { counter-reset: s; list-style: none; display: flex; flex-direction: column; gap: 16px; margin: 28px 0; }
-
-.step-item {
-  counter-increment: s;
-  display: flex; gap: 20px; align-items: flex-start;
-  padding: 20px; border-radius: 14px;
-  border: 1px solid var(--border); background: var(--surface2);
-  transition: border-color .3s;
-}
-
-.step-item:hover { border-color: rgba(123,47,190,.4); }
-
-.step-n {
-  width: 38px; height: 38px; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--purple), var(--cyan));
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; font-weight: 800; color: #fff;
-}
-
-.step-n::before { content: counter(s); }
-
-.step-body strong { color: var(--cyan); font-size: 15px; display: block; margin-bottom: 4px; }
-.step-body p { font-size: 14px; margin: 0; color: var(--muted); line-height: 1.6; }
-
-/* ── PULL QUOTE ── */
-.pull-quote {
-  background: linear-gradient(135deg, rgba(0,212,255,.06), rgba(123,47,190,.06));
-  border: 1px solid rgba(0,212,255,.15);
-  border-radius: 20px; padding: 40px; margin: 40px 0; text-align: center;
-}
-
-.pull-quote .q-mark { font-size: 80px; line-height: .8; color: rgba(0,212,255,.2); font-weight: 900; }
-
-.pull-quote .q-text {
-  font-size: clamp(18px, 3vw, 26px); font-weight: 700;
-  color: #fff; line-height: 1.4; margin: 16px 0 12px;
-}
-
-.pull-quote .q-sub { font-size: 15px; color: var(--muted); }
-
-/* ── CTA ── */
-.cta-box {
-  background: linear-gradient(135deg, rgba(0,212,255,.08), rgba(123,47,190,.08));
-  border: 1px solid rgba(0,212,255,.2);
-  border-radius: 24px; padding: 48px; text-align: center; margin-top: 40px;
-}
-
-.cta-box h3 { font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 12px; }
-.cta-box p { font-size: 15px; color: var(--muted); margin-bottom: 28px; }
-
-.tags { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-
-.tag {
-  background: rgba(0,212,255,.06); border: 1px solid rgba(0,212,255,.12);
-  color: var(--cyan); padding: 5px 14px; border-radius: 20px;
-  font-size: 12px; font-weight: 500; transition: all .2s;
-}
-
-.tag:hover { background: rgba(0,212,255,.12); transform: translateY(-2px); }
-
-/* ── FOOTER ── */
-footer {
-  border-top: 1px solid var(--border);
-  padding: 32px 40px; text-align: center;
-  color: var(--muted); font-size: 12px;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-
-.footer-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
-
-/* ── ALT BG ── */
-.alt-bg { background: var(--surface); }
-
-/* ── RESPONSIVE ── */
-@media(max-width:768px) {
-  .section { padding: 60px 24px 60px 48px; }
-  #toc { left: 10px; }
-  .stats-row { grid-template-columns: 1fr; }
-  .arch { flex-direction: column; }
-  .arch-connector { transform: rotate(90deg); margin: 8px 0; }
+.htitle .rest{background:linear-gradient(135deg,#fff,var(--di));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+.typewriter{font-size:18px;color:var(--mu);max-width:620px;margin:0 auto 48px;line-height:1.7;min-height:54px;animation:fd .8s .3s ease both}
+.cursor-blink{display:inline-block;width:2px;height:18px;background:var(--c);margin-left:2px;animation:blink 1s ease infinite;vertical-align:middle}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes fd{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+.hauth{display:inline-flex;align-items:center;gap:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);padding:12px 28px;border-radius:50px;animation:fd .8s .5s ease both;transition:border-color .3s}
+.hauth:hover{border-color:rgba(0,212,255,.2)}
+.av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--c),var(--p));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0}
+.an{font-size:14px;font-weight:600;color:var(--tx);text-align:left}
+.ar{font-size:11px;color:var(--mu);text-align:left}
+
+.sarr{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;animation:fd 1s .8s ease both}
+.sarr span{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.2)}
+.sarr-icon{width:28px;height:28px;border-right:1.5px solid rgba(255,255,255,.2);border-bottom:1.5px solid rgba(255,255,255,.2);transform:rotate(45deg);animation:sb 2s ease infinite}
+@keyframes sb{0%,100%{transform:rotate(45deg) translate(0,0);opacity:.3}50%{transform:rotate(45deg) translate(4px,4px);opacity:1}}
+
+/* SECTION LABELS */
+.slabel{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--c);margin-bottom:20px;display:flex;align-items:center;gap:10px;opacity:0;transform:translateX(-20px);transition:opacity .6s,transform .6s}
+.slabel.vis{opacity:1;transform:translateX(0)}
+.slabel::before{content:'';display:block;width:28px;height:1.5px;background:linear-gradient(90deg,var(--c),var(--p))}
+
+h2{font-size:clamp(26px,4.5vw,46px);font-weight:900;color:#fff;line-height:1.15;margin-bottom:28px;opacity:0;transform:translateY(30px);transition:opacity .7s .1s,transform .7s .1s}
+h2.vis{opacity:1;transform:translateY(0)}
+h2 em{font-style:normal;background:linear-gradient(135deg,var(--c),var(--p));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+.lead{font-size:18px;color:var(--di);line-height:1.85;border-left:2px solid var(--c);padding-left:22px;margin-bottom:36px;opacity:0;transform:translateY(20px);transition:opacity .7s .2s,transform .7s .2s}
+.lead.vis{opacity:1;transform:translateY(0)}
+p{color:var(--mu);font-size:16px;line-height:1.85;margin-bottom:20px}
+
+/* STATS — 3D TILT */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:44px 0;perspective:1000px}
+.stat{background:var(--s2);border:1px solid var(--bd);border-radius:20px;padding:32px 20px;text-align:center;transition:box-shadow .3s;transform-style:preserve-3d;will-change:transform;cursor:default;position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,212,255,.06),rgba(123,47,190,.06));opacity:0;transition:opacity .3s;border-radius:20px}
+.stat:hover::before{opacity:1}
+.stat:hover{box-shadow:0 20px 60px rgba(0,0,0,.4),0 0 30px rgba(0,212,255,.08);border-color:rgba(0,212,255,.2)}
+.sn{font-size:44px;font-weight:900;background:linear-gradient(135deg,var(--c),var(--p));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block;line-height:1}
+.sl{font-size:12px;color:var(--mu);margin-top:8px;display:block;line-height:1.5}
+
+/* CHECKLIST */
+.clist{list-style:none;display:flex;flex-direction:column;gap:10px;margin:28px 0}
+.ci{display:flex;align-items:center;gap:16px;background:var(--s2);border:1px solid var(--bd);border-radius:14px;padding:18px 22px;font-size:15px;color:var(--di);opacity:0;transform:translateX(-30px);transition:opacity .5s,transform .5s,border-color .3s,background .3s;cursor:default}
+.ci.vis{opacity:1;transform:translateX(0)}
+.ci:hover{border-color:rgba(0,212,255,.25);background:rgba(0,212,255,.03);transform:translateX(4px)}
+.cico{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--c),var(--p));display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;position:relative}
+.cico::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1px solid rgba(0,212,255,.2);animation:spin 4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ARCH SVG */
+.arch-wrap{margin:36px 0;position:relative}
+.arch-svg{width:100%;height:160px}
+
+/* TIMELINE ROADMAP */
+.timeline{position:relative;margin:36px 0;padding-left:40px}
+.timeline::before{content:'';position:absolute;left:12px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--c),var(--p),var(--acc));transform:scaleY(0);transform-origin:top;transition:transform 1s ease}
+.timeline.vis::before{transform:scaleY(1)}
+.titem{position:relative;margin-bottom:28px;opacity:0;transform:translateX(20px);transition:opacity .6s,transform .6s}
+.titem.vis{opacity:1;transform:translateX(0)}
+.titem::before{content:'';position:absolute;left:-34px;top:20px;width:14px;height:14px;border-radius:50%;background:linear-gradient(135deg,var(--c),var(--p));box-shadow:0 0 20px rgba(0,212,255,.4)}
+.tcard{background:var(--s2);border:1px solid var(--bd);border-radius:16px;padding:24px 28px;transition:border-color .3s,transform .3s}
+.tcard:hover{border-color:rgba(0,212,255,.3);transform:translateX(4px)}
+.tnum{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--c);margin-bottom:8px}
+.tcard h4{font-size:16px;font-weight:700;color:#fff;margin-bottom:8px}
+.tcard p{font-size:14px;color:var(--mu);margin:0;line-height:1.65}
+
+/* CODE */
+.cblock{background:#0a0e14;border:1px solid var(--bd);border-radius:18px;overflow:hidden;margin:32px 0;font-family:'Fira Code','Courier New',monospace}
+.ctop{background:var(--s2);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bd)}
+.dots{display:flex;gap:6px}
+.d{width:12px;height:12px;border-radius:50%}
+.d.r{background:#ff5f57}.d.y{background:#ffbd2e}.d.g{background:#28ca41}
+.fname{font-size:12px;color:var(--mu);font-family:'Inter',sans-serif}
+.cbtn{background:none;border:1px solid var(--bd);color:var(--mu);padding:5px 14px;border-radius:8px;font-size:11px;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;letter-spacing:.5px}
+.cbtn:hover{border-color:var(--c);color:var(--c);background:rgba(0,212,255,.05)}
+.cbtn:active{transform:scale(.96)}
+.cbody{padding:28px;font-size:13.5px;line-height:1.75;overflow-x:auto;color:var(--di)}
+.ck{color:#79c0ff}.cs{color:#a5d6ff}.cc{color:rgba(139,148,158,.7)}.co{color:#ffa657}
+
+/* STEPS */
+.steps{counter-reset:s;list-style:none;display:flex;flex-direction:column;gap:14px;margin:28px 0}
+.si2{counter-increment:s;display:flex;gap:20px;align-items:flex-start;padding:22px 24px;border-radius:16px;border:1px solid var(--bd);background:var(--s2);transition:border-color .3s,transform .3s,box-shadow .3s;opacity:0;transform:translateY(20px)}
+.si2.vis{opacity:1;transform:translateY(0)}
+.si2:hover{border-color:rgba(123,47,190,.35);transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.snum{width:42px;height:42px;flex-shrink:0;background:linear-gradient(135deg,var(--p),var(--c));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff}
+.snum::before{content:counter(s)}
+.sbody strong{color:var(--c);font-size:15px;display:block;margin-bottom:6px;font-weight:700}
+.sbody p{font-size:14px;margin:0;color:var(--mu);line-height:1.65}
+
+/* PULL QUOTE */
+.pq{position:relative;margin:48px 0;padding:48px;border-radius:24px;overflow:hidden;text-align:center}
+.pq::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,212,255,.06),rgba(123,47,190,.08),rgba(167,139,250,.04));z-index:0}
+.pq::after{content:'';position:absolute;inset:0;border:1px solid rgba(0,212,255,.12);border-radius:24px;z-index:0}
+.pq-inner{position:relative;z-index:1}
+.qm{font-size:100px;line-height:.7;font-weight:900;background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(123,47,190,.15));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block;margin-bottom:16px}
+.qt{font-size:clamp(18px,3vw,28px);font-weight:800;color:#fff;line-height:1.35;margin-bottom:16px}
+.qs{font-size:14px;color:var(--mu)}
+.qs em{font-style:normal;color:var(--c)}
+
+/* CTA MAGNETIC */
+.cta-sec{border-radius:28px;padding:56px 48px;text-align:center;margin-top:48px;position:relative;overflow:hidden}
+.cta-sec::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,212,255,.07),rgba(123,47,190,.09));z-index:0}
+.cta-sec::after{content:'';position:absolute;inset:0;border:1px solid rgba(0,212,255,.15);border-radius:28px;z-index:0}
+.cta-inner{position:relative;z-index:1}
+.cta-sec h3{font-size:28px;font-weight:900;color:#fff;margin-bottom:14px}
+.cta-sec p{font-size:16px;color:var(--mu);margin-bottom:36px;line-height:1.7}
+.mbtn{display:inline-block;background:linear-gradient(135deg,var(--c),var(--p));color:#fff;font-weight:700;font-size:15px;padding:16px 40px;border-radius:50px;letter-spacing:.5px;transition:transform .2s,box-shadow .2s;box-shadow:0 0 0 0 rgba(0,212,255,.3);cursor:pointer;border:none;font-family:'Inter',sans-serif}
+.mbtn:hover{box-shadow:0 8px 40px rgba(0,212,255,.3),0 0 0 4px rgba(0,212,255,.1);transform:translateY(-2px)}
+.mbtn:active{transform:translateY(0)}
+
+.tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:32px}
+.tag{background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.1);color:var(--c);padding:5px 16px;border-radius:20px;font-size:12px;font-weight:500;transition:all .2s;cursor:default}
+.tag:hover{background:rgba(0,212,255,.1);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,212,255,.15)}
+
+/* ALT */
+.alt{background:var(--s1)}
+
+footer{border-top:1px solid var(--bd);padding:40px;text-align:center;color:var(--mu);font-size:12px;display:flex;align-items:center;justify-content:center;gap:10px}
+.fdot{width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.15)}
+
+@media(max-width:768px){
+  .sec{padding:60px 24px 60px 50px}
+  #toc{left:8px}
+  .stats{grid-template-columns:1fr}
+  body{cursor:auto}
+  #cur,#cur2{display:none}
 }
 </style>
 </head>
 <body>
 
-<div id="progress-bar"></div>
+<div id="cur"></div>
+<div id="cur2"></div>
+<div id="pb"></div>
 
 <div id="toc">
-  <div class="toc-dot active" data-label="Início" data-target="hero"></div>
-  <div class="toc-dot" data-label="O que é MCP" data-target="s1"></div>
-  <div class="toc-dot" data-label="Na prática" data-target="s2"></div>
-  <div class="toc-dot" data-label="Arquitetura" data-target="s3"></div>
-  <div class="toc-dot" data-label="Roadmap 2026" data-target="s4"></div>
-  <div class="toc-dot" data-label="Como configurar" data-target="s5"></div>
-  <div class="toc-dot" data-label="O que muda" data-target="s6"></div>
-  <div class="toc-dot" data-label="Reflexão" data-target="s7"></div>
+  <div class="td on" data-l="Início" data-t="hero"></div>
+  <div class="td" data-l="O que é MCP" data-t="s1"></div>
+  <div class="td" data-l="Na prática" data-t="s2"></div>
+  <div class="td" data-l="Arquitetura" data-t="s3"></div>
+  <div class="td" data-l="Roadmap 2026" data-t="s4"></div>
+  <div class="td" data-l="Como configurar" data-t="s5"></div>
+  <div class="td" data-l="O que muda" data-t="s6"></div>
+  <div class="td" data-l="Reflexão" data-t="s7"></div>
 </div>
 
-<div id="reading-badge">
-  ⏱ <span id="pct">0%</span> lido · ~5 min
-</div>
+<div id="rbadge">⏱ <b id="pct">0%</b> lido</div>
 
-<!-- ─── HERO ─── -->
+<!-- HERO -->
 <section id="hero">
-  <canvas id="particles"></canvas>
-  <div class="hero-inner">
-    <div class="badge"><div class="pulse-dot"></div> Trending · Abril 2026</div>
-    <h1>MCP: O "USB-C" da IA que está Revolucionando o BI</h1>
-    <p class="hero-sub">Como o Model Context Protocol está mudando a forma como analistas de dados trabalham — e por que você precisa entender isso agora.</p>
-    <div class="author-row">
-      <div class="author-avatar">RV</div>
-      <div class="author-info">
-        <div class="author-name">Rafael Veloso</div>
-        <div class="author-role">Data &amp; BI Specialist · Abril 2026</div>
+  <div class="mesh">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
+  <div class="hi">
+    <div class="hbadge"><div class="pdot"></div>Trending · Abril 2026</div>
+    <h1 class="htitle">
+      <span class="glit">MCP:</span>
+      <span class="rest"> O "USB-C" da IA<br>que está Revolucionando o BI</span>
+    </h1>
+    <div class="typewriter" id="tw"></div>
+    <div class="hauth">
+      <div class="av">RV</div>
+      <div>
+        <div class="an">Rafael Veloso</div>
+        <div class="ar">Data &amp; BI Specialist · Abril 2026</div>
       </div>
     </div>
   </div>
-  <div class="scroll-hint">
-    scroll
-    <div class="scroll-arrow"></div>
-  </div>
+  <div class="sarr"><span>scroll</span><div class="sarr-icon"></div></div>
 </section>
 
-<!-- ─── S1: O QUE É MCP ─── -->
-<section class="section" id="s1">
-  <div class="section-inner">
-    <div class="sec-label">Fundamentos</div>
-    <h2>O que é MCP e por que importa para dados?</h2>
-    <p class="lead-text">
-      Hoje conectei meu agente de IA diretamente ao LinkedIn — sem abrir o navegador, sem copiar e colar. Apenas disse: <em>"publica esse artigo"</em> → e ele publicou. Isso é MCP em ação.
-    </p>
-    <p>O <strong style="color:var(--text)">Model Context Protocol</strong> é um padrão aberto criado pela Anthropic que funciona como um "USB-C para IA" — um conector universal que permite que qualquer modelo de linguagem se comunique com ferramentas externas de forma padronizada.</p>
-
-    <div class="stats-row">
-      <div class="stat">
-        <span class="stat-num" data-target="10000">0</span>
-        <span class="stat-label">Servidores MCP públicos ativos</span>
-      </div>
-      <div class="stat">
-        <span class="stat-num" data-target="97">0</span>
-        <span class="stat-label">Milhões de downloads mensais do SDK</span>
-      </div>
-      <div class="stat">
-        <span class="stat-num" data-target="4">0</span>
-        <span class="stat-label">Big techs adotando o padrão</span>
-      </div>
+<!-- S1 -->
+<section class="sec" id="s1">
+  <div class="si">
+    <div class="slabel">Fundamentos</div>
+    <h2>O que é MCP e por que<br>importa para <em>dados</em>?</h2>
+    <p class="lead">O <strong style="color:var(--tx)">Model Context Protocol</strong> é um padrão aberto criado pela Anthropic que funciona como um "USB-C para IA" — um conector universal que permite que qualquer modelo de linguagem se comunique com ferramentas externas de forma padronizada.</p>
+    <p>Anthropic, Microsoft, Google e AWS já estão a bordo. 2026 é o ano em que o MCP chega ao enterprise.</p>
+    <div class="stats">
+      <div class="stat"><span class="sn" data-t="10000">0</span><span class="sl">Servidores MCP<br>públicos ativos</span></div>
+      <div class="stat"><span class="sn" data-t="97">0</span><span class="sl">Milhões de downloads<br>mensais do SDK</span></div>
+      <div class="stat"><span class="sn" data-t="4">0</span><span class="sl">Big techs adotando<br>o padrão</span></div>
     </div>
-
-    <p>Anthropic, Microsoft, Google e AWS já estão a bordo. O MCP está se tornando o padrão da indústria para integração de IA com sistemas externos.</p>
   </div>
 </section>
 
-<!-- ─── S2: NA PRÁTICA ─── -->
-<section class="section alt-bg" id="s2">
-  <div class="section-inner">
-    <div class="sec-label">Aplicação Prática</div>
-    <h2>O que um analista de BI ganha com isso?</h2>
-    <p>Imagine seu agente de IA fazendo tudo isso de forma autônoma:</p>
-
-    <ul class="check-list">
-      <li class="check-item"><div class="check-icon">✓</div>Consultar o Qlik Sense e gerar análises automaticamente</li>
-      <li class="check-item"><div class="check-icon">✓</div>Abrir tickets no Jira quando anomalias são detectadas no dashboard</li>
-      <li class="check-item"><div class="check-icon">✓</div>Publicar relatórios no SharePoint sem intervenção humana</li>
-      <li class="check-item"><div class="check-icon">✓</div>Acionar pipelines no dbt ou Databricks por linguagem natural</li>
-      <li class="check-item"><div class="check-icon">✓</div>Postar insights do dashboard diretamente no LinkedIn</li>
+<!-- S2 -->
+<section class="sec alt" id="s2">
+  <div class="si">
+    <div class="slabel">Aplicação Prática</div>
+    <h2>O que um analista de BI<br><em>ganha</em> com isso?</h2>
+    <p>Imagine seu agente de IA fazendo tudo isso de forma autônoma, sem você precisar intervir:</p>
+    <ul class="clist">
+      <li class="ci"><div class="cico">✓</div>Consultar o Qlik Sense e gerar análises automaticamente</li>
+      <li class="ci"><div class="cico">✓</div>Abrir tickets no Jira quando anomalias são detectadas no dashboard</li>
+      <li class="ci"><div class="cico">✓</div>Publicar relatórios no SharePoint sem intervenção humana</li>
+      <li class="ci"><div class="cico">✓</div>Acionar pipelines no dbt ou Databricks por linguagem natural</li>
+      <li class="ci"><div class="cico">✓</div>Postar insights do dashboard diretamente no LinkedIn</li>
     </ul>
-
-    <p>Antes, cada integração exigia um conector customizado, autenticação específica e manutenção constante. Com MCP, você escreve <strong style="color:var(--text)">um servidor</strong> e qualquer modelo compatível pode usar.</p>
+    <p>Antes, cada integração exigia um conector customizado. Com MCP, você escreve <strong style="color:var(--tx)">um servidor</strong> — qualquer modelo usa.</p>
   </div>
 </section>
 
-<!-- ─── S3: ARQUITETURA ─── -->
-<section class="section" id="s3">
-  <div class="section-inner">
-    <div class="sec-label">Arquitetura</div>
-    <h2>Como o MCP funciona na prática</h2>
-    <p>A estrutura é elegante, simples e poderosa:</p>
-
-    <div class="arch">
-      <div class="arch-node">
-        <div class="arch-node-title">Modelo de IA</div>
-        <div class="arch-node-sub">Claude · GPT · Gemini</div>
-      </div>
-      <div class="arch-connector">
-        <div class="arch-line"></div>
-        <div class="arch-tag">MCP Protocol</div>
-      </div>
-      <div class="arch-node">
-        <div class="arch-node-title">MCP Server</div>
-        <div class="arch-node-sub">SSE / HTTP Transport</div>
-      </div>
-      <div class="arch-connector">
-        <div class="arch-line"></div>
-        <div class="arch-tag">API / SDK</div>
-      </div>
-      <div class="arch-node">
-        <div class="arch-node-title">Ferramenta</div>
-        <div class="arch-node-sub">Qlik · Power BI · Jira</div>
-      </div>
-    </div>
-
-    <p>O modelo de IA não precisa saber como cada ferramenta funciona internamente. O MCP Server faz a ponte — traduzindo intenções em ações concretas.</p>
-  </div>
-</section>
-
-<!-- ─── S4: ROADMAP ─── -->
-<section class="section alt-bg" id="s4">
-  <div class="section-inner">
-    <div class="sec-label">Roadmap 2026</div>
-    <h2>O que vem aí — e impacta pipelines de dados</h2>
-    <p>O comitê de direção do MCP publicou seu roadmap em março de 2026 com três mudanças críticas:</p>
-
-    <div class="roadmap">
-      <div class="roadmap-item">
-        <div class="roadmap-num">1</div>
-        <div class="roadmap-body">
-          <h4>Tasks Primitive — Operações Assíncronas</h4>
-          <p>Um agente pode disparar um pipeline ETL de 20 minutos e aguardar a conclusão sem travar a sessão. Essencial para pipelines reais de produção.</p>
-        </div>
-      </div>
-      <div class="roadmap-item">
-        <div class="roadmap-num">2</div>
-        <div class="roadmap-body">
-          <h4>Stateless HTTP Transport</h4>
-          <p>Deploy em cloud simplificado drasticamente. Menos overhead, mais escala. Perfeito para AWS Lambda e Google Cloud Run.</p>
-        </div>
-      </div>
-      <div class="roadmap-item">
-        <div class="roadmap-num">3</div>
-        <div class="roadmap-body">
-          <h4>Compliance e Governança Embutidos</h4>
-          <p>Alinhamento com frameworks globais de conformidade — crítico para ambientes financeiros, de saúde ou sob LGPD/GDPR.</p>
-        </div>
-      </div>
+<!-- S3 -->
+<section class="sec" id="s3">
+  <div class="si">
+    <div class="slabel">Arquitetura</div>
+    <h2>Como o MCP funciona<br>na <em>prática</em></h2>
+    <p>A estrutura é elegante, simples e poderosa. O modelo não precisa saber como cada ferramenta funciona — o MCP Server faz a ponte.</p>
+    <div class="arch-wrap">
+      <svg class="arch-svg" viewBox="0 0 700 140" fill="none" xmlns="http://www.w3.org/2000/svg" id="archsvg">
+        <!-- Node 1 -->
+        <rect x="10" y="30" width="160" height="80" rx="16" fill="rgba(0,212,255,0.06)" stroke="rgba(0,212,255,0.2)" stroke-width="1"/>
+        <text x="90" y="68" text-anchor="middle" fill="#00D4FF" font-family="Inter" font-weight="700" font-size="14">Modelo de IA</text>
+        <text x="90" y="88" text-anchor="middle" fill="#8B949E" font-family="Inter" font-size="11">Claude · GPT · Gemini</text>
+        <!-- Arrow 1 -->
+        <line x1="170" y1="70" x2="265" y2="70" stroke="url(#gr1)" stroke-width="1.5" stroke-dasharray="6 3" class="aline"/>
+        <text x="218" y="62" text-anchor="middle" fill="#8B949E" font-family="Inter" font-size="10">MCP Protocol</text>
+        <!-- Node 2 -->
+        <rect x="265" y="20" width="170" height="100" rx="16" fill="rgba(123,47,190,0.08)" stroke="rgba(123,47,190,0.3)" stroke-width="1.5"/>
+        <text x="350" y="65" text-anchor="middle" fill="#a78bfa" font-family="Inter" font-weight="800" font-size="15">MCP Server</text>
+        <text x="350" y="85" text-anchor="middle" fill="#8B949E" font-family="Inter" font-size="11">SSE / HTTP Transport</text>
+        <circle cx="350" cy="17" r="5" fill="#a78bfa" opacity=".6"><animate attributeName="opacity" values=".6;1;.6" dur="2s" repeatCount="indefinite"/></circle>
+        <!-- Arrow 2 -->
+        <line x1="435" y1="70" x2="530" y2="70" stroke="url(#gr2)" stroke-width="1.5" stroke-dasharray="6 3" class="aline"/>
+        <text x="483" y="62" text-anchor="middle" fill="#8B949E" font-family="Inter" font-size="10">API / SDK</text>
+        <!-- Node 3 -->
+        <rect x="530" y="30" width="160" height="80" rx="16" fill="rgba(0,212,255,0.06)" stroke="rgba(0,212,255,0.2)" stroke-width="1"/>
+        <text x="610" y="64" text-anchor="middle" fill="#00D4FF" font-family="Inter" font-weight="700" font-size="14">Ferramenta</text>
+        <text x="610" y="84" text-anchor="middle" fill="#8B949E" font-family="Inter" font-size="11">Qlik · Power BI · Jira</text>
+        <defs>
+          <linearGradient id="gr1" x1="170" y1="70" x2="265" y2="70" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#00D4FF"/>
+            <stop offset="100%" stop-color="#7B2FBE"/>
+          </linearGradient>
+          <linearGradient id="gr2" x1="435" y1="70" x2="530" y2="70" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#7B2FBE"/>
+            <stop offset="100%" stop-color="#00D4FF"/>
+          </linearGradient>
+        </defs>
+      </svg>
     </div>
   </div>
 </section>
 
-<!-- ─── S5: COMO CONFIGURAR ─── -->
-<section class="section" id="s5">
-  <div class="section-inner">
-    <div class="sec-label">Mão na massa</div>
-    <h2>Como configurar seu agente de BI com MCP</h2>
-    <p>Em menos de 30 minutos você tem um agente conectado às suas ferramentas. A configuração no Claude Desktop é assim:</p>
+<!-- S4 -->
+<section class="sec alt" id="s4">
+  <div class="si">
+    <div class="slabel">Roadmap 2026</div>
+    <h2>O que vem aí — e impacta<br>seus <em>pipelines</em></h2>
+    <p>O comitê de direção do MCP publicou em março de 2026 três mudanças que vão transformar o trabalho com dados:</p>
+    <div class="timeline" id="tl">
+      <div class="titem">
+        <div class="tcard">
+          <div class="tnum">01 — Tasks Primitive</div>
+          <h4>Operações Assíncronas</h4>
+          <p>Um agente dispara um pipeline ETL de 20 minutos e aguarda a conclusão sem travar a sessão. Essencial para produção real.</p>
+        </div>
+      </div>
+      <div class="titem">
+        <div class="tcard">
+          <div class="tnum">02 — HTTP Transport</div>
+          <h4>Stateless e Escalável</h4>
+          <p>Deploy em cloud simplificado. Menos overhead, mais escala. Perfeito para AWS Lambda e Google Cloud Run.</p>
+        </div>
+      </div>
+      <div class="titem">
+        <div class="tcard">
+          <div class="tnum">03 — Governance</div>
+          <h4>Compliance Embutido</h4>
+          <p>Alinhamento com frameworks globais de conformidade — crítico para ambientes financeiros e sob LGPD/GDPR.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <div class="code-wrap">
-      <div class="code-top">
+<!-- S5 -->
+<section class="sec" id="s5">
+  <div class="si">
+    <div class="slabel">Mão na massa</div>
+    <h2>Configuração em<br><em>30 minutos</em></h2>
+    <p>É isso. Dois campos de URL e seu agente está conectado às suas ferramentas.</p>
+    <div class="cblock">
+      <div class="ctop">
         <div class="dots"><div class="d r"></div><div class="d y"></div><div class="d g"></div></div>
-        <span class="file-name">claude_desktop_config.json</span>
-        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        <span class="fname">claude_desktop_config.json</span>
+        <button class="cbtn" onclick="cp(this)">Copiar</button>
       </div>
-      <div class="code-body" id="code1">
-<span class="cc">// Configuração do MCP Server no Claude Desktop</span>
+      <div class="cbody" id="ccode">
+<span class="cc">// Configure seus servidores MCP aqui</span>
 {
   <span class="ck">"mcpServers"</span>: {
     <span class="ck">"linkedin"</span>: {
@@ -763,232 +505,208 @@ footer {
     <span class="ck">"qlik"</span>: {
       <span class="ck">"url"</span>: <span class="cs">"http://localhost:3001/sse"</span>
     },
-    <span class="ck">"power-bi"</span>: {
+    <span class="ck">"databricks"</span>: {
       <span class="ck">"url"</span>: <span class="cs">"http://localhost:3002/sse"</span>
     }
   }
 }
       </div>
     </div>
-
-    <p>Agora você pode pedir ao agente: <em style="color:var(--dim)">"Com base nesse dashboard, escreve um post técnico sobre a anomalia e publica no LinkedIn."</em> E ele faz. Em segundos.</p>
+    <p>Agora diga ao agente: <em style="color:var(--di)">"Com base nesse dashboard, escreve um post sobre a anomalia e publica no LinkedIn."</em><br>Ele faz. Em segundos.</p>
   </div>
 </section>
 
-<!-- ─── S6: O QUE MUDA ─── -->
-<section class="section alt-bg" id="s6">
-  <div class="section-inner">
-    <div class="sec-label">Impacto na Carreira</div>
-    <h2>O que isso muda para profissionais de BI</h2>
-    <p>Os profissionais que se destacarão nos próximos 2-3 anos dominarão três competências:</p>
-
+<!-- S6 -->
+<section class="sec alt" id="s6">
+  <div class="si">
+    <div class="slabel">Impacto na Carreira</div>
+    <h2>O que isso muda para<br>profissionais de <em>BI</em></h2>
+    <p>Três competências vão separar quem prospera de quem fica para trás:</p>
     <ol class="steps">
-      <li class="step-item">
-        <div class="step-n"></div>
-        <div class="step-body">
+      <li class="si2">
+        <div class="snum"></div>
+        <div class="sbody">
           <strong>Construir servidores MCP</strong>
-          <p>Transformar Qlik, Power BI e Databricks em ferramentas que agentes podem usar autonomamente.</p>
+          <p>Transformar Qlik, Power BI e Databricks em ferramentas que agentes usam autonomamente — sem connectors customizados, sem manutenção.</p>
         </div>
       </li>
-      <li class="step-item">
-        <div class="step-n"></div>
-        <div class="step-body">
+      <li class="si2">
+        <div class="snum"></div>
+        <div class="sbody">
           <strong>Orquestrar agentes inteligentes</strong>
-          <p>Automatizar análises, relatórios e insights em escala — sem intervenção manual.</p>
+          <p>Automatizar análises, relatórios e insights em escala — liberando o analista humano para trabalho estratégico de alto valor.</p>
         </div>
       </li>
-      <li class="step-item">
-        <div class="step-n"></div>
-        <div class="step-body">
-          <strong>Governar e auditar o que os agentes fazem</strong>
-          <p>Garantir compliance, qualidade e rastreabilidade em cada ação automatizada.</p>
+      <li class="si2">
+        <div class="snum"></div>
+        <div class="sbody">
+          <strong>Governar e auditar ações dos agentes</strong>
+          <p>Garantir compliance, qualidade de dados e rastreabilidade completa em cada ação automatizada.</p>
         </div>
       </li>
     </ol>
   </div>
 </section>
 
-<!-- ─── S7: REFLEXÃO ─── -->
-<section class="section" id="s7">
-  <div class="section-inner">
-    <div class="sec-label">Reflexão Final</div>
-    <h2>O que está acontecendo agora</h2>
-
-    <p>O MCP está fazendo para IA o que o REST fez para a web nos anos 2000: padronizando a conexão entre sistemas e desbloqueando um ecossistema de possibilidades.</p>
-
-    <div class="pull-quote">
-      <div class="q-mark">"</div>
-      <div class="q-text">A pergunta não é mais se a IA vai substituir analistas de dados.<br>A pergunta é: você vai aprender a trabalhar com IA, ou vai esperar?</div>
-      <div class="q-sub">— Rafael Veloso, Data &amp; BI Specialist</div>
+<!-- S7 -->
+<section class="sec" id="s7">
+  <div class="si">
+    <div class="slabel">Reflexão Final</div>
+    <h2>Não é o <em>futuro</em>.<br>É agora.</h2>
+    <p>O MCP está fazendo para IA o que o REST fez para a web nos anos 2000: padronizando conexões, desbloqueando ecossistemas, criando oportunidades que quem chegou cedo capturou.</p>
+    <div class="pq">
+      <div class="pq-inner">
+        <span class="qm">"</span>
+        <div class="qt">A pergunta não é mais se a IA vai substituir analistas de dados.<br>A pergunta é: você vai aprender a trabalhar com IA, ou vai esperar alguém te substituir por quem já sabe?</div>
+        <div class="qs">— <em>Rafael Veloso</em>, Data &amp; BI Specialist</div>
+      </div>
     </div>
-
-    <p>Este artigo foi escrito e publicado por um agente de IA usando MCP para se conectar ao GitHub e ao LinkedIn. Não é ficção científica. É o que está acontecendo agora.</p>
-
-    <div class="cta-box">
-      <h3>💬 Você já está explorando MCP?</h3>
-      <p>Me conta nos comentários como você está usando ou planejando usar MCP nas suas ferramentas de dados. Conecta comigo para trocar ideias sobre BI, automação e o futuro dos dados!</p>
-      <div class="tags">
-        <span class="tag">#MCP</span><span class="tag">#BusinessIntelligence</span>
-        <span class="tag">#DataEngineering</span><span class="tag">#InteligênciaArtificial</span>
-        <span class="tag">#BI</span><span class="tag">#Qlik</span><span class="tag">#PowerBI</span>
-        <span class="tag">#Automação</span><span class="tag">#AIAgents</span><span class="tag">#ModelContextProtocol</span>
+    <p>Este artigo foi escrito e publicado por um agente de IA usando MCP para se conectar ao GitHub e ao LinkedIn. Isso aconteceu hoje. É real.</p>
+    <div class="cta-sec">
+      <div class="cta-inner">
+        <h3>💬 Você já está explorando MCP?</h3>
+        <p>Me conta nos comentários como você está usando ou planejando usar MCP nas suas ferramentas de dados. Conecta comigo para trocar ideias sobre BI, automação e o futuro dos dados!</p>
+        <div class="tags">
+          <span class="tag">#MCP</span><span class="tag">#BusinessIntelligence</span><span class="tag">#DataEngineering</span>
+          <span class="tag">#InteligênciaArtificial</span><span class="tag">#BI</span><span class="tag">#Qlik</span>
+          <span class="tag">#PowerBI</span><span class="tag">#Automação</span><span class="tag">#AIAgents</span>
+          <span class="tag">#ModelContextProtocol</span>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
 <footer>
-  <span>© 2026 Rafael Veloso</span>
-  <div class="footer-dot"></div>
-  <span>Data &amp; BI Specialist</span>
-  <div class="footer-dot"></div>
+  <span>© 2026 Rafael Veloso</span><div class="fdot"></div>
+  <span>Data &amp; BI Specialist</span><div class="fdot"></div>
   <span>Publicado via MCP + GitHub Pages</span>
 </footer>
 
 <script>
-// ── PARTICLES ──
-const canvas = document.getElementById('particles');
-const ctx = canvas.getContext('2d');
-let particles = [];
+// CURSOR
+const cur=document.getElementById('cur'),cur2=document.getElementById('cur2');
+let mx=0,my=0,cx=0,cy=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.transform=`translate(${mx}px,${my}px)`;});
+function animCur(){cx+=(mx-cx)*.12;cy+=(my-cy)*.12;cur2.style.transform=`translate(${cx}px,${cy}px)`;requestAnimationFrame(animCur);}
+animCur();
+document.querySelectorAll('a,button,.stat,.ci,.tcard,.si2,.tag').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur2.style.width='56px';cur2.style.height='56px';cur2.style.borderColor='rgba(0,212,255,.6)';});
+  el.addEventListener('mouseleave',()=>{cur2.style.width='36px';cur2.style.height='36px';cur2.style.borderColor='rgba(0,212,255,.4)';});
+});
 
-function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-resize();
-window.addEventListener('resize', resize);
+// PROGRESS
+const pb=document.getElementById('pb'),pct=document.getElementById('pct');
+window.addEventListener('scroll',()=>{
+  const max=document.body.scrollHeight-window.innerHeight;
+  const v=Math.round((window.scrollY/max)*100);
+  pb.style.width=v+'%';pct.textContent=v+'%';
+});
 
-function createParticle() {
-  return {
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    vx: (Math.random() - .5) * .4,
-    vy: (Math.random() - .5) * .4,
-    r: Math.random() * 1.5 + .5,
-    opacity: Math.random() * .5 + .1
-  };
-}
+// TOC
+const secs=['hero','s1','s2','s3','s4','s5','s6','s7'];
+const dots=document.querySelectorAll('.td');
+dots.forEach(d=>d.addEventListener('click',()=>document.getElementById(d.dataset.t).scrollIntoView({behavior:'smooth'})));
+const io=new IntersectionObserver(e=>e.forEach(en=>{if(en.isIntersecting){const i=secs.indexOf(en.target.id);dots.forEach((d,j)=>d.classList.toggle('on',i===j));}}),{threshold:.4});
+secs.forEach(id=>{const el=document.getElementById(id);if(el)io.observe(el);});
 
-for (let i = 0; i < 80; i++) particles.push(createParticle());
+// REVEAL
+const ro=new IntersectionObserver(e=>e.forEach(en=>{if(en.isIntersecting)en.target.classList.add('vis');}),{threshold:.15});
+document.querySelectorAll('.slabel,h2,.lead').forEach(el=>ro.observe(el));
 
-function drawParticles() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particles.forEach(p => {
-    p.x += p.vx; p.y += p.vy;
-    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(0,212,255,${p.opacity})`;
-    ctx.fill();
-  });
-  // draw connections
-  for (let i = 0; i < particles.length; i++) {
-    for (let j = i+1; j < particles.length; j++) {
-      const dx = particles[i].x - particles[j].x;
-      const dy = particles[i].y - particles[j].y;
-      const dist = Math.sqrt(dx*dx + dy*dy);
-      if (dist < 120) {
-        ctx.beginPath();
-        ctx.moveTo(particles[i].x, particles[i].y);
-        ctx.lineTo(particles[j].x, particles[j].y);
-        ctx.strokeStyle = `rgba(0,212,255,${.08 * (1 - dist/120)})`;
-        ctx.lineWidth = .5;
-        ctx.stroke();
-      }
-    }
+// CHECKLIST STAGGER
+const cio=new IntersectionObserver(e=>e.forEach(en=>{
+  if(en.isIntersecting){
+    en.target.querySelectorAll('.ci').forEach((ci,i)=>{setTimeout(()=>ci.classList.add('vis'),i*100);});
   }
-  requestAnimationFrame(drawParticles);
-}
-drawParticles();
+}),{threshold:.2});
+document.querySelectorAll('.clist').forEach(el=>cio.observe(el));
 
-// ── PROGRESS BAR ──
-const bar = document.getElementById('progress-bar');
-const pct = document.getElementById('pct');
-window.addEventListener('scroll', () => {
-  const max = document.body.scrollHeight - window.innerHeight;
-  const val = Math.round((window.scrollY / max) * 100);
-  bar.style.width = val + '%';
-  pct.textContent = val + '%';
-});
+// STEPS STAGGER
+const sto=new IntersectionObserver(e=>e.forEach(en=>{
+  if(en.isIntersecting){
+    en.target.querySelectorAll('.si2').forEach((s,i)=>{setTimeout(()=>s.classList.add('vis'),i*150);});
+  }
+}),{threshold:.2});
+document.querySelectorAll('.steps').forEach(el=>sto.observe(el));
 
-// ── TOC ACTIVE ──
-const sections = ['hero','s1','s2','s3','s4','s5','s6','s7'];
-const dots = document.querySelectorAll('.toc-dot');
+// TIMELINE
+const tlo=new IntersectionObserver(e=>e.forEach(en=>{
+  if(en.isIntersecting){
+    en.target.classList.add('vis');
+    en.target.querySelectorAll('.titem').forEach((t,i)=>{setTimeout(()=>t.classList.add('vis'),300+i*200);});
+  }
+}),{threshold:.2});
+document.querySelectorAll('.timeline').forEach(el=>tlo.observe(el));
 
-dots.forEach(d => {
-  d.addEventListener('click', () => {
-    document.getElementById(d.dataset.target).scrollIntoView({ behavior: 'smooth' });
-  });
-});
-
-const obs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      const idx = sections.indexOf(e.target.id);
-      dots.forEach((d,i) => d.classList.toggle('active', i === idx));
-    }
-  });
-}, { threshold: .4 });
-
-sections.forEach(id => {
-  const el = document.getElementById(id);
-  if (el) obs.observe(el);
-});
-
-// ── REVEAL ON SCROLL ──
-const revealObs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) e.target.classList.add('visible');
-  });
-}, { threshold: .15 });
-
-document.querySelectorAll('.section-inner').forEach(el => revealObs.observe(el));
-
-// ── COUNTER ANIMATION ──
-function animateCounter(el, target) {
-  const isLarge = target >= 1000;
-  let start = 0;
-  const duration = 1800;
-  const step = (timestamp) => {
-    if (!start) start = timestamp;
-    const progress = Math.min((timestamp - start) / duration, 1);
-    const eased = 1 - Math.pow(1 - progress, 3);
-    const val = Math.floor(eased * target);
-    el.textContent = isLarge ? (val >= 1000 ? (val/1000).toFixed(0)+'K+' : val) : (val === target && target === 97 ? val+'M' : val === target && target === 4 ? val : val);
-    if (progress < 1) requestAnimationFrame(step);
-    else {
-      if (target === 10000) el.textContent = '10K+';
-      else if (target === 97) el.textContent = '97M';
-      else if (target === 4) el.textContent = '4';
-    }
+// COUNTERS
+function animNum(el,target){
+  const isK=target>=1000;
+  let st=null;
+  const step=ts=>{
+    if(!st)st=ts;
+    const p=Math.min((ts-st)/1600,1);
+    const e=1-Math.pow(1-p,4);
+    const v=Math.floor(e*target);
+    if(target===10000)el.textContent=v>=1000?(v/1000).toFixed(0)+'K+':v;
+    else if(target===97)el.textContent=v+'M';
+    else el.textContent=v===target?v:v;
+    if(p<1)requestAnimationFrame(step);
+    else{if(target===10000)el.textContent='10K+';else if(target===97)el.textContent='97M';else el.textContent=target;}
   };
   requestAnimationFrame(step);
 }
+const cno=new IntersectionObserver(e=>e.forEach(en=>{
+  if(en.isIntersecting){
+    en.target.querySelectorAll('.sn[data-t]').forEach(el=>{animNum(el,+el.dataset.t);delete el.dataset.t;});
+  }
+}),{threshold:.5});
+document.querySelectorAll('.stats').forEach(el=>cno.observe(el));
 
-const counterObs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.querySelectorAll('.stat-num[data-target]').forEach(el => {
-        const t = parseInt(el.dataset.target);
-        animateCounter(el, t);
-        delete el.dataset.target;
-      });
-    }
+// 3D TILT
+document.querySelectorAll('.stat').forEach(card=>{
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5;
+    const y=(e.clientY-r.top)/r.height-.5;
+    card.style.transform=`perspective(600px) rotateY(${x*12}deg) rotateX(${-y*12}deg) translateY(-4px)`;
   });
-}, { threshold: .5 });
+  card.addEventListener('mouseleave',()=>{card.style.transform='';});
+});
 
-document.querySelectorAll('.stats-row').forEach(el => counterObs.observe(el));
+// TYPEWRITER
+const phrases=["Hoje, um agente de IA publicou este artigo por mim.","Sem abrir o navegador. Sem copiar e colar.","Isso é MCP — e está mudando tudo."];
+let pi=0,ci=0,del=false;const twEl=document.getElementById('tw');
+twEl.innerHTML='<span class="cursor-blink"></span>';
+function type(){
+  const cur=twEl.querySelector('.cursor-blink');
+  if(!del){
+    if(ci<phrases[pi].length){twEl.innerHTML=phrases[pi].slice(0,++ci)+'<span class="cursor-blink"></span>';setTimeout(type,45);}
+    else{setTimeout(()=>{del=true;type();},2000);}
+  }else{
+    if(ci>0){twEl.innerHTML=phrases[pi].slice(0,--ci)+'<span class="cursor-blink"></span>';setTimeout(type,20);}
+    else{del=false;pi=(pi+1)%phrases.length;setTimeout(type,400);}
+  }
+}
+setTimeout(type,800);
 
-// ── COPY CODE ──
-function copyCode(btn) {
-  const code = document.getElementById('code1').innerText;
-  navigator.clipboard.writeText(code).then(() => {
-    btn.textContent = 'Copiado!';
-    btn.style.color = '#00D4FF';
-    setTimeout(() => { btn.textContent = 'Copiar'; btn.style.color = ''; }, 2000);
+// COPY
+function cp(btn){
+  navigator.clipboard.writeText(document.getElementById('ccode').innerText).then(()=>{
+    btn.textContent='Copiado ✓';btn.style.color='#00D4FF';btn.style.borderColor='#00D4FF';
+    setTimeout(()=>{btn.textContent='Copiar';btn.style.color='';btn.style.borderColor='';},2000);
   });
 }
+
+// SVG DASH ANIMATION
+document.querySelectorAll('.aline').forEach(l=>{
+  const len=l.getTotalLength?.()??200;
+  l.style.strokeDasharray=l.getAttribute('stroke-dasharray')||'6 3';
+  l.style.animation='dash 2s linear infinite';
+});
+const style=document.createElement('style');
+style.textContent='@keyframes dash{to{stroke-dashoffset:-18}}';
+document.head.appendChild(style);
 </script>
 </body>
 </html>
