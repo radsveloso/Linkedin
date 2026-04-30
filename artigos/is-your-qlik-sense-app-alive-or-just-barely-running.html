@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Is Your Qlik Sense App Alive or Just Barely Running?</title>
+    <meta property="og:title" content="Is Your Qlik Sense App Alive or Just Barely Running?">
+    <meta property="og:description" content="<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>Is Your Qlik Sense...">
+    <meta property="og:type" content="article">
+    <meta name="author" content="Rafael Veloso">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #0077B5 0%, #00A0DC 100%);
+            color: white;
+            padding: 60px 40px 40px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+        
+        .meta {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        article {
+            padding: 40px;
+        }
+        
+        article p {
+            margin-bottom: 1.5em;
+            font-size: 1.1em;
+        }
+        
+        article h2 {
+            margin-top: 2em;
+            margin-bottom: 1em;
+            color: #0077B5;
+        }
+        
+        article ul, article ol {
+            margin-left: 2em;
+            margin-bottom: 1.5em;
+        }
+        
+        article li {
+            margin-bottom: 0.5em;
+        }
+        
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin-bottom: 1.5em;
+        }
+        
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+        
+        footer {
+            background: #f8f8f8;
+            padding: 40px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            header, article {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Is Your Qlik Sense App Alive or Just Barely Running?</h1>
+            <div class="meta">
+                Por Rafael Veloso • 29 de abril de 2026
+            </div>
+        </header>
+        
+        <article>
+            <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>Is Your Qlik Sense App Alive or Just Barely Running? — Rafael Veloso</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;background:#08080f;}
+body{background:#08080f !important;color:#e2e8f0 !important;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;overflow-x:hidden;cursor:none;}
+#c1{position:fixed;width:9px;height:9px;background:#f59e0b;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);box-shadow:0 0 12px #f59e0b,0 0 24px rgba(245,158,11,.4);}
+#c2{position:fixed;width:32px;height:32px;border:1.5px solid rgba(245,158,11,.45);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .18s,height .18s;}
+#pb{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#d97706,#f59e0b,#fcd34d);z-index:9990;width:0%;box-shadow:0 0 8px #f59e0b;}
+#toc{position:fixed;right:18px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:500;}
+.td{width:7px;height:7px;border-radius:50%;background:rgba(245,158,11,.2);cursor:pointer;transition:.3s;border:1px solid transparent;}
+.td.on,.td:hover{background:#f59e0b;box-shadow:0 0 7px rgba(245,158,11,.5);transform:scale(1.5);}
+@media(max-width:680px){#toc{display:none;}}
+.blob{position:fixed;border-radius:50%;filter:blur(80px);opacity:.13;pointer-events:none;z-index:0;animation:flt 13s ease-in-out infinite;}
+.b1{width:460px;height:460px;background:radial-gradient(circle,#92400e,transparent);top:-80px;left:-80px;}
+.b2{width:340px;height:340px;background:radial-gradient(circle,#1d4ed8,transparent);bottom:-60px;right:-60px;animation-delay:-6s;}
+@keyframes flt{0%,100%{transform:translate(0,0)}50%{transform:translate(16px,-12px)}}
+.rv{opacity:0;transform:translateY(28px);transition:opacity .6s,transform .6s;}
+.rv.in{opacity:1;transform:none;}
+@keyframes fu{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3;transform:scale(.8)}}
+
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 20px;position:relative;z-index:1;background:#08080f;background:radial-gradient(ellipse at 50% -5%,rgba(180,83,9,.22),#08080f 62%);}
+.badge{display:inline-flex;align-items:center;gap:7px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.22);border-radius:99px;padding:5px 14px;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fcd34d;margin-bottom:28px;animation:fu .7s .1s both;}
+.bdot{width:6px;height:6px;border-radius:50%;background:#f59e0b;animation:pulse 2s infinite;}
+h1.ht{font-size:clamp(2.6rem,6.5vw,4.8rem);font-weight:900;line-height:1.06;letter-spacing:-.04em;margin-bottom:24px;animation:fu .7s .25s both;color:#e2e8f0;}
+.htg{display:block;background:linear-gradient(130deg,#f59e0b,#fbbf24 50%,#fde68a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sub{font-size:clamp(.95rem,1.9vw,1.15rem);color:#94a3b8;min-height:2.4em;margin-bottom:34px;max-width:580px;line-height:1.65;animation:fu .7s .4s both;}
+.twc{display:inline-block;width:2px;height:1em;background:#f59e0b;vertical-align:text-bottom;margin-left:2px;animation:blink .65s infinite;}
+.hbtns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;animation:fu .7s .55s both;}
+.bp{padding:13px 30px;border-radius:99px;background:linear-gradient(135deg,#d97706,#f59e0b);color:#0a0a0a;font-weight:700;font-size:.9rem;text-decoration:none;border:none;cursor:pointer;box-shadow:0 4px 22px rgba(245,158,11,.4);transition:transform .2s,box-shadow .2s;}
+.bp:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 8px 32px rgba(245,158,11,.55);}
+.bg{padding:13px 30px;border-radius:99px;border:1.5px solid rgba(245,158,11,.22);color:#94a3b8;font-weight:600;font-size:.9rem;text-decoration:none;background:transparent;cursor:pointer;transition:border-color .2s,color .2s;}
+.bg:hover{border-color:#f59e0b;color:#f59e0b;}
+
+.s-dark{background:#08080f;position:relative;z-index:1;}
+.s-mid{background:#0d0d18;position:relative;z-index:1;}
+.s-card{background:#0a0e18;position:relative;z-index:1;}
+.divl{width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(245,158,11,.15),transparent);position:relative;z-index:1;}
+.wrap{max-width:880px;margin:0 auto;padding:56px 24px;}
+.lbl{font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#f59e0b;margin-bottom:10px;display:block;}
+h2{font-size:clamp(1.7rem,3.8vw,2.7rem);font-weight:800;line-height:1.15;margin-bottom:18px;letter-spacing:-.025em;color:#e2e8f0;}
+h2 em{font-style:normal;color:#f59e0b;}
+p{color:#94a3b8;line-height:1.78;font-size:1rem;margin-bottom:.9rem;}
+p:last-child{margin-bottom:0;}
+p strong{color:#e2e8f0;}
+
+.dx{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:24px 0;}
+@media(max-width:560px){.dx{grid-template-columns:1fr;}}
+.dx-card{background:#14141e;border:1px solid rgba(245,158,11,.14);border-radius:12px;padding:20px;transition:border-color .2s,transform .2s;}
+.dx-card:hover{border-color:rgba(245,158,11,.38);transform:translateY(-3px);}
+.dx-card .di{font-size:1.4rem;margin-bottom:8px;}
+.dx-card h4{font-size:.92rem;font-weight:700;color:#e2e8f0;margin-bottom:4px;}
+.dx-card p{font-size:.84rem;margin:0;color:#94a3b8;}
+.dx-bad{border-color:rgba(239,68,68,.2) !important;}
+.dx-bad:hover{border-color:rgba(239,68,68,.45) !important;}
+.dx-good{border-color:rgba(34,197,94,.2) !important;}
+.dx-good:hover{border-color:rgba(34,197,94,.45) !important;}
+
+.layers{display:flex;flex-direction:column;gap:1px;border:1px solid rgba(245,158,11,.14);border-radius:14px;overflow:hidden;margin:24px 0;}
+.layer{display:grid;grid-template-columns:140px 1fr;gap:0;}
+.layer-tag{padding:20px 18px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;font-weight:800;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;gap:4px;}
+.layer-bronze{background:#1c0f00;color:#f59e0b;}
+.layer-silver{background:#0a1020;color:#93c5fd;}
+.layer-gold{background:#0f1a10;color:#4ade80;}
+.layer-body{background:#14141e;padding:20px;border-left:1px solid rgba(245,158,11,.1);}
+.layer-body h4{font-size:.92rem;font-weight:700;color:#e2e8f0;margin-bottom:4px;}
+.layer-body p{font-size:.84rem;margin:0;color:#94a3b8;}
+@media(max-width:520px){.layer{grid-template-columns:1fr;}.layer-tag{flex-direction:row;padding:12px 18px;}}
+
+.code-wrap{background:#0d1117;border:1px solid rgba(245,158,11,.14);border-radius:12px;overflow:hidden;margin:24px 0;}
+.code-header{background:#161b22;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(245,158,11,.1);}
+.code-header span{font-size:.75rem;font-weight:700;color:#f59e0b;font-family:monospace;letter-spacing:.08em;}
+.code-dots{display:flex;gap:6px;}
+.code-dots i{width:10px;height:10px;border-radius:50%;}
+.code-dots i:nth-child(1){background:#f87171;}
+.code-dots i:nth-child(2){background:#fbbf24;}
+.code-dots i:nth-child(3){background:#4ade80;}
+pre{padding:20px 18px;overflow-x:auto;font-family:'Cascadia Code','Fira Code','Courier New',monospace;font-size:.82rem;line-height:1.7;color:#e2e8f0;}
+.kw{color:#f472b6;}
+.fn{color:#60a5fa;}
+.st{color:#4ade80;}
+.cm{color:#4b5563;font-style:italic;}
+.vr{color:#fcd34d;}
+
+.ck{list-style:none;margin:20px 0;}
+.ck li{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid rgba(245,158,11,.07);opacity:0;transform:translateX(-14px);transition:opacity .4s,transform .4s;}
+.ck li:last-child{border-bottom:none;}
+.ck li.in{opacity:1;transform:none;}
+.cki{width:22px;height:22px;flex-shrink:0;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#f59e0b;font-size:.75rem;margin-top:2px;}
+.ckt strong{display:block;font-size:.94rem;font-weight:600;color:#e2e8f0;margin-bottom:2px;}
+.ckt span{font-size:.84rem;color:#94a3b8;}
+
+.killers{display:flex;flex-direction:column;gap:12px;margin:24px 0;}
+.killer{background:#14141e;border:1px solid rgba(239,68,68,.18);border-radius:12px;padding:18px 20px;display:flex;align-items:flex-start;gap:14px;transition:border-color .2s;}
+.killer:hover{border-color:rgba(239,68,68,.4);}
+.killer-num{width:28px;height:28px;border-radius:50%;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;color:#f87171;flex-shrink:0;margin-top:1px;}
+.killer h4{font-size:.93rem;font-weight:700;color:#e2e8f0;margin-bottom:3px;}
+.killer p{font-size:.84rem;margin:0;color:#94a3b8;}
+
+.pq{border-left:3px solid #f59e0b;padding:16px 22px;margin:24px 0;background:rgba(245,158,11,.06);border-radius:0 12px 12px 0;font-size:1.05rem;font-style:italic;color:#e2e8f0;line-height:1.65;}
+
+.ctasec{background:#0a0a14;padding:56px 24px;text-align:center;position:relative;z-index:1;}
+.ctabox{max-width:600px;margin:0 auto;background:#14141e;border:1px solid rgba(245,158,11,.18);border-radius:22px;padding:44px 36px;position:relative;overflow:hidden;}
+.ctabox::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.1),transparent 65%);pointer-events:none;}
+.ctabox::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#d97706,#f59e0b,#fcd34d);}
+.ctabox h2{font-size:clamp(1.4rem,2.8vw,2rem);margin-bottom:10px;color:#e2e8f0;}
+.ctabox h2 em{font-style:normal;color:#f59e0b;}
+.ctabox p{margin-bottom:26px;color:#94a3b8;max-width:420px;margin-left:auto;margin-right:auto;}
+.bmag{display:inline-block;padding:13px 34px;border-radius:99px;background:linear-gradient(135deg,#d97706,#f59e0b);color:#0a0a0a;font-weight:700;font-size:.93rem;text-decoration:none;border:none;cursor:pointer;box-shadow:0 6px 26px rgba(245,158,11,.4);transition:transform .15s,box-shadow .15s;}
+.bmag:hover{transform:scale(1.05);box-shadow:0 10px 38px rgba(245,158,11,.55);}
+footer{text-align:center;padding:26px 24px 38px;color:#64748b;font-size:.8rem;border-top:1px solid rgba(245,158,11,.1);background:#08080f;position:relative;z-index:1;}
+footer a{color:#f59e0b;text-decoration:none;}
+</style>
+</head>
+<body>
+<div id="c1"></div>
+<div id="c2"></div>
+<div id="pb"></div>
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<nav id="toc">
+  <div class="td on" data-s="s0"></div>
+  <div class="td" data-s="s1"></div>
+  <div class="td" data-s="s2"></div>
+  <div class="td" data-s="s3"></div>
+  <div class="td" data-s="s4"></div>
+  <div class="td" data-s="s5"></div>
+</nav>
+
+<!-- HERO -->
+<div id="s0" class="hero">
+  <div class="badge"><span class="bdot"></span>Qlik Architecture 2025</div>
+  <h1 class="ht">
+    <span style="display:block;color:#e2e8f0;">Is your Qlik Sense</span>
+    <span class="htg">alive or just barely running?</span>
+  </h1>
+  <div class="sub"><span id="tw"></span><span class="twc"></span></div>
+  <div class="hbtns">
+    <a class="bp" href="#s1">See the full architecture</a>
+    <a class="bg" href="#s5">Production checklist</a>
+  </div>
+</div>
+
+<div class="divl"></div>
+
+<!-- S1 -->
+<div id="s1" class="s-mid">
+  <div class="wrap">
+    <span class="lbl rv">01 — Diagnosis</span>
+    <h2 class="rv">The app works.<br><em>But for how long?</em></h2>
+    <p class="rv">Most Qlik Sense environments I encounter at companies pass the visual test: nice dashboards, data that looks right, users navigating freely. But when you look under the hood, the story changes.</p>
+    <p class="rv">Scripts with no QVD layer. Reloads that pull 100% of source data every time. Unnecessary joins on the front-end. Section Access configured as an afterthought. These are apps that <strong>work until the day they stop working</strong>, and when they go down, nobody knows where to start.</p>
+
+    <div class="dx rv">
+      <div class="dx-card dx-bad">
+        <div class="di">💀</div>
+        <h4>App that just barely runs</h4>
+        <p>4-hour reloads. Full extract every night. A 2,000-line script with no comments. One developer who understands what's happening.</p>
+      </div>
+      <div class="dx-card dx-bad">
+        <div class="di">⚠️</div>
+        <h4>Warning signs</h4>
+        <p>Synthetic keys in the data model. Circular tables. Joins in the script that belong in the source. Engine RAM spiking on reload.</p>
+      </div>
+      <div class="dx-card dx-good">
+        <div class="di">✅</div>
+        <h4>Truly production-ready</h4>
+        <p>Incremental reload in minutes. Separate QVD layers. Modular, documented scripts. Any developer can maintain it.</p>
+      </div>
+      <div class="dx-card dx-good">
+        <div class="di">🚀</div>
+        <h4>Built to scale</h4>
+        <p>Granular Section Access. Performance monitoring. Versioned QVD layers. Data governance applied at the script level.</p>
+      </div>
+    </div>
+
+    <div class="pq rv">"A healthy Qlik app is not the one with the most charts. It is the one any developer can maintain two years from now."</div>
+  </div>
+</div>
+
+<div class="divl"></div>
+
+<!-- S2 -->
+<div id="s2" class="s-dark">
+  <div class="wrap">
+    <span class="lbl rv">02 — Architecture</span>
+    <h2 class="rv">The 3 layers that separate<br><em>juniors from seniors</em></h2>
+    <p class="rv">Serious Qlik production environments follow a QVD layer architecture. It is the equivalent of the Medallion model (Bronze/Silver/Gold) that the Data Engineering world adopted, applied to the Qlik ecosystem.</p>
+
+    <div class="layers rv">
+      <div class="layer">
+        <div class="layer-tag layer-bronze">🥉<span>RAW<br>QVD</span></div>
+        <div class="layer-body">
+          <h4>Layer 1: Raw Extraction</h4>
+          <p>Exact copy of the source. No transformation. No join. No filter. This is your historical backup and source of truth. Never connect an app directly here.</p>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-tag layer-silver">🥈<span>TRANSFORM<br>QVD</span></div>
+        <div class="layer-body">
+          <h4>Layer 2: Transformation</h4>
+          <p>Cleaning, typing, enrichment, and joins between entities. This is where business logic lives. Modular scripts, one file per entity.</p>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-tag layer-gold">🥇<span>APP<br>QVD</span></div>
+        <div class="layer-body">
+          <h4>Layer 3: Consumption App</h4>
+          <p>Reads only transformed QVDs. Lean script, no business logic. Aggregations and Section Access filters. Reload in minutes, not hours.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-wrap rv">
+      <div class="code-header">
+        <div class="code-dots"><i></i><i></i><i></i></div>
+        <span>01_RAW_Orders.qvs — Extraction Layer</span>
+      </div>
+      <pre><span class="cm">// ===============================================
+// RAW LAYER: Pure extraction from source
+// No transformation. No join. No filter.
+// ===============================================</span>
+
+<span class="vr">LET vQVDRaw</span>   = <span class="st">'lib://QVD/Raw/'</span>;
+<span class="vr">LET vQVDTF</span>    = <span class="st">'lib://QVD/Transform/'</span>;
+
+<span class="fn">Orders_RAW</span>:
+<span class="kw">LOAD</span>
+    OrderID,
+    CustomerID,
+    OrderDate,
+    Amount,
+    Status,
+    <span class="fn">Now</span>() <span class="kw">AS</span> _ExtractedAt
+<span class="kw">FROM</span> [lib://DataSources/ERP_Orders.csv]
+(txt, delimiter <span class="kw">is</span> <span class="st">','</span>, embedded labels);
+
+<span class="kw">STORE</span> Orders_RAW <span class="kw">INTO</span> [<span class="vr">$(vQVDRaw)</span>Orders_RAW.qvd] (QVD);
+<span class="kw">DROP TABLE</span> Orders_RAW;</pre>
+    </div>
+  </div>
+</div>
+
+<div class="divl"></div>
+
+<!-- S3 -->
+<div id="s3" class="s-mid">
+  <div class="wrap">
+    <span class="lbl rv">03 — Performance</span>
+    <h2 class="rv">Incremental Load:<br><em>the end of full extract</em></h2>
+    <p class="rv">If your script pulls 100% of source data on every reload, you are wasting resources, widening the failure window, and putting unnecessary pressure on transactional systems. Incremental Load fixes this by loading <strong>only new or modified records</strong>.</p>
+
+    <div class="code-wrap rv">
+      <div class="code-header">
+        <div class="code-dots"><i></i><i></i><i></i></div>
+        <span>02_TF_Orders.qvs — Incremental Load with QVD</span>
+      </div>
+      <pre><span class="cm">// ===============================================
+// INCREMENTAL LOAD: Delta only
+// Compares QVD creation time with source
+// ===============================================</span>
+
+<span class="cm">// Get the timestamp from the last reload</span>
+<span class="kw">IF</span> <span class="fn">NOT IsNull</span>(<span class="fn">QVDCreateTime</span>(<span class="st">'$(vQVDTF)Orders_TF.qvd'</span>)) <span class="kw">THEN</span>
+    <span class="vr">LET vLastLoad</span> = <span class="fn">QVDCreateTime</span>(<span class="st">'$(vQVDTF)Orders_TF.qvd'</span>);
+<span class="kw">ELSE</span>
+    <span class="vr">LET vLastLoad</span> = <span class="st">'1900-01-01'</span>; <span class="cm">// First run: full load</span>
+<span class="kw">END IF</span>
+
+<span class="cm">// Load existing records from QVD</span>
+<span class="fn">Orders_TF</span>:
+<span class="kw">LOAD</span> *
+<span class="kw">FROM</span> [<span class="vr">$(vQVDTF)</span>Orders_TF.qvd] (qvd)
+<span class="kw">WHERE</span> OrderID <span class="kw">NOT IN</span> (
+    <span class="kw">SELECT</span> OrderID <span class="kw">FROM</span> Orders <span class="kw">WHERE</span> ModifiedAt >= <span class="st">'$(vLastLoad)'</span>
+);
+
+<span class="cm">// Concatenate only the delta from source</span>
+<span class="kw">CONCATENATE</span> (Orders_TF)
+<span class="kw">SQL SELECT</span>
+    OrderID,
+    CustomerID,
+    <span class="fn">CAST</span>(OrderDate <span class="kw">AS</span> DATE)   <span class="kw">AS</span> OrderDate,
+    Amount,
+    <span class="fn">UPPER</span>(<span class="fn">TRIM</span>(Status))        <span class="kw">AS</span> Status
+<span class="kw">FROM</span> dbo.Orders
+<span class="kw">WHERE</span> ModifiedAt >= <span class="st">'$(vLastLoad)'</span>;
+
+<span class="kw">STORE</span> Orders_TF <span class="kw">INTO</span> [<span class="vr">$(vQVDTF)</span>Orders_TF.qvd] (QVD);
+<span class="kw">DROP TABLE</span> Orders_TF;</pre>
+    </div>
+
+    <div class="code-wrap rv">
+      <div class="code-header">
+        <div class="code-dots"><i></i><i></i><i></i></div>
+        <span>03_APP_Dashboard.qvs — Section Access</span>
+      </div>
+      <pre><span class="cm">// ===============================================
+// SECTION ACCESS: Row-level security
+// Always test in staging before production
+// ===============================================</span>
+
+<span class="kw">Section Access</span>;
+<span class="fn">Access_Control</span>:
+<span class="kw">LOAD * INLINE</span> [
+    ACCESS,   USERID,          REGION,    OMIT
+    ADMIN,    DOMAIN\RAFAEL,   *,
+    USER,     DOMAIN\ANA,      South,     Amount
+    USER,     DOMAIN\CARLOS,   North,     Amount
+    USER,     DOMAIN\LUCIA,    East,
+];
+
+<span class="kw">Section Application</span>;
+
+<span class="cm">// Load only transformed QVDs</span>
+<span class="fn">Orders</span>:
+<span class="kw">LOAD</span>
+    OrderID,
+    CustomerID,
+    OrderDate,
+    <span class="fn">Year</span>(OrderDate)           <span class="kw">AS</span> Year,
+    <span class="fn">Month</span>(OrderDate)          <span class="kw">AS</span> Month,
+    Amount,
+    Status,
+    Region                     <span class="cm">// Section Access control field</span>
+<span class="kw">FROM</span> [<span class="vr">$(vQVDTF)</span>Orders_TF.qvd] (qvd);</pre>
+    </div>
+  </div>
+</div>
+
+<div class="divl"></div>
+
+<!-- S4 -->
+<div id="s4" class="s-card">
+  <div class="wrap">
+    <span class="lbl rv">04 — Fatal Mistakes</span>
+    <h2 class="rv">The 5 mistakes that <em>bring down</em><br>any Qlik environment</h2>
+    <p class="rv">It does not matter the size of the company or how much was invested in licenses. These mistakes show up everywhere and all of them are preventable.</p>
+
+    <div class="killers rv">
+      <div class="killer">
+        <div class="killer-num">1</div>
+        <div>
+          <h4>Untreated synthetic keys</h4>
+          <p>When two tables share more than one field, Qlik automatically creates synthetic keys. They degrade performance and make the model unpredictable. Fix: rename conflicting fields or use explicit composite keys.</p>
+        </div>
+      </div>
+      <div class="killer">
+        <div class="killer-num">2</div>
+        <div>
+          <h4>Full extract on million-row tables</h4>
+          <p>Extracting 50 million records every night when only 0.1% changed is pure waste. Implement Incremental Load with a control field (ModifiedAt, RowVersion) and cut reload time by up to 95%.</p>
+        </div>
+      </div>
+      <div class="killer">
+        <div class="killer-num">3</div>
+        <div>
+          <h4>Business logic on the front-end</h4>
+          <p>KPIs calculated in complex Set Analysis expressions that should be pre-computed fields in the script. This multiplies processing for every chart object. Calculate in script, expose as a field.</p>
+        </div>
+      </div>
+      <div class="killer">
+        <div class="killer-num">4</div>
+        <div>
+          <h4>Section Access without staging</h4>
+          <p>Misconfigured Section Access in production can lock out all users instantly, including admins. Always test in a dev environment with real user accounts before promoting to production.</p>
+        </div>
+      </div>
+      <div class="killer">
+        <div class="killer-num">5</div>
+        <div>
+          <h4>Monolithic scripts with no modularity</h4>
+          <p>A 3,000-line script that does everything: extraction, transformation, joins, and load. Impossible to debug, impossible to maintain. Split by entity and centralize configuration in global variables.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divl"></div>
+
+<!-- S5 -->
+<div id="s5" class="s-dark">
+  <div class="wrap">
+    <span class="lbl rv">05 — Checklist</span>
+    <h2 class="rv">Is your app ready<br><em>for production?</em></h2>
+    <p class="rv">Before promoting any app to production, run through this checklist. If any item fails, you have work to do.</p>
+
+    <ul class="ck" id="ck1">
+      <li><div class="cki">✓</div><div class="ckt"><strong>QVD layered architecture in place</strong><span>RAW, Transform, App. No app connects directly to the data source.</span></div></li>
+      <li><div class="cki">✓</div><div class="ckt"><strong>Incremental Load implemented</strong><span>Reload loads only delta. Reload time documented and monitored.</span></div></li>
+      <li><div class="cki">✓</div><div class="ckt"><strong>Zero synthetic keys in the data model</strong><span>Data model viewer shows no synthetic keys (dotted tables).</span></div></li>
+      <li><div class="cki">✓</div><div class="ckt"><strong>Section Access tested in staging</strong><span>Every user profile validated with real accounts before production.</span></div></li>
+      <li><div class="cki">✓</div><div class="ckt"><strong>Modular, documented scripts</strong><span>One file per entity. Centralized configuration variables. Any dev can maintain it.</span></div></li>
+      <li><div class="cki">✓</div><div class="ckt"><strong>Active performance monitoring</strong><span>Qlik Sense App Analyzer or Operations Monitor configured. Reload failure alerts active.</span></div></li>
+      <li><div class="cki">✓</div><div class="ckt"><strong>Data model documentation</strong><span>Data dictionary with definition of every field and table. Updated on every change.</span></div></li>
+    </ul>
+  </div>
+</div>
+
+<div class="divl"></div>
+
+<div class="ctasec">
+  <div class="ctabox rv">
+    <h2>How healthy is<br><em>your Qlik environment?</em></h2>
+    <p>How many checklist items does your app pass today? Drop a comment or connect to exchange experiences on Qlik architecture in production.</p>
+    <a class="bmag" href="https://www.linkedin.com/in/rafael-veloso-data/" target="_blank">Connect with Rafael</a>
+  </div>
+</div>
+
+<footer>
+  <p>Written by <a href="https://www.linkedin.com/in/rafael-veloso-data/" target="_blank">Rafael Veloso</a> — BI &amp; Qlik Specialist · May 2025</p>
+</footer>
+
+<script>
+const c1=document.getElementById('c1'),c2=document.getElementById('c2');
+let mx=innerWidth/2,my=innerHeight/2,cx=mx,cy=my;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;c1.style.transform=`translate(${mx-4.5}px,${my-4.5}px)`;});
+(function loop(){cx+=(mx-cx)*.11;cy+=(my-cy)*.11;c2.style.transform=`translate(${cx-16}px,${cy-16}px)`;requestAnimationFrame(loop);})();
+window.addEventListener('scroll',()=>{const s=document.documentElement.scrollTop,h=document.documentElement.scrollHeight-innerHeight;document.getElementById('pb').style.width=(s/h*100)+'%';},{passive:true});
+const sids=['s0','s1','s2','s3','s4','s5'].map(id=>document.getElementById(id));
+const tds=document.querySelectorAll('.td');
+tds.forEach((d,i)=>d.addEventListener('click',()=>sids[i]?.scrollIntoView({behavior:'smooth'})));
+const io2=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){const i=sids.indexOf(e.target);tds.forEach(d=>d.classList.remove('on'));if(i>=0)tds[i].classList.add('on');}});},{threshold:.35});
+sids.forEach(s=>s&&io2.observe(s));
+const phrases=["Scripts only one dev understands. 4-hour reloads.","The difference is in the architecture, not the charts.","Real scripts. QVD layers. True production readiness."];
+const twEl=document.getElementById('tw');
+let pi=0,ci=0,del=false;
+function tick(){const ph=phrases[pi];if(!del){twEl.textContent=ph.slice(0,++ci);}else{twEl.textContent=ph.slice(0,--ci);}if(!del&&ci===ph.length){del=true;setTimeout(tick,2200);return;}if(del&&ci===0){del=false;pi=(pi+1)%phrases.length;}setTimeout(tick,del?33:52);}
+tick();
+const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');});},{threshold:.08});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+const ioC=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.querySelectorAll('li').forEach((li,i)=>setTimeout(()=>li.classList.add('in'),i*85));}});},{threshold:.06});
+document.querySelectorAll('.ck').forEach(c=>ioC.observe(c));
+document.querySelectorAll('.dx-card,.killer,.layer').forEach(card=>{
+  card.addEventListener('mousemove',e=>{const r=card.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;card.style.transform=`perspective(600px) rotateY(${x*5}deg) rotateX(${-y*5}deg) translateY(-2px)`;});
+  card.addEventListener('mouseleave',()=>card.style.transform='');
+});
+const mag=document.querySelector('.bmag');
+if(mag){mag.addEventListener('mousemove',e=>{const r=mag.getBoundingClientRect(),x=(e.clientX-r.left-r.width/2)*.2,y=(e.clientY-r.top-r.height/2)*.2;mag.style.transform=`translate(${x}px,${y}px) scale(1.05)`;});mag.addEventListener('mouseleave',()=>mag.style.transform='');}
+</script>
+</body>
+</html>
+
+        </article>
+        
+        <footer>
+            <p>© 2026 Rafael Veloso. Todos os direitos reservados.</p>
+        </footer>
+    </div>
+</body>
+</html>
