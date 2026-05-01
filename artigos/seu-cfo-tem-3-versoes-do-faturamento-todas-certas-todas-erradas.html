@@ -1,144 +1,470 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seu CFO Tem 3 Versões do Faturamento. Todas Certas. Todas Erradas.</title>
-    <meta property="og:title" content="Seu CFO Tem 3 Versões do Faturamento. Todas Certas. Todas Erradas.">
-    <meta property="og:description" content="Você já viveu aquela reunião?
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="color-scheme" content="dark"/>
+<title>Seu CFO Tem 3 Versões do Faturamento. Todas Certas. Todas Erradas.</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{background:#08080f;}
+body{
+  background:#08080f !important;
+  color:#e2e8f0 !important;
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  line-height:1.7;
+  cursor:none;
+}
+.cursor{position:fixed;width:12px;height:12px;background:#3b82f6;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .15s ease;}
+.cursor-ring{position:fixed;width:36px;height:36px;border:1.5px solid rgba(59,130,246,.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .25s ease,width .2s,height .2s;}
 
-CFO pergunta o faturamento de março. Três telas de Power BI abertas na mesa. Três números diferentes. Silêncio.
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(8,8,15,.85);backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(59,130,246,.15);
+  padding:14px 32px;display:flex;align-items:center;justify-content:space-between;
+}
+.nav-logo{font-size:.85rem;font-weight:700;color:#3b82f6;letter-spacing:.12em;text-transform:uppercase;}
+.nav-dots{display:flex;gap:8px;}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:rgba(59,130,246,.25);cursor:pointer;transition:background .2s;}
+.nav-dot.active{background:#3b82f6;}
 
-Ninguém está errado. Cada número reflete uma realidade d...">
-    <meta property="og:type" content="article">
-    <meta name="author" content="Rafael Veloso">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: #f5f5f5;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            min-height: 100vh;
-        }
-        
-        header {
-            background: linear-gradient(135deg, #0077B5 0%, #00A0DC 100%);
-            color: white;
-            padding: 60px 40px 40px;
-        }
-        
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            line-height: 1.2;
-        }
-        
-        .meta {
-            font-size: 0.9em;
-            opacity: 0.9;
-        }
-        
-        article {
-            padding: 40px;
-        }
-        
-        article p {
-            margin-bottom: 1.5em;
-            font-size: 1.1em;
-        }
-        
-        article h2 {
-            margin-top: 2em;
-            margin-bottom: 1em;
-            color: #0077B5;
-        }
-        
-        article ul, article ol {
-            margin-left: 2em;
-            margin-bottom: 1.5em;
-        }
-        
-        article li {
-            margin-bottom: 0.5em;
-        }
-        
-        code {
-            background: #f4f4f4;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-        }
-        
-        pre {
-            background: #282c34;
-            color: #abb2bf;
-            padding: 20px;
-            border-radius: 5px;
-            overflow-x: auto;
-            margin-bottom: 1.5em;
-        }
-        
-        pre code {
-            background: none;
-            color: inherit;
-            padding: 0;
-        }
-        
-        footer {
-            background: #f8f8f8;
-            padding: 40px;
-            text-align: center;
-            color: #666;
-            border-top: 1px solid #e0e0e0;
-        }
-        
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 1.8em;
-            }
-            
-            header, article {
-                padding: 30px 20px;
-            }
-        }
-    </style>
+/* HERO */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:80px 24px 56px;text-align:center;position:relative;overflow:hidden;
+  background:#08080f !important;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);
+  border-radius:999px;padding:6px 16px;font-size:.75rem;font-weight:600;
+  color:#93c5fd;letter-spacing:.1em;text-transform:uppercase;margin-bottom:32px;
+}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:#3b82f6;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+h1{
+  font-size:clamp(2rem,5vw,3.5rem);font-weight:800;line-height:1.15;
+  max-width:820px;margin-bottom:24px;
+  background:linear-gradient(135deg,#e2e8f0 0%,#93c5fd 50%,#3b82f6 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+.hero-sub{font-size:1.1rem;color:#94a3b8;max-width:560px;margin:0 auto 40px;}
+.typewriter{color:#3b82f6;font-weight:600;border-right:2px solid #3b82f6;padding-right:4px;white-space:nowrap;overflow:hidden;width:0;animation:typing 3s steps(60,end) 1s forwards,blink .75s step-end infinite;}
+@keyframes typing{from{width:0;}to{width:100%;}}
+@keyframes blink{50%{border-color:transparent;}}
+
+.hero-stats{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:40px;}
+.stat-card{
+  background:#0d0d18 !important;border:1px solid rgba(59,130,246,.2);border-radius:12px;
+  padding:20px 28px;text-align:center;min-width:140px;
+  transition:transform .3s,border-color .3s;cursor:default;
+}
+.stat-card:hover{transform:translateY(-6px) rotateX(4deg);border-color:rgba(59,130,246,.5);}
+.stat-num{font-size:2rem;font-weight:800;color:#3b82f6;display:block;}
+.stat-label{font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em;}
+
+.scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:#475569;font-size:.75rem;}
+.scroll-arrow{width:24px;height:24px;border-right:2px solid #3b82f6;border-bottom:2px solid #3b82f6;transform:rotate(45deg);animation:bounce 1.5s infinite;}
+@keyframes bounce{0%,100%{transform:rotate(45deg) translateY(0);}50%{transform:rotate(45deg) translateY(6px);}}
+
+/* SECTIONS */
+.s-dark{background:#08080f !important;padding:56px 24px;}
+.s-mid{background:#0d0d18 !important;padding:56px 24px;}
+.s-card{background:#101020 !important;padding:56px 24px;}
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(59,130,246,.3),transparent);margin:0;}
+.container{max-width:800px;margin:0 auto;}
+
+h2{font-size:clamp(1.5rem,3vw,2.1rem);font-weight:700;color:#e2e8f0 !important;margin-bottom:20px;line-height:1.3;}
+h3{font-size:1.15rem;font-weight:600;color:#93c5fd !important;margin:28px 0 12px;}
+p{color:#cbd5e1 !important;margin-bottom:16px;font-size:1rem;}
+strong{color:#e2e8f0 !important;}
+
+/* ACCENT BLOCK */
+.accent-block{
+  border-left:3px solid #3b82f6;padding:20px 24px;
+  background:rgba(59,130,246,.06) !important;border-radius:0 8px 8px 0;margin:24px 0;
+}
+.accent-block p{color:#cbd5e1 !important;margin:0;font-style:italic;}
+
+/* CODE */
+pre{
+  background:#060610 !important;border:1px solid rgba(59,130,246,.2);border-radius:8px;
+  padding:20px;overflow-x:auto;margin:20px 0;
+}
+code{font-family:'Fira Code','Cascadia Code',monospace;font-size:.85rem;color:#93c5fd !important;line-height:1.6;}
+.code-label{font-size:.7rem;color:#475569;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;display:block;}
+
+/* COMPARE */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0;}
+.compare-bad{background:#1a0a0a !important;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:16px;}
+.compare-good{background:#0a1a0a !important;border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:16px;}
+.compare-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;display:block;}
+.compare-bad .compare-label{color:#f87171 !important;}
+.compare-good .compare-label{color:#4ade80 !important;}
+.compare-bad code{color:#fca5a5 !important;}
+.compare-good code{color:#86efac !important;}
+
+/* CHECKLIST */
+.checklist{list-style:none;margin:16px 0;}
+.checklist li{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:12px 16px;margin-bottom:8px;
+  background:#0d0d18 !important;border-radius:8px;border:1px solid rgba(59,130,246,.1);
+  color:#cbd5e1 !important;font-size:.95rem;
+  opacity:0;transform:translateX(-20px);transition:opacity .4s,transform .4s;
+}
+.checklist li.visible{opacity:1;transform:none;}
+.checklist li .icon{color:#f87171 !important;font-size:1.1rem;flex-shrink:0;margin-top:1px;}
+.checklist li.ok .icon{color:#4ade80 !important;}
+
+/* ARCH */
+.arch-flow{display:flex;flex-direction:column;gap:12px;margin:24px 0;}
+.arch-step{
+  display:flex;align-items:center;gap:16px;
+  background:#0d0d18 !important;border:1px solid rgba(59,130,246,.15);
+  border-radius:8px;padding:16px 20px;
+}
+.arch-num{
+  width:36px;height:36px;border-radius:50%;background:#3b82f6;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:.9rem;color:#08080f !important;flex-shrink:0;
+}
+.arch-text strong{color:#93c5fd !important;display:block;margin-bottom:4px;}
+.arch-text span{color:#94a3b8 !important;font-size:.88rem;}
+
+/* HIGHLIGHT */
+.highlight-box{
+  background:rgba(59,130,246,.08) !important;border:1px solid rgba(59,130,246,.25);
+  border-radius:12px;padding:28px;margin:24px 0;text-align:center;
+}
+.highlight-box p{color:#93c5fd !important;font-size:1.1rem;font-weight:500;margin:0;}
+
+/* CTA */
+.cta-section{
+  background:#0d0d18 !important;border:1px solid rgba(59,130,246,.25);
+  border-radius:16px;padding:40px;text-align:center;margin:0 auto;max-width:600px;
+}
+.cta-section h2{color:#e2e8f0 !important;}
+.cta-section p{color:#94a3b8 !important;}
+.cta-btn{
+  display:inline-block;margin-top:20px;padding:14px 36px;
+  background:linear-gradient(135deg,#2563eb,#3b82f6);
+  color:#fff !important;font-weight:700;border-radius:8px;
+  text-decoration:none;font-size:1rem;
+  transition:transform .2s,box-shadow .2s;
+  box-shadow:0 0 0 rgba(59,130,246,0);
+}
+.cta-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(59,130,246,.4);}
+
+/* FOOTER */
+footer{background:#08080f !important;padding:32px 24px;text-align:center;border-top:1px solid rgba(59,130,246,.1);}
+footer p{color:#475569 !important;font-size:.8rem;}
+footer span{color:#3b82f6 !important;}
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Seu CFO Tem 3 Versões do Faturamento. Todas Certas. Todas Erradas.</h1>
-            <div class="meta">
-                Por Rafael Veloso • 1 de maio de 2026
-            </div>
-        </header>
-        
-        <article>
-            Você já viveu aquela reunião?
 
-CFO pergunta o faturamento de março. Três telas de Power BI abertas na mesa. Três números diferentes. Silêncio.
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="curR"></div>
 
-Ninguém está errado. Cada número reflete uma realidade diferente do negócio. Mas nenhum deles responde à pergunta que importa.
+<nav>
+  <div class="nav-logo">Rafael Veloso</div>
+  <div class="nav-dots">
+    <div class="nav-dot active" data-sec="0"></div>
+    <div class="nav-dot" data-sec="1"></div>
+    <div class="nav-dot" data-sec="2"></div>
+    <div class="nav-dot" data-sec="3"></div>
+    <div class="nav-dot" data-sec="4"></div>
+  </div>
+</nav>
 
-Esse é o problema central de dados sem governança: não é que os dados mentem. É que cada área fala a verdade dela.
+<!-- HERO -->
+<section class="hero" data-sec="0">
+  <div class="hero-badge"><span class="hero-badge-dot"></span>Power BI &amp; Governança de Dados</div>
+  <h1>Seu CFO Tem 3 Versões do Faturamento.<br>Todas Certas. Todas Erradas.</h1>
+  <p class="hero-sub">O problema não é o Power BI. É que cada time criou seu próprio modelo semântico. E ninguém percebeu até a reunião de board.</p>
+  <div style="overflow:hidden;max-width:560px;margin:0 auto;">
+    <div class="typewriter">Quando os dados não concordam, a confiança desmorona.</div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-card"><span class="stat-num" data-target="400">0</span><span class="stat-label">Relatórios típicos</span></div>
+    <div class="stat-card"><span class="stat-num" data-target="5">0</span><span class="stat-label">Versões da métrica</span></div>
+    <div class="stat-card"><span class="stat-num" data-target="1">0</span><span class="stat-label">Verdade possível</span></div>
+  </div>
+  <div class="scroll-hint"><span>Role para baixo</span><div class="scroll-arrow"></div></div>
+</section>
 
-No artigo desta semana eu explico a arquitetura de 4 camadas que resolve esse problema de uma vez por todas, do dado bruto até o KPI confiável que aparece no dashboard do board.
-        </article>
-        
-        <footer>
-            <p>© 2026 Rafael Veloso. Todos os direitos reservados.</p>
-        </footer>
+<div class="divider"></div>
+
+<!-- CENA -->
+<section class="s-mid" data-sec="1">
+  <div class="container">
+    <div class="hero-badge" style="margin-bottom:24px;"><span class="hero-badge-dot"></span>O Problema</div>
+    <h2>A Reunião que Paralisou Tudo</h2>
+    <div class="accent-block">
+      <p>"Reunião de board. O CFO pergunta: qual foi o faturamento de março? Três telas de Power BI abertas na mesa. Três números diferentes. Silêncio. Ninguém sabia qual estava certo."</p>
     </div>
+    <p>Isso não é bug. Não é erro de ETL. É o resultado natural de uma organização que cresceu sem governança de modelo semântico.</p>
+    <p>Cada time criou seu próprio <code>.pbix</code>. Cada analista definiu "Faturamento" do seu jeito. Todas as definições fazem sentido dentro do contexto de cada área. E é justamente aí que está o problema.</p>
+
+    <h3>As Três Versões do Mesmo Número</h3>
+    <div class="compare-grid">
+      <div class="compare-bad">
+        <span class="compare-label">Time Comercial</span>
+        <pre style="margin:0;padding:0;border:none;background:transparent;"><code>Faturamento =
+CALCULATE(
+  SUM(Vendas[Valor]),
+  Vendas[Status] = "Entregue"
+)</code></pre>
+      </div>
+      <div class="compare-bad">
+        <span class="compare-label">Time Financeiro</span>
+        <pre style="margin:0;padding:0;border:none;background:transparent;"><code>Faturamento =
+CALCULATE(
+  SUM(Vendas[Valor]),
+  Vendas[Status] IN
+  {"Entregue","Faturado"}
+)</code></pre>
+      </div>
+    </div>
+    <div class="compare-bad" style="margin-top:0;">
+      <span class="compare-label">Time de Operações (tabela diferente)</span>
+      <pre style="margin:0;padding:0;border:none;background:transparent;"><code>Faturamento = SUM(NotasFiscais[ValorTotal])</code></pre>
+    </div>
+    <p style="margin-top:16px;">Três medidas. Mesmo nome. Três tabelas-fonte diferentes. Três filtros diferentes. <strong>Todas defensáveis. Nenhuma confiável isoladamente.</strong></p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- OS 5 SINAIS -->
+<section class="s-card" data-sec="2">
+  <div class="container">
+    <div class="hero-badge" style="margin-bottom:24px;"><span class="hero-badge-dot"></span>Diagnóstico</div>
+    <h2>5 Sinais de que Sua Empresa Tem Este Problema</h2>
+    <ul class="checklist" id="checklist">
+      <li><span class="icon">✗</span><span>Relatórios com métricas de mesmo nome retornando números diferentes para o mesmo período</span></li>
+      <li><span class="icon">✗</span><span>Nenhum dataset certificado ou promovido no Power BI Service</span></li>
+      <li><span class="icon">✗</span><span>Cada analista mantém seu próprio "modelo mestre" local em .pbix</span></li>
+      <li><span class="icon">✗</span><span>Sem convenção de nomenclatura para medidas DAX entre times</span></li>
+      <li><span class="icon">✗</span><span>Atualizações de dados falhando silenciosamente sem alertas ou owners definidos</span></li>
+    </ul>
+    <div class="highlight-box">
+      <p>Se você marcou 3 ou mais, sua empresa não tem um problema de Power BI. Tem um problema de governança de dados.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SOLUCAO -->
+<section class="s-mid" data-sec="3">
+  <div class="container">
+    <div class="hero-badge" style="margin-bottom:24px;"><span class="hero-badge-dot"></span>A Solução</div>
+    <h2>Modelo Semântico Certificado: Uma Fonte de Verdade</h2>
+    <p>A solução não é proibir que os times criem relatórios. É garantir que todos os relatórios bebam da mesma fonte.</p>
+
+    <h3>Arquitetura de Governança em 4 Camadas</h3>
+    <div class="arch-flow">
+      <div class="arch-step">
+        <div class="arch-num">1</div>
+        <div class="arch-text">
+          <strong>Fonte de Dados Única (Data Lake / Warehouse)</strong>
+          <span>Bronze, Silver, Gold. Uma tabela de Vendas canônica, com regras de negócio aplicadas no pipeline, não no relatório.</span>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-num">2</div>
+        <div class="arch-text">
+          <strong>Modelo Semântico Central (Certificado)</strong>
+          <span>Um único .pbix ou Semantic Model no Fabric com TODAS as métricas definidas, documentadas e versionadas.</span>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-num">3</div>
+        <div class="arch-text">
+          <strong>Live Connection para Relatórios</strong>
+          <span>Todos os times conectam via Live Connection. Criam visualizações. Não criam medidas. O modelo semântico é soberano.</span>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-num">4</div>
+        <div class="arch-text">
+          <strong>Endorsement + Ownership Definido</strong>
+          <span>Dataset certificado no Power BI Service. Owner responsável. SLA de atualização. Alertas de falha ativos.</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>O DAX do Modelo Central</h3>
+    <span class="code-label">Semantic Model Certificado — fonte única</span>
+    <pre><code>// Medidas com nomes claros e definições documentadas
+[Faturamento Entregue] =
+    CALCULATE(
+        SUM(Vendas[Valor]),
+        Vendas[Status] = "Entregue"
+    )
+
+[Faturamento Faturado] =
+    CALCULATE(
+        SUM(Vendas[Valor]),
+        Vendas[Status] = "Faturado"
+    )
+
+// Métrica canônica que o CFO vê no board
+[Faturamento Total] =
+    [Faturamento Entregue] + [Faturamento Faturado]
+
+// Variação mês anterior (padronizada para toda empresa)
+[Faturamento Total MoM%] =
+    DIVIDE(
+        [Faturamento Total] -
+        CALCULATE([Faturamento Total], PREVIOUSMONTH(Calendario[Data])),
+        CALCULATE([Faturamento Total], PREVIOUSMONTH(Calendario[Data])),
+        BLANK()
+    )</code></pre>
+
+    <h3>Convenção de Nomenclatura Obrigatória</h3>
+    <div class="compare-grid">
+      <div class="compare-bad">
+        <span class="compare-label">Antes (caótico)</span>
+        <pre style="margin:0;padding:0;border:none;background:transparent;"><code>Fat
+Faturamento
+FatTotal
+Revenue
+Faturamento2024
+fat_total_v2</code></pre>
+      </div>
+      <div class="compare-good">
+        <span class="compare-label">Depois (governado)</span>
+        <pre style="margin:0;padding:0;border:none;background:transparent;"><code>[Faturamento Total]
+[Faturamento Entregue]
+[Faturamento MoM%]
+[Faturamento YTD]
+[Faturamento vs Meta]
+[Faturamento Forecast]</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FABRIC -->
+<section class="s-dark" data-sec="4">
+  <div class="container">
+    <div class="hero-badge" style="margin-bottom:24px;"><span class="hero-badge-dot"></span>Insight Avançado</div>
+    <h2>Microsoft Fabric Muda o Jogo da Governança</h2>
+    <p>Com o Microsoft Fabric, a governança de modelo semântico evolui para um nível que o Power BI tradicional não alcançava.</p>
+
+    <h3>O que muda com o Fabric</h3>
+    <ul class="checklist" id="checklist2">
+      <li class="ok"><span class="icon">✓</span><span><strong>OneLake como fonte única:</strong> todos os dados em um único repositório, sem silos entre times</span></li>
+      <li class="ok"><span class="icon">✓</span><span><strong>Direct Lake mode:</strong> performance de Import sem o custo de replicar dados, direto do Delta Lake</span></li>
+      <li class="ok"><span class="icon">✓</span><span><strong>Semantic models versionados:</strong> controle de versão nativo no Fabric Workspace</span></li>
+      <li class="ok"><span class="icon">✓</span><span><strong>Metrics Hub:</strong> camada central de métricas de negócio com rastreabilidade de linhagem</span></li>
+    </ul>
+
+    <div class="accent-block">
+      <p>O Fabric não resolve automaticamente o problema de governança. Ele dá as ferramentas. A disciplina de usar um modelo semântico central ainda é decisão da organização, não da ferramenta.</p>
+    </div>
+
+    <h3>O Que Você Deve Fazer Esta Semana</h3>
+    <ul class="checklist" id="checklist3">
+      <li class="ok"><span class="icon">1</span><span>Audite quantos datasets diferentes existem no seu tenant Power BI</span></li>
+      <li class="ok"><span class="icon">2</span><span>Identifique as 5 métricas mais usadas em toda a empresa</span></li>
+      <li class="ok"><span class="icon">3</span><span>Reúna os owners de cada área e alinhe a definição canônica de cada métrica</span></li>
+      <li class="ok"><span class="icon">4</span><span>Crie um Semantic Model central, certifique no Power BI Service, defina owner</span></li>
+      <li class="ok"><span class="icon">5</span><span>Migre os relatórios críticos para Live Connection neste modelo</span></li>
+    </ul>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CTA -->
+<section class="s-mid">
+  <div class="cta-section">
+    <h2>Você já viveu a reunião dos três números?</h2>
+    <p style="margin-top:12px;">Conta nos comentários como resolveu (ou ainda está resolvendo) o problema de governança na sua empresa. Cada caso é uma aula.</p>
+    <a href="https://www.linkedin.com/in/-rafael-veloso/" class="cta-btn">Conectar com Rafael</a>
+    <p style="margin-top:20px;font-size:.8rem;color:#475569 !important;">
+      #PowerBI #MicrosoftFabric #BusinessIntelligence #GovernançaDeDados #DAX #BI #DataAnalytics #DataGovernance
+    </p>
+  </div>
+</section>
+
+<footer>
+  <p>Escrito por <span>Rafael Veloso</span> &bull; BI &amp; Data Specialist &bull; <span>radsveloso@gmail.com</span></p>
+</footer>
+
+<script>
+// Custom cursor
+const cur=document.getElementById('cur'),curR=document.getElementById('curR');
+document.addEventListener('mousemove',e=>{
+  cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';
+  setTimeout(()=>{curR.style.left=e.clientX+'px';curR.style.top=e.clientY+'px';},60);
+});
+
+// Counter animation
+function animateCounter(el){
+  const target=+el.dataset.target;
+  let current=0;
+  const step=target/40;
+  const interval=setInterval(()=>{
+    current=Math.min(current+step,target);
+    el.textContent=Math.round(current);
+    if(current>=target)clearInterval(interval);
+  },30);
+}
+const statNums=document.querySelectorAll('.stat-num[data-target]');
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){animateCounter(e.target);io.unobserve(e.target);}});
+},{threshold:.5});
+statNums.forEach(n=>io.observe(n));
+
+// Checklist stagger
+function revealChecklist(id){
+  const items=document.querySelectorAll('#'+id+' li');
+  items.forEach((li,i)=>setTimeout(()=>li.classList.add('visible'),i*120));
+}
+const clIO=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      revealChecklist(e.target.id);
+      clIO.unobserve(e.target);
+    }
+  });
+},{threshold:.2});
+['checklist','checklist2','checklist3'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el)clIO.observe(el);
+});
+
+// Nav dots
+const sections=document.querySelectorAll('[data-sec]');
+const dots=document.querySelectorAll('.nav-dot');
+const secIO=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const idx=e.target.dataset.sec;
+      dots.forEach(d=>d.classList.remove('active'));
+      const dot=document.querySelector(`.nav-dot[data-sec="${idx}"]`);
+      if(dot)dot.classList.add('active');
+    }
+  });
+},{threshold:.4});
+sections.forEach(s=>secIO.observe(s));
+dots.forEach(d=>{
+  d.addEventListener('click',()=>{
+    const target=document.querySelector(`[data-sec="${d.dataset.sec}"]`);
+    if(target)target.scrollIntoView({behavior:'smooth'});
+  });
+});
+</script>
 </body>
 </html>
