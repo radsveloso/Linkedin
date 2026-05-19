@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="color-scheme" content="dark"/>
+<title>End-to-End Qlik Migration: QlikView → Qlik Sense → Qlik Cloud + NPrinting</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{background:#08080f;}
+body{background:#08080f !important;color:#e2e8f0 !important;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.7;cursor:none;}
+.cursor{position:fixed;width:12px;height:12px;background:#3b82f6;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .15s ease;}
+.cursor-ring{position:fixed;width:36px;height:36px;border:1.5px solid rgba(59,130,246,.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .25s ease,width .2s,height .2s;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,8,15,.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(59,130,246,.15);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{font-size:.85rem;font-weight:700;color:#3b82f6;letter-spacing:.12em;text-transform:uppercase;}
+.nav-dots{display:flex;gap:8px;}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:rgba(59,130,246,.25);cursor:pointer;transition:background .2s;}
+.nav-dot.active{background:#3b82f6;}
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px 56px;text-align:center;position:relative;overflow:hidden;background:#08080f !important;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:999px;padding:6px 16px;font-size:.75rem;font-weight:600;color:#93c5fd;letter-spacing:.1em;text-transform:uppercase;margin-bottom:32px;}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:#3b82f6;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;line-height:1.15;max-width:860px;margin-bottom:24px;background:linear-gradient(135deg,#e2e8f0 0%,#93c5fd 50%,#3b82f6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-size:1.1rem;color:#94a3b8;max-width:600px;margin:0 auto 40px;}
+.typewriter{color:#3b82f6;font-weight:600;border-right:2px solid #3b82f6;padding-right:4px;white-space:nowrap;overflow:hidden;width:0;animation:typing 3.5s steps(60,end) 1s forwards,blink .75s step-end infinite;}
+@keyframes typing{from{width:0;}to{width:100%;}}
+@keyframes blink{50%{border-color:transparent;}}
+.hero-stats{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:40px;}
+.stat-card{background:#0d0d18 !important;border:1px solid rgba(59,130,246,.2);border-radius:12px;padding:20px 28px;text-align:center;min-width:140px;transition:transform .3s,border-color .3s;cursor:default;}
+.stat-card:hover{transform:translateY(-6px);border-color:rgba(59,130,246,.5);}
+.stat-num{font-size:2rem;font-weight:800;color:#3b82f6;display:block;}
+.stat-label{font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em;}
+.scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:#475569;font-size:.75rem;}
+.scroll-arrow{width:24px;height:24px;border-right:2px solid #3b82f6;border-bottom:2px solid #3b82f6;transform:rotate(45deg);animation:bounce 1.5s infinite;}
+@keyframes bounce{0%,100%{transform:rotate(45deg) translateY(0);}50%{transform:rotate(45deg) translateY(6px);}}
+.s-dark{background:#08080f !important;padding:56px 24px;}
+.s-mid{background:#0d0d18 !important;padding:56px 24px;}
+.s-card{background:#101020 !important;padding:56px 24px;}
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(59,130,246,.3),transparent);margin:0;}
+.container{max-width:820px;margin:0 auto;}
+h2{font-size:clamp(1.5rem,3vw,2.1rem);font-weight:700;color:#e2e8f0 !important;margin-bottom:20px;line-height:1.3;}
+h3{font-size:1.15rem;font-weight:600;color:#93c5fd !important;margin:28px 0 12px;}
+h4{font-size:.95rem;font-weight:700;color:#7dd3fc !important;margin:20px 0 8px;text-transform:uppercase;letter-spacing:.06em;}
+p{color:#cbd5e1 !important;margin-bottom:16px;font-size:1rem;}
+strong{color:#e2e8f0 !important;}
+.accent-block{border-left:3px solid #3b82f6;padding:20px 24px;background:rgba(59,130,246,.06) !important;border-radius:0 8px 8px 0;margin:24px 0;}
+.accent-block p{color:#cbd5e1 !important;margin:0;font-style:italic;}
+pre{background:#060610 !important;border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:20px;overflow-x:auto;margin:16px 0;}
+code{font-family:'Fira Code','Cascadia Code',monospace;font-size:.83rem;color:#93c5fd !important;line-height:1.6;}
+.code-label{font-size:.7rem;color:#475569;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;display:block;}
+.inline-code{font-family:'Fira Code','Cascadia Code',monospace;font-size:.85rem;color:#7dd3fc !important;background:rgba(59,130,246,.1);padding:2px 7px;border-radius:4px;}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0;}
+.compare-bad{background:#1a0a0a !important;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:16px;}
+.compare-good{background:#0a1a0a !important;border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:16px;}
+.compare-neutral{background:#0a0a1a !important;border:1px solid rgba(99,102,241,.3);border-radius:8px;padding:16px;}
+.compare-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;display:block;}
+.compare-bad .compare-label{color:#f87171 !important;}
+.compare-good .compare-label{color:#4ade80 !important;}
+.compare-neutral .compare-label{color:#a5b4fc !important;}
+.compare-bad code{color:#fca5a5 !important;}
+.compare-good code{color:#86efac !important;}
+.compare-neutral code{color:#c7d2fe !important;}
+.checklist{list-style:none;margin:16px 0;}
+.checklist li{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;background:#0d0d18 !important;border-radius:8px;border:1px solid rgba(59,130,246,.1);color:#cbd5e1 !important;font-size:.95rem;opacity:0;transform:translateX(-20px);transition:opacity .4s,transform .4s;}
+.checklist li.visible{opacity:1;transform:none;}
+.checklist li .icon{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
+.checklist li .icon.warn{color:#f87171 !important;}
+.checklist li .icon.ok{color:#4ade80 !important;}
+.checklist li .icon.info{color:#60a5fa !important;}
+.arch-flow{display:flex;flex-direction:column;gap:12px;margin:24px 0;}
+.arch-step{display:flex;align-items:flex-start;gap:16px;background:#0d0d18 !important;border:1px solid rgba(59,130,246,.15);border-radius:8px;padding:16px 20px;}
+.arch-num{width:36px;height:36px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:#08080f !important;flex-shrink:0;margin-top:2px;}
+.arch-text strong{color:#93c5fd !important;display:block;margin-bottom:4px;}
+.arch-text span{color:#94a3b8 !important;font-size:.88rem;}
+.trail-header{display:flex;align-items:center;gap:14px;margin:32px 0 20px;}
+.trail-num{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:#fff !important;flex-shrink:0;}
+.trail-num.t1{background:linear-gradient(135deg,#7c3aed,#4f46e5);}
+.trail-num.t2{background:linear-gradient(135deg,#0369a1,#0284c7);}
+.trail-num.t3{background:linear-gradient(135deg,#065f46,#059669);}
+.trail-title{font-size:1.3rem;font-weight:700;color:#e2e8f0 !important;}
+.trail-sub{font-size:.8rem;color:#64748b;margin-top:2px;}
+.highlight-box{background:rgba(59,130,246,.08) !important;border:1px solid rgba(59,130,246,.25);border-radius:12px;padding:28px;margin:24px 0;text-align:center;}
+.highlight-box p{color:#93c5fd !important;font-size:1.05rem;font-weight:500;margin:0;}
+.tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin:2px;}
+.tag-warn{background:rgba(239,68,68,.15);color:#f87171 !important;border:1px solid rgba(239,68,68,.25);}
+.tag-ok{background:rgba(34,197,94,.15);color:#4ade80 !important;border:1px solid rgba(34,197,94,.25);}
+.tag-info{background:rgba(59,130,246,.15);color:#93c5fd !important;border:1px solid rgba(59,130,246,.25);}
+.cta-section{background:#0d0d18 !important;border:1px solid rgba(59,130,246,.25);border-radius:16px;padding:40px;text-align:center;margin:0 auto;max-width:640px;}
+.cta-section h2{color:#e2e8f0 !important;}
+.cta-section p{color:#94a3b8 !important;}
+.cta-btn{display:inline-block;margin-top:20px;padding:14px 36px;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff !important;font-weight:700;border-radius:8px;text-decoration:none;font-size:1rem;transition:transform .2s,box-shadow .2s;}
+.cta-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(59,130,246,.4);}
+footer{background:#08080f !important;padding:32px 24px;text-align:center;border-top:1px solid rgba(59,130,246,.1);}
+footer p{color:#475569 !important;font-size:.8rem;}
+footer span{color:#3b82f6 !important;}
+@media(max-width:600px){.compare-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="curR"></div>
+<nav>
+  <div class="nav-logo">Rafael Veloso</div>
+  <div class="nav-dots">
+    <div class="nav-dot active" data-sec="0"></div>
+    <div class="nav-dot" data-sec="1"></div>
+    <div class="nav-dot" data-sec="2"></div>
+    <div class="nav-dot" data-sec="3"></div>
+    <div class="nav-dot" data-sec="4"></div>
+    <div class="nav-dot" data-sec="5"></div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" data-sec="0">
+  <div class="hero-badge"><span class="hero-badge-dot"></span>Qlik Sense &bull; Qlik Cloud &bull; NPrinting</div>
+  <h1>End-to-End Qlik Migration:<br>QlikView → Qlik Sense → Qlik Cloud + NPrinting</h1>
+  <p class="hero-sub">Three migration paths. Real technical traps. The guide the market never published — with scripts, syntax differences, and exactly what breaks at each stage.</p>
+  <div style="overflow:hidden;max-width:620px;margin:0 auto;">
+    <div class="typewriter">Migration is not clicking "Publish." It is re-engineering.</div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-card"><span class="stat-num" data-target="3">0</span><span class="stat-label">migration paths</span></div>
+    <div class="stat-card"><span class="stat-num" data-target="12">0</span><span class="stat-label">critical traps</span></div>
+    <div class="stat-card"><span class="stat-num" data-target="100">0</span><span class="stat-label">% from real projects</span></div>
+  </div>
+  <div class="scroll-hint"><span>Scroll down</span><div class="scroll-arrow"></div></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CONTEXT -->
+<section class="s-mid" data-sec="1">
+  <div class="container">
+    <div class="hero-badge" style="margin-bottom:24px;"><span class="hero-badge-dot"></span>Why This Is More Complex Than It Looks</div>
+    <h2>The Reality of Qlik Migrations</h2>
+    <p>Qlik announced end of support for QlikView in 2025. NPrinting has no meaningful roadmap evolution. And Qlik Sense on-premises is in maintenance mode while Qlik Cloud receives all new capabilities.</p>
+    <p>The result: companies that built their BI on QlikView over the last 15 years are facing a three-stage migration — and each stage has its own set of technical traps.</p>
+
+    <div class="accent-block">
+      <p>"The biggest trap in Qlik migrations is not technical. It is the assumption that the load script will behave the same way. It will not. And NPrinting even less so."</p>
+    </div>
+
+    <h3>The Three Paths</h3>
+    <div class="arch-flow">
+      <div class="arch-step">
+        <div class="arch-num" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);">1</div>
+        <div class="arch-text">
+          <strong>QlikView → Qlik Sense</strong>
+          <span>.qvw to .qvf — new object model, new extensibility paradigm, Section Access rewritten, expressions with different behavior in edge cases.</span>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-num" style="background:linear-gradient(135deg,#0369a1,#0284c7);">2</div>
+        <div class="arch-text">
+          <strong>Qlik Sense On-Prem → Qlik Cloud</strong>
+          <span>Spaces, OAuth 2.0, Managed Spaces, Data Spaces — completely different tenant architecture. Extensions require re-certification. QVDs migrate to cloud storage.</span>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-num" style="background:linear-gradient(135deg,#065f46,#059669);">3</div>
+        <div class="arch-text">
+          <strong>NPrinting → Qlik Cloud Reporting Service</strong>
+          <span>Office templates do not migrate automatically. Scheduled distribution via Automation. Attribute-based bursting works differently. Pixel-perfect requires a new approach.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PATH 1 -->
+<section class="s-card" data-sec="2">
+  <div class="container">
+    <div class="trail-header">
+      <div class="trail-num t1">1</div>
+      <div>
+        <div class="trail-title">QlikView → Qlik Sense</div>
+        <div class="trail-sub">Format, scripting, objects and security</div>
+      </div>
+    </div>
+
+    <h3>What Changes in the Load Script</h3>
+    <p>Qlik Sense load script syntax is largely compatible with QlikView — but there are critical differences that fail silently.</p>
+
+    <h4>NullAsValue and SET NULLINTERPRET</h4>
+    <div class="compare-grid">
+      <div class="compare-bad">
+        <span class="compare-label">QlikView (default behavior)</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// QlikView handles NULL more
+// permissively in associations.
+// NULL fields participate in joins
+// without explicit configuration.
+
+LOAD * FROM sales.qvd (qvd);</code></pre>
+      </div>
+      <div class="compare-good">
+        <span class="compare-label">Qlik Sense (explicit and correct)</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// Declare NULL behavior explicitly
+SET NullInterpret = '';
+SET NullDisplay = '-';
+
+NullAsValue Field1, Field2;
+
+LOAD * FROM sales.qvd (qvd);</code></pre>
+      </div>
+    </div>
+
+    <h4>Section Access — Mandatory Rewrite</h4>
+    <p>In QlikView, Section Access uses <span class="inline-code">NTNAME</span>, <span class="inline-code">OMIT</span> and <span class="inline-code">ACCESS</span> fields configured via QMC. In Qlik Sense the model is different: <span class="inline-code">USER.EMAIL</span> or <span class="inline-code">USER.USERID</span> replace <span class="inline-code">NTNAME</span>, and the <span class="inline-code">OMIT</span> field has been discontinued.</p>
+
+    <div class="compare-grid">
+      <div class="compare-bad">
+        <span class="compare-label">Section Access — QlikView</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>Section Access;
+LOAD * INLINE [
+  ACCESS, NTNAME,       REGION, OMIT
+  ADMIN,  DOMAIN\admin, *,
+  USER,   DOMAIN\anna,  West,   COST
+  USER,   DOMAIN\john,  East,   COST
+];
+Section Application;</code></pre>
+      </div>
+      <div class="compare-good">
+        <span class="compare-label">Section Access — Qlik Sense</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>Section Access;
+LOAD * INLINE [
+  ACCESS, USERID,           REGION
+  ADMIN,  anna@company.com, *
+  USER,   john@company.com, East
+  USER,   pedro@company.com,West
+];
+// OMIT discontinued:
+// use Row-Level Security via
+// filter field in the data model
+Section Application;</code></pre>
+      </div>
+    </div>
+
+    <h3>Objects: What Migrates and What Does Not</h3>
+    <ul class="checklist" id="cl1">
+      <li><span class="icon ok">&#x2713;</span><span><strong>Bar Charts, Line Charts, Pie Charts</strong> — migrate with expression adjustments. <span class="tag tag-ok">compatible</span></span></li>
+      <li><span class="icon ok">&#x2713;</span><span><strong>Straight Tables</strong> — migrate as Table in Sense, with dimension expression review. <span class="tag tag-ok">compatible</span></span></li>
+      <li><span class="icon warn">&#x2717;</span><span><strong>Grid Charts</strong> — do not exist in Sense. Use Heatmap or a custom extension. <span class="tag tag-warn">rewrite</span></span></li>
+      <li><span class="icon warn">&#x2717;</span><span><strong>Multi-Box / Current Selections Box</strong> — replaced by Filter Pane and Selections Bar. <span class="tag tag-warn">rewrite</span></span></li>
+      <li><span class="icon warn">&#x2717;</span><span><strong>Container Object</strong> — the concept exists in Sense but behaves differently. Review show/hide logic carefully. <span class="tag tag-warn">review</span></span></li>
+      <li><span class="icon warn">&#x2717;</span><span><strong>Macros (VBScript)</strong> — Qlik Sense does not support VBScript macros. Rewrite as Extensions or Automations. <span class="tag tag-warn">rewrite</span></span></li>
+    </ul>
+
+    <h4>TOTAL Qualifier — Critical Edge Case</h4>
+    <div class="compare-grid">
+      <div class="compare-bad">
+        <span class="compare-label">QlikView — expected behavior</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// In QlikView, TOTAL ignores
+// all dimensions by default
+Sum(Sales) / Sum(TOTAL Sales)</code></pre>
+      </div>
+      <div class="compare-good">
+        <span class="compare-label">Qlik Sense — be explicit</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// In Sense, specify which
+// dimensions TOTAL should ignore
+Sum(Sales) /
+Sum(TOTAL &lt;Region&gt; Sales)
+
+// Without specifying: behavior
+// may differ under selections</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PATH 2 -->
+<section class="s-mid" data-sec="3">
+  <div class="container">
+    <div class="trail-header">
+      <div class="trail-num t2">2</div>
+      <div>
+        <div class="trail-title">Qlik Sense On-Prem → Qlik Cloud</div>
+        <div class="trail-sub">Spaces, OAuth, Extensions and QVDs</div>
+      </div>
+    </div>
+
+    <h3>The New Spaces Model</h3>
+    <p>Qlik Cloud replaces the Streams model with <strong>Spaces</strong> — and understanding the difference between them is the first step toward a rework-free migration.</p>
+    <div class="arch-flow">
+      <div class="arch-step">
+        <div class="arch-num" style="background:#1e40af;width:44px;height:44px;font-size:.75rem;border-radius:8px;">Pers.</div>
+        <div class="arch-text"><strong>Personal Space</strong><span>One per user. Development and testing. Content not directly shareable. Equivalent to the "Work" stream in Sense.</span></div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-num" style="background:#1d4ed8;width:44px;height:44px;font-size:.75rem;border-radius:8px;">Shar.</div>
+        <div class="arch-text"><strong>Shared Space</strong><span>Collaborative content between users. Apps, datasets and automations. Equivalent to Streams with edit access.</span></div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-num" style="background:#1e3a5f;width:44px;height:44px;font-size:.75rem;border-radius:8px;">Man.</div>
+        <div class="arch-text"><strong>Managed Space</strong><span>Published content for consumption. Separate roles for developer and consumer. Production governance.</span></div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-num" style="background:#164e63;width:44px;height:44px;font-size:.75rem;border-radius:8px;">Data</div>
+        <div class="arch-text"><strong>Data Space</strong><span>Exclusively for data: QVDs, connections, datasets. Separation between data layer and analytics layer.</span></div>
+      </div>
+    </div>
+
+    <h3>Authentication: API Keys → OAuth 2.0</h3>
+    <p>In Sense on-prem, integrations use Virtual Proxies with certificates or JWT. In the Cloud, the standard is OAuth 2.0 with declared scopes.</p>
+    <span class="code-label">Authentication via OAuth 2.0 — Qlik Cloud API</span>
+    <pre><code># Get access token (Client Credentials)
+curl -X POST https://YOUR_TENANT.us.qlikcloud.com/oauth/token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "grant_type": "client_credentials",
+    "client_id": "YOUR_CLIENT_ID",
+    "client_secret": "YOUR_CLIENT_SECRET"
+  }'
+
+# Use the token to reload an app
+curl -X POST \
+  https://YOUR_TENANT.us.qlikcloud.com/api/v1/apps/APP_ID/reloads \
+  -H "Authorization: Bearer ACCESS_TOKEN" \
+  -H "Content-Type: application/json"</code></pre>
+
+    <h3>QVDs: Migration to Cloud Storage</h3>
+    <p>On-premises QVDs live in file shares or local directories. In the Cloud, they require a Data Connection pointing to S3, ADLS Gen2, GCS, or Qlik Data Gateway for on-premises sources.</p>
+    <div class="compare-grid">
+      <div class="compare-bad">
+        <span class="compare-label">On-Prem — local path</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>LOAD * FROM
+[lib://QVD_Store/sales_$(vYear).qvd]
+(qvd);</code></pre>
+      </div>
+      <div class="compare-good">
+        <span class="compare-label">Cloud — declared connection</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// Data Connection: "S3_DataLake"
+// configured in the Data Space
+
+LOAD * FROM
+[lib://S3_DataLake:sales/$(vYear).qvd]
+(qvd);
+
+// Or via Qlik Data Gateway
+// for QVDs on corporate network</code></pre>
+      </div>
+    </div>
+
+    <h3>Extensions: Re-certification Required</h3>
+    <ul class="checklist" id="cl2">
+      <li><span class="icon warn">&#x2717;</span><span>Extensions built with deprecated Sense APIs (legacy <span class="inline-code">qlik.currApp()</span>) need to be rewritten for <span class="inline-code">@nebula.js</span> or <span class="inline-code">enigma.js</span>. <span class="tag tag-warn">rewrite</span></span></li>
+      <li><span class="icon warn">&#x2717;</span><span>Extensions using Node.js <span class="inline-code">require()</span> directly do not work inside the Cloud sandbox environment. <span class="tag tag-warn">incompatible</span></span></li>
+      <li><span class="icon ok">&#x2713;</span><span>Extensions based on Visualization API v2+ with correct bundle migrate with minimal adjustments. <span class="tag tag-ok">compatible</span></span></li>
+      <li><span class="icon info">&#x2192;</span><span>All extensions must be validated in the Qlik Developer Console and submitted for tenant approval before going to production. <span class="tag tag-info">mandatory process</span></span></li>
+    </ul>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PATH 3 -->
+<section class="s-card" data-sec="4">
+  <div class="container">
+    <div class="trail-header">
+      <div class="trail-num t3">3</div>
+      <div>
+        <div class="trail-title">NPrinting → Qlik Cloud Reporting</div>
+        <div class="trail-sub">Templates, distribution and attribute-based bursting</div>
+      </div>
+    </div>
+
+    <p>This is the most underestimated path. Many teams assume "NPrinting will keep working" after moving apps to the Cloud. It will not — NPrinting only connects to Qlik Sense on-premises.</p>
+
+    <div class="accent-block">
+      <p>NPrinting has no support for Qlik Cloud. If your apps migrate to the Cloud, your report distribution must migrate too.</p>
+    </div>
+
+    <h3>NPrinting vs Qlik Cloud Reporting — Side by Side</h3>
+    <div class="compare-grid">
+      <div class="compare-neutral">
+        <span class="compare-label">NPrinting</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>Templates: Excel, Word,
+  PowerPoint, HTML, PDF
+
+Distribution: Email, Folder,
+  NewsStand
+
+Bursting: by user field
+  in connection (user filter)
+
+Scheduling: cron-like via
+  NPrinting Scheduler
+
+Pixel-perfect: yes, via
+  detailed Office template</code></pre>
+      </div>
+      <div class="compare-good">
+        <span class="compare-label">Qlik Cloud Reporting</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>Templates: Qlik Sense app
+  (Office templates do not import)
+
+Distribution: Email via
+  Qlik Application Automation
+
+Bursting: loop in Automation
+  + dynamic Section Access
+
+Scheduling: Automation
+  (time or event-based triggers)
+
+Pixel-perfect: via PDF export
+  configured in the app</code></pre>
+      </div>
+    </div>
+
+    <h3>Bursting via Qlik Application Automation</h3>
+    <p>In NPrinting, bursting was declarative: point to a field and it generated one PDF per value. In the Cloud, bursting is imperative via Automation:</p>
+    <span class="code-label">Bursting logic — Qlik Application Automation (pseudocode)</span>
+    <pre><code>// Block: Start (Trigger: Schedule — daily at 6am)
+
+// 1. Fetch list of regions via REST API
+GET /api/v1/apps/{appId}/data
+  → returns list of values for field "Region"
+
+// 2. Loop through each region
+FOR EACH region IN region_list:
+
+  // 3. Apply selection via Engine API
+  POST /api/v1/apps/{appId}/reloads
+  body: { selections: [{ field: "Region", values: [region] }] }
+
+  // 4. Export PDF from configured sheet
+  POST /api/v1/apps/{appId}/sheets/{sheetId}/export
+  body: { outputFormat: "pdf" }
+  → returns URL of generated PDF
+
+  // 5. Send by email
+  Email: to      = lookup_email(region)
+         subject = "Report - " + region
+         attach  = PDF_URL</code></pre>
+
+    <h3>What Does Not Exist (Yet) in Qlik Cloud Reporting</h3>
+    <ul class="checklist" id="cl3">
+      <li><span class="icon warn">&#x2717;</span><span>Excel templates with complex conditional formatting (Qlik pivot tables to native Excel). No direct equivalent exists. <span class="tag tag-warn">no substitute</span></span></li>
+      <li><span class="icon warn">&#x2717;</span><span>NewsStand (NPrinting's self-service report portal). Replace with a Managed Space with controlled access. <span class="tag tag-warn">rethink</span></span></li>
+      <li><span class="icon ok">&#x2713;</span><span>Email distribution with PDF export from the app — functionally equivalent to NPrinting for simple use cases. <span class="tag tag-ok">available</span></span></li>
+      <li><span class="icon ok">&#x2713;</span><span>Automation scheduling is more flexible than NPrinting Scheduler — supports event-based triggers, not just time-based. <span class="tag tag-ok">better</span></span></li>
+    </ul>
+
+    <div class="highlight-box">
+      <p>For critical pixel-perfect reports (regulatory, financial), evaluate a hybrid on-prem Sense approach or a complementary reporting solution while Cloud Reporting matures.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- MIGRATION PLAN -->
+<section class="s-mid" data-sec="5">
+  <div class="container">
+    <div class="hero-badge" style="margin-bottom:24px;"><span class="hero-badge-dot"></span>Migration Plan</div>
+    <h2>Assessment Before You Migrate</h2>
+    <p>Every migration starts with an honest inventory. Run this before opening any project ticket:</p>
+
+    <ul class="checklist" id="cl4">
+      <li class="ok"><span class="icon ok">1</span><span>Inventory QlikView apps: how many active .qvw files, users per app, which use Section Access, which have VBScript macros</span></li>
+      <li class="ok"><span class="icon ok">2</span><span>Map your QVDs: location, size, refresh frequency, which apps depend on each QVD</span></li>
+      <li class="ok"><span class="icon ok">3</span><span>Inventory NPrinting: how many reports, templates by type (Excel/Word/PDF), distribution lists, scheduling frequency</span></li>
+      <li class="ok"><span class="icon ok">4</span><span>Extensions and legacy object dependencies: Grid Charts, Multi-Box, Containers with complex logic</span></li>
+      <li class="ok"><span class="icon ok">5</span><span>User mapping: who uses Section Access today, which filter fields, role structure</span></li>
+    </ul>
+
+    <h3>Recommended Migration Order</h3>
+    <div class="arch-flow">
+      <div class="arch-step">
+        <div class="arch-num">1</div>
+        <div class="arch-text"><strong>Data layer first</strong><span>Migrate QVDs to cloud storage before migrating apps. Without data in the Cloud, no app works. Configure Data Connections and validate QVD integrity.</span></div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-num">2</div>
+        <div class="arch-text"><strong>Lower-criticality apps</strong><span>Start with apps that have fewer users and no Section Access. Validate expression behavior, performance and data model integrity before moving critical apps.</span></div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-num">3</div>
+        <div class="arch-text"><strong>Section Access and security</strong><span>Migrate security in an isolated environment before exposing to production. Validate Row-Level Security with test users representing each access profile.</span></div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-num">4</div>
+        <div class="arch-text"><strong>NPrinting in parallel</strong><span>Run NPrinting on-prem in parallel with Cloud Reporting for at least one full close cycle. Compare outputs before decommissioning NPrinting.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CTA -->
+<section class="s-dark">
+  <div class="cta-section">
+    <h2>Which migration path is your pain right now?</h2>
+    <p style="margin-top:12px;">QlikView sitting idle for years waiting to migrate? NPrinting nobody knows how to replace? Sense on-prem with an end-of-support date approaching?<br><br>Tell me in the comments where you are on this journey. I have been through all three paths in production.</p>
+    <a href="https://www.linkedin.com/in/-rafael-veloso/" class="cta-btn">Connect with Rafael</a>
+    <p style="margin-top:20px;font-size:.8rem;color:#475569 !important;">
+      #Qlik #QlikSense #QlikCloud #QlikView #NPrinting #DataGovernance #BusinessIntelligence #BI #DataEngineering #CloudMigration
+    </p>
+  </div>
+</section>
+
+<footer>
+  <p>Written by <span>Rafael Veloso</span> &bull; BI &amp; Data Specialist &bull; <span>radsveloso@gmail.com</span></p>
+</footer>
+
+<script>
+const cur=document.getElementById('cur'),curR=document.getElementById('curR');
+document.addEventListener('mousemove',e=>{
+  cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';
+  setTimeout(()=>{curR.style.left=e.clientX+'px';curR.style.top=e.clientY+'px';},60);
+});
+function animateCounter(el){
+  const target=+el.dataset.target;let current=0;const step=Math.max(target/40,0.1);
+  const interval=setInterval(()=>{current=Math.min(current+step,target);el.textContent=Math.round(current);if(current>=target)clearInterval(interval);},30);
+}
+const statNums=document.querySelectorAll('.stat-num[data-target]');
+const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){animateCounter(e.target);io.unobserve(e.target);}});},{threshold:.5});
+statNums.forEach(n=>io.observe(n));
+function revealChecklist(id){const items=document.querySelectorAll('#'+id+' li');items.forEach((li,i)=>setTimeout(()=>li.classList.add('visible'),i*120));}
+const clIO=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){revealChecklist(e.target.id);clIO.unobserve(e.target);}});},{threshold:.2});
+['cl1','cl2','cl3','cl4'].forEach(id=>{const el=document.getElementById(id);if(el)clIO.observe(el);});
+const sections=document.querySelectorAll('[data-sec]');
+const dots=document.querySelectorAll('.nav-dot');
+const secIO=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){const idx=e.target.dataset.sec;dots.forEach(d=>d.classList.remove('active'));const dot=document.querySelector(`.nav-dot[data-sec="${idx}"]`);if(dot)dot.classList.add('active');}});},{threshold:.4});
+sections.forEach(s=>secIO.observe(s));
+dots.forEach(d=>{d.addEventListener('click',()=>{const target=document.querySelector(`[data-sec="${d.dataset.sec}"]`);if(target)target.scrollIntoView({behavior:'smooth'});});});
+</script>
+</body>
+</html>
