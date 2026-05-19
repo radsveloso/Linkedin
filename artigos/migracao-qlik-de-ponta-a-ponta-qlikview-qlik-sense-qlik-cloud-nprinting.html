@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migração Qlik de Ponta a Ponta: QlikView → Qlik Sense → Qlik Cloud + NPrinting</title>
+    <meta property="og:title" content="Migração Qlik de Ponta a Ponta: QlikView → Qlik Sense → Qlik Cloud + NPrinting">
+    <meta property="og:description" content="<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/><title>Migração Qlik de Ponta a Ponta</title></head><body>
+<h1>Migração Qlik de Ponta a Ponta: QlikView → Qlik Sense → Qlik Cloud + NPrin...">
+    <meta property="og:type" content="article">
+    <meta name="author" content="Rafael Veloso">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #0077B5 0%, #00A0DC 100%);
+            color: white;
+            padding: 60px 40px 40px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+        
+        .meta {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        article {
+            padding: 40px;
+        }
+        
+        article p {
+            margin-bottom: 1.5em;
+            font-size: 1.1em;
+        }
+        
+        article h2 {
+            margin-top: 2em;
+            margin-bottom: 1em;
+            color: #0077B5;
+        }
+        
+        article ul, article ol {
+            margin-left: 2em;
+            margin-bottom: 1.5em;
+        }
+        
+        article li {
+            margin-bottom: 0.5em;
+        }
+        
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin-bottom: 1.5em;
+        }
+        
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+        
+        footer {
+            background: #f8f8f8;
+            padding: 40px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            header, article {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Migração Qlik de Ponta a Ponta: QlikView → Qlik Sense → Qlik Cloud + NPrinting</h1>
+            <div class="meta">
+                Por Rafael Veloso • 19 de maio de 2026
+            </div>
+        </header>
+        
+        <article>
+            <!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/><title>Migração Qlik de Ponta a Ponta</title></head><body>
+<h1>Migração Qlik de Ponta a Ponta: QlikView → Qlik Sense → Qlik Cloud + NPrinting</h1>
+<p>A Qlik anunciou o fim do suporte ao QlikView para 2025. O NPrinting não tem roadmap de evolução. O Qlik Sense on-prem está em modo de manutenção. Empresas que construíram seu BI nos últimos 15 anos sobre QlikView estão diante de uma migração em três etapas — cada uma com suas próprias armadilhas técnicas.</p>
+<h2>Trilha 1: QlikView → Qlik Sense</h2>
+<p>NullAsValue e SET NULLINTERPRET precisam ser declarados explicitamente. Section Access reescrito: NTNAME substituído por USER.EMAIL, campo OMIT descontinuado. Grid Charts, Multi-Box e macros VBScript não existem no Sense.</p>
+<h2>Trilha 2: Qlik Sense On-Prem → Qlik Cloud</h2>
+<p>Novo modelo de Spaces (Personal, Shared, Managed, Data). Autenticação migra de API Keys para OAuth 2.0. QVDs precisam ir para cloud storage (S3, ADLS Gen2). Extensions legado precisam de re-certificação.</p>
+<h2>Trilha 3: NPrinting → Qlik Cloud Reporting</h2>
+<p>NPrinting não tem suporte ao Qlik Cloud. Bursting agora é imperativo via Qlik Application Automation. Templates Office não importam diretamente. NewsStand substituído por Managed Space.</p>
+<p>Script PowerShell de assessment e ordem recomendada de migração no artigo completo.</p>
+</body></html>
+        </article>
+        
+        <footer>
+            <p>© 2026 Rafael Veloso. Todos os direitos reservados.</p>
+        </footer>
+    </div>
+</body>
+</html>
