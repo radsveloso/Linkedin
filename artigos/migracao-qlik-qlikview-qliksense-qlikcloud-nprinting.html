@@ -115,7 +115,7 @@ footer span{color:#3b82f6 !important;}
 <section class="hero" data-sec="0">
   <div class="hero-badge"><span class="hero-badge-dot"></span>Qlik Sense &bull; Qlik Cloud &bull; NPrinting</div>
   <h1>Migração Qlik de Ponta a Ponta:<br>QlikView → Qlik Sense → Qlik Cloud + NPrinting</h1>
-  <p class="hero-sub">Três trilhas de migração. Armadilhas técnicas reais. O guia que o mercado não publicou — com scripts, diferenças de sintaxe e o que quebra em cada etapa.</p>
+  <p class="hero-sub">Três trilhas de migração. Armadilhas técnicas reais. O guia que o mercado não publicou: scripts, diferenças de sintaxe e o que quebra em cada etapa.</p>
   <div style="overflow:hidden;max-width:620px;margin:0 auto;">
     <div class="typewriter">Migrar não é clicar em "Publicar". É reengenharia.</div>
   </div>
@@ -248,23 +248,34 @@ Section Application;</code></pre>
       <li><span class="icon warn">✗</span><span><strong>Macro (VBScript)</strong> — Qlik Sense não suporta macros VBScript. Reescrever como Extensions ou Automations. <span class="tag tag-warn">reescrever</span></span></li>
     </ul>
 
-    <h4>Expressão com TOTAL — Edge Case Crítico</h4>
+    <h4>Expressão com TOTAL — Comportamento Idêntico nas Duas Plataformas</h4>
+    <p>O qualificador <span class="inline-code">TOTAL</span> sem especificação de campo ignora <strong>todas as dimensões do gráfico</strong> em ambas as plataformas. QlikView e Qlik Sense se comportam da mesma forma neste caso — a sintaxe básica migra sem alteração.</p>
     <div class="compare-grid">
-      <div class="compare-bad">
-        <span class="compare-label">QlikView — comportamento esperado</span>
-        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// No QlikView, TOTAL ignora
-// todas as dimensões por padrão
-Sum(Vendas) / Sum(TOTAL Vendas)</code></pre>
-      </div>
-      <div class="compare-good">
-        <span class="compare-label">Qlik Sense — seja explícito</span>
-        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// No Sense, especifique quais
-// dimensões o TOTAL deve ignorar
-Sum(Vendas) /
-Sum(TOTAL &lt;Regiao&gt; Vendas)
+      <div class="compare-neutral">
+        <span class="compare-label">QlikView e Qlik Sense — idêntico</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// TOTAL sem campo: ignora
+// todas as dimensões do gráfico
+// (comportamento igual nas duas plataformas)
+Sum(Vendas) / Sum(TOTAL Vendas)
 
-// Sem especificar: comportamento
-// pode diferir em seleções</code></pre>
+// Com campo: restringe quais
+// dimensões o TOTAL ignora
+// (sintaxe disponível em ambas)
+Sum(Vendas) /
+Sum(TOTAL &lt;Regiao&gt; Vendas)</code></pre>
+      </div>
+      <div class="compare-neutral">
+        <span class="compare-label">Onde diferenças reais existem</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// Edge cases reais de migração:
+// 1. Set Analysis aninhado com TOTAL
+//    — ordem de avaliação pode diferir
+
+Sum({&lt;Ano={2024}&gt;} TOTAL Vendas)
+
+// 2. Master Visualizations no Qlik Cloud
+//    — contexto de seleção pode
+//    interagir de forma diferente
+//    com o qualificador TOTAL</code></pre>
       </div>
     </div>
   </div>

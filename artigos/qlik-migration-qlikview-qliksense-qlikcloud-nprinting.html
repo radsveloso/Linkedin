@@ -115,7 +115,7 @@ footer span{color:#3b82f6 !important;}
 <section class="hero" data-sec="0">
   <div class="hero-badge"><span class="hero-badge-dot"></span>Qlik Sense &bull; Qlik Cloud &bull; NPrinting</div>
   <h1>End-to-End Qlik Migration:<br>QlikView → Qlik Sense → Qlik Cloud + NPrinting</h1>
-  <p class="hero-sub">Three migration paths. Real technical traps. The guide the market never published — with scripts, syntax differences, and exactly what breaks at each stage.</p>
+  <p class="hero-sub">Three migration paths. Real technical traps. The guide the market never published: scripts, syntax differences, and exactly what breaks at each stage.</p>
   <div style="overflow:hidden;max-width:620px;margin:0 auto;">
     <div class="typewriter">Migration is not clicking "Publish." It is re-engineering.</div>
   </div>
@@ -248,23 +248,34 @@ Section Application;</code></pre>
       <li><span class="icon warn">&#x2717;</span><span><strong>Macros (VBScript)</strong> — Qlik Sense does not support VBScript macros. Rewrite as Extensions or Automations. <span class="tag tag-warn">rewrite</span></span></li>
     </ul>
 
-    <h4>TOTAL Qualifier — Critical Edge Case</h4>
+    <h4>TOTAL Qualifier — Identical Behavior on Both Platforms</h4>
+    <p>The <span class="inline-code">TOTAL</span> qualifier without a field specification ignores <strong>all chart dimensions</strong> on both platforms. QlikView and Qlik Sense behave identically here — basic TOTAL syntax migrates without change.</p>
     <div class="compare-grid">
-      <div class="compare-bad">
-        <span class="compare-label">QlikView — expected behavior</span>
-        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// In QlikView, TOTAL ignores
-// all dimensions by default
-Sum(Sales) / Sum(TOTAL Sales)</code></pre>
-      </div>
-      <div class="compare-good">
-        <span class="compare-label">Qlik Sense — be explicit</span>
-        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// In Sense, specify which
-// dimensions TOTAL should ignore
-Sum(Sales) /
-Sum(TOTAL &lt;Region&gt; Sales)
+      <div class="compare-neutral">
+        <span class="compare-label">QlikView and Qlik Sense — identical</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// TOTAL without field: ignores
+// all chart dimensions
+// (same behavior on both platforms)
+Sum(Sales) / Sum(TOTAL Sales)
 
-// Without specifying: behavior
-// may differ under selections</code></pre>
+// With field: restricts which
+// dimensions TOTAL ignores
+// (syntax available on both)
+Sum(Sales) /
+Sum(TOTAL &lt;Region&gt; Sales)</code></pre>
+      </div>
+      <div class="compare-neutral">
+        <span class="compare-label">Where real differences exist</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// Genuine migration edge cases:
+// 1. Set Analysis nested with TOTAL
+//    — evaluation order can differ
+
+Sum({&lt;Year={2024}&gt;} TOTAL Sales)
+
+// 2. Master Visualizations in Qlik Cloud
+//    — selection context may interact
+//    differently with the TOTAL
+//    qualifier in certain scenarios</code></pre>
       </div>
     </div>
   </div>
