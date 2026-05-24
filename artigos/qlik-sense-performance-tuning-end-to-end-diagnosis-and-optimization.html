@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Qlik Sense Performance Tuning: End-to-End Diagnosis and Optimization</title>
     <meta property="og:title" content="Qlik Sense Performance Tuning: End-to-End Diagnosis and Optimization">
-    <meta property="og:description" content="80% of Qlik Sense performance issues live in the data model - not in expressions, not in infrastructure....">
+    <meta property="og:description" content="# Qlik Sense Performance Tuning: End-to-End Diagnosis and Optimization
+
+End-to-end diagnosis and optimization: data model, QVD layer, expressions, and infrastructure - with real scripts and measurable...">
     <meta property="og:type" content="article">
     <meta name="author" content="Rafael Veloso">
     <style>
@@ -121,7 +123,368 @@
         </header>
         
         <article>
-            80% of Qlik Sense performance issues live in the data model - not in expressions, not in infrastructure.
+            # Qlik Sense Performance Tuning: End-to-End Diagnosis and Optimization
+
+End-to-end diagnosis and optimization: data model, QVD layer, expressions, and infrastructure - with real scripts and measurable results.
+
+**80% of performance problems live in the data model.**
+
+| Metric | Value |
+|--------|-------|
+| Issues in model | 80% |
+| Gain with incremental | 10x |
+| RAM savings with DROP FIELDS | -60% |
+| Expression response target | 5s |
+
+---
+
+## 1. Diagnosis Before Optimization
+
+The most common mistake in performance work is jumping straight to fixes. Before changing anything, you need to understand **where the bottleneck actually is**. Qlik Sense performance issues fall into four distinct categories - and the fix for each is completely different.
+
+- **Data Model**: Synthetic keys, unnecessary fields, unoptimized schema
+- **Reload Script**: Full loads where incremental applies, inefficient joins
+- **Expressions**: IF() inside aggregations, AGGR() in every chart
+- **Infrastructure**: RAM, CPU, node sizing, Qlik Cloud tier
+
+### Reading the Reload Log
+
+Every reload in Qlik Sense generates a detailed log. Knowing how to read it is the first diagnostic step. Go to **Management Console > Apps > [App] > Reload History**, or in Qlik Cloud, check the App Activity log.
+
+```
+-- SYNTHETIC KEY WARNING --
+A synthetic key was generated for table [Orders]:
+Fields: CustomerID, ProductID
+This creates a hidden composite key table that expands in memory.
+Action required: rename or alias the duplicated fields.
+
+-- SLOW TABLE --
+Loading table [FactSales]: 12,450,000 rows in 04:32
+Previous run: 12,448,000 rows in 04:31 (full reload - no delta)
+Action: implement incremental load to avoid reprocessing 12M rows.
+
+-- LARGE FIELD --
+Field [LegacyXMLPayload]: 48 MB, 0 distinct values used in any chart
+Action: DROP this field - consuming RAM with zero analytical value.
+```
+
+### Structured Diagnosis Workflow
+
+1. **Review the reload log** - Look for synthetic keys, slow tables, unnecessary fields, and full loads that should be incremental.
+2. **Check the data model** - Review the table structure. Identify loop links and orphan tables.
+3. **Profile expression response time** - Use the Engine Diagnostics API to identify which chart objects take the longest to render.
+4. **Check RAM consumption** - Monitor the QIX Engine RAM. Each resident table and each field occupies in-memory space.
+5. **Prioritize by impact** - Model issues first, then script, then expressions, then infrastructure. Don't add hardware to paper over a bad model.
+
+> "Throwing more RAM at a poorly designed model is like widening a highway that leads nowhere. Fix the model first - infrastructure is the last resort, not the first response."
+
+---
+
+## 2. Data Model Optimization
+
+The data model is the foundation of everything. A well-structured model means less RAM, faster selections, and expressions that evaluate in milliseconds. A poor model corrupts all subsequent optimization efforts.
+
+### Synthetic Key Elimination
+
+Qlik creates synthetic keys when two or more tables share more than one field with the same name. The result is a hidden composite-key table that multiplies in memory and makes debugging nightmarish.
+
+**Problem - synthetic key generated:**
+
+```qlik
+Orders:
+LOAD
+  OrderID,
+  CustomerID,  // shared
+  ProductID,   // shared
+  Quantity
+FROM orders.csv;
+
+OrderDetails:
+LOAD
+  OrderID,
+  CustomerID,  // shared = synthetic key!
+  ProductID,   // shared = synthetic key!
+  UnitPrice
+FROM order_details.csv;
+// Qlik creates $Syn1 - hidden composite key table
+```
+
+**Fix - alias to isolate the key:**
+
+```qlik
+OrderDetails:
+LOAD
+  OrderID,
+  CustomerID AS Cust_Detail,  // alias eliminates conflict
+  ProductID  AS Prod_Detail,  // alias eliminates conflict
+  UnitPrice
+FROM order_details.csv;
+// No synthetic key. Join via OrderID only - clean model.
+```
+
+### DROP FIELDS - Remove What You Don't Use
+
+Every field loaded into Qlik occupies RAM - even if no chart ever references it. ETL columns, internal control flags, legacy codes, and XML payloads are common culprits.
+
+```qlik
+Orders:
+LOAD
+  OrderID,
+  CustomerID,
+  ProductID,
+  Quantity,
+  UnitPrice,
+  OrderDate,
+  ETLTimestamp,      // ETL control - no analytical value
+  BatchID,           // batch processing - not needed in the model
+  InternalRef,       // legacy internal code
+  LegacyXMLPayload   // payload from old system - 48 MB of RAM wasted
+FROM orders.csv;
+
+// Drop immediately after loading
+DROP FIELDS ETLTimestamp, BatchID, InternalRef, LegacyXMLPayload;
+// Measured gain in this example: ~38% RAM reduction for the Orders table
+```
+
+Audit practice: once a month, cross-reference all loaded fields against expressions and master items. Every field not referenced in any chart or master item is a candidate for dropping.
+
+### Star Schema - Denormalize in Script, Not in the Model
+
+Qlik is optimized for star schema: one large fact table surrounded by smaller dimension tables. If your source is a relational database with multiple join levels (snowflake), denormalize during the script load.
+
+```qlik
+// Recommended - denormalize into one flat dimension:
+DimProduct:
+LOAD
+  p.ProductID,
+  p.ProductName,
+  s.SubCategoryName,
+  c.CategoryName,
+  d.DepartmentName
+FROM products p
+JOIN sub_category s ON p.SubCategoryID = s.SubCategoryID
+JOIN category c ON s.CategoryID = c.CategoryID
+JOIN department d ON c.DepartmentID = d.DepartmentID;
+// 1 flat dimension - clean star schema
+// Selections propagate directly to FactSales
+```
+
+### NoConcatenate - When Qlik Concatenates Unexpectedly
+
+When two tables have the same field names, Qlik automatically concatenates them. Use `NoConcatenate` to prevent it.
+
+```qlik
+PlanSales:
+LOAD SaleDate, ProductID, Amount FROM plan.csv;
+
+// Without NoConcatenate, Qlik merges PlanSales and ActualSales
+// because fields match - wrong behavior.
+
+ActualSales:
+NoConcatenate
+LOAD SaleDate, ProductID, Amount FROM actuals.csv;
+// Now they are two separate tables
+```
+
+---
+
+## 3. Script and QVD Layer
+
+The QVD layer is the highest-impact performance technique available in Qlik. A well-structured QVD layer transforms a 4-hour full reload into a 12-minute incremental load - without changing a single chart or expression.
+
+### Incremental Load - The Most Impactful Pattern
+
+The logic: on first run, load everything and store to QVD. On subsequent runs, load only what's new or changed (delta), merge with what's already in the QVD, then store the updated QVD back.
+
+```qlik
+// Step 1: get timestamp of last load stored in the QVD
+LET vLastLoad = Peek('UpdatedAt', -1, 'MaxDate');
+
+IF IsNull(vLastLoad) OR NOT QvdNoOfRecords('lib://QVDs/sales.qvd') > 0 THEN
+  // FULL LOAD (first run or corrupted QVD)
+  Sales_Full:
+  LOAD SaleID, CustomerID, ProductID, Amount, SaleDate, UpdatedAt
+  FROM [lib://Sources/sales.csv]
+  WHERE UpdatedAt >= '1900-01-01';
+
+  STORE Sales_Full INTO [lib://QVDs/sales.qvd] (qvd);
+  DROP TABLE Sales_Full;
+
+ELSE
+  // INCREMENTAL LOAD (delta only)
+  Sales_Delta:
+  LOAD SaleID, CustomerID, ProductID, Amount, SaleDate, UpdatedAt
+  FROM [lib://Sources/sales.csv]
+  WHERE UpdatedAt >= '$(vLastLoad)';
+
+  // Load existing QVD excluding records already in delta
+  Sales_Existing:
+  LOAD SaleID, CustomerID, ProductID, Amount, SaleDate, UpdatedAt
+  FROM [lib://QVDs/sales.qvd] (qvd)
+  WHERE NOT EXISTS(SaleID);
+
+  // Merge: existing + delta = complete updated table
+  CONCATENATE(Sales_Existing)
+  LOAD * RESIDENT Sales_Delta;
+  DROP TABLE Sales_Delta;
+
+  STORE Sales_Existing INTO [lib://QVDs/sales.qvd] (qvd);
+  DROP TABLE Sales_Existing;
+
+END IF
+
+// Load from QVD into the model (always optimized read)
+Sales:
+LOAD * FROM [lib://QVDs/sales.qvd] (qvd);
+
+// Record the max timestamp for next run
+MaxDate:
+LOAD Max(UpdatedAt) AS UpdatedAt RESIDENT Sales;
+```
+
+Critical prerequisite: the source table must have a reliable **UpdatedAt** timestamp field updated on every INSERT and UPDATE. Without this, incremental load is unreliable.
+
+### Buffer LOAD - Smart Caching for Slow Sources
+
+```qlik
+// Buffer LOAD - caches for 7 days, then auto-invalidates
+Buffer (stale [7 days]) DimProduct:
+LOAD ProductID, ProductName, Category, UnitCost
+FROM [lib://Sources/products.csv];
+
+// Ideal for: slowly-changing dimensions (products, regions, cost centers)
+// Not ideal for: rapidly changing data (stock prices, real-time sales)
+```
+
+### Binary LOAD - Reuse Another App's Data Model
+
+```qlik
+// In the secondary app - load everything from the primary:
+Binary [lib://Apps/MasterDimensions.qvf];
+
+// Only load the specific fact tables this app needs:
+FactSalesRegion:
+LOAD RegionID, ProductID, Amount, SaleDate
+FROM [lib://QVDs/fact_sales_region.qvd] (qvd);
+
+// This model instantly inherits DimProduct, DimCustomer,
+// DimRegion, DimDate from the primary app - no reprocessing.
+```
+
+---
+
+## 4. Expressions and Visualizations
+
+Even a perfect data model can be negated by inefficient expressions. The most expensive operations in Qlik chart rendering are IF() inside aggregations, excessive AGGR() calls, and too many objects on a single sheet.
+
+### Set Analysis vs IF() - The Most Common Mistake
+
+Using IF() inside Sum() or Count() forces Qlik to evaluate the condition for every single row before aggregating. Set Analysis filters the data set *before* evaluation using index structures - dramatically faster on large datasets.
+
+**Slow - IF() inside aggregation:**
+
+```qlik
+// 12M rows = 12M IF() evaluations per expression
+Sum(IF(Category = 'Electronics', Amount, 0))
+Count(IF(Status = 'Completed' AND Region = 'West', OrderID, NULL()))
+```
+
+**Fast - Set Analysis filters before aggregating:**
+
+```qlik
+// Filters using QIX index - no row-by-row evaluation
+Sum({<Category={'Electronics'}>} Amount)
+Count({<Status={'Completed'},Region={'West'}>} OrderID)
+
+// Rule: if you're filtering inside an aggregation,
+// it should be Set Analysis, not IF().
+```
+
+### AGGR() - Pre-calculate in Script, Not in Every Chart
+
+When the same AGGR() expression appears in multiple charts, Qlik recalculates it independently for each one. The fix: calculate once in the script and expose as a regular field.
+
+```qlik
+// In the load script - calculate once, store in QVD:
+SalesPerCustomerProduct:
+LOAD
+  CustomerID,
+  ProductID,
+  Sum(Amount) AS TotalAmountPerCustomerProduct
+RESIDENT FactSales
+GROUP BY CustomerID, ProductID;
+
+// All charts now use simple aggregation over an indexed field:
+Avg(TotalAmountPerCustomerProduct)
+Rank(Avg(TotalAmountPerCustomerProduct))
+Sum(Amount) / Avg(TotalAmountPerCustomerProduct)
+
+// Performance difference on 10M rows: ~15x faster rendering.
+```
+
+### Variables for Reused Expressions
+
+```qlik
+// Define once:
+SET vCurrentYearFilter = '{<Year={$(=Year(Today()))}>}';
+SET vElectronicsFilter = '{<Category={''Electronics''}>}';
+
+// Use everywhere - update logic in one place:
+Sum($(vCurrentYearFilter) Amount)
+Sum($(vElectronicsFilter) Amount)
+```
+
+### Sheet Design: The Object Count Rule
+
+Each object on a sheet triggers its own calculation cycle on every selection. The target for interactive dashboards is **8 to 10 objects per sheet maximum**.
+
+- Limit to 8-10 objects per sheet - split content across sheets when needed
+- Use Show Conditions on heavy objects: `GetSelectedCount(Year) > 0`
+- Enable "Always One Selected Value" on date dimensions to prevent full-range aggregation
+- Use ODAG (On-Demand App Generation) for detail drill-through - keep the summary app light
+- Avoid table objects with more than 20 columns - each column is a separate expression cycle
+
+---
+
+## 5. Profiling and Continuous Audit
+
+Performance is not a one-time fix. As data volumes grow and new developers add expressions and objects, performance degrades silently. Building a regular audit practice is what separates production-quality apps from ones that work until they don't.
+
+### TRACE Timing Markers in Script
+
+```qlik
+LET vT0 = Now();
+TRACE === START: Loading FactSales ===;
+
+FactSales:
+LOAD SaleID, CustomerID, ProductID, Amount, SaleDate
+FROM [lib://QVDs/fact_sales.qvd] (qvd);
+
+TRACE === DONE: FactSales loaded, time: $(Interval(Now() - vT0, 'mm:ss')) ===;
+
+// Check the reload log to see which section is slowest.
+// If FactSales takes 4 minutes, incremental load gives the biggest gain.
+```
+
+### Performance Audit Checklist
+
+- **Monthly**: Check for synthetic keys - any table named $Syn* needs resolution with aliasing
+- **Monthly**: Scan for `Sum(IF`, `Count(IF`, `Avg(IF` - replace with Set Analysis
+- **Quarterly**: Audit unused fields - cross-reference all loaded fields against expressions
+- **Each deploy**: Verify incremental load is working by comparing row counts in reload log
+- **Each deploy**: Review sheet object count - anything over 12 warrants splitting
+- **Each deploy**: Confirm QVD layer stale times match business requirements
+- **After volume increases**: Test expression response time - an expression at 2s for 5M rows may take 18s at 50M rows, especially AGGR() in charts
+
+> Senior-level insight: the most resilient Qlik apps are not those with the most features - they are those where the developer can explain, in 30 seconds, exactly where each row of data comes from, why each field exists, and what the worst-case selection scenario looks like. If you can't explain it, you can't optimize it.
+
+---
+
+*Written by Rafael Veloso - Qlik Sense Performance Guide*
+
+*Full series: [radsveloso.github.io/Linkedin/artigos](https://radsveloso.github.io/Linkedin/artigos/)*
+
+#QlikSense #PerformanceTuning #QVD #DataEngineering #SetAnalysis #IncrementalLoad #BI #DataModeling #QlikDeveloper #BusinessIntelligence
         </article>
         
         <footer>
