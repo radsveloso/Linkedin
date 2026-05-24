@@ -135,7 +135,7 @@ footer span{color:#3b82f6 !important;}
     <div class="hero-badge" style="margin-bottom:24px;"><span class="hero-badge-dot"></span>Por Que Isso É Mais Complexo do que Parece</div>
     <h2>A Realidade das Migrações Qlik</h2>
     <p>A Qlik anunciou o fim do suporte ao QlikView para 2025. O NPrinting já não tem roadmap de evolução significativo. E o Qlik Sense on-prem está em modo de manutenção enquanto o Qlik Cloud recebe todos os novos recursos.</p>
-    <p>O resultado: empresas que construíram seu BI nos últimos 15 anos sobre QlikView estão diante de uma migração em três etapas — e cada etapa tem suas próprias armadilhas técnicas.</p>
+    <p>O resultado: empresas que construíram seu BI nos últimos 15 anos sobre QlikView estão diante de uma migração em três etapas - e cada etapa tem suas próprias armadilhas técnicas.</p>
 
     <div class="accent-block">
       <p>"A maior armadilha das migrações Qlik não é técnica. É a suposição de que o load script vai funcionar igual. Não vai. E o NPrinting menos ainda."</p>
@@ -147,14 +147,14 @@ footer span{color:#3b82f6 !important;}
         <div class="arch-num" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);">1</div>
         <div class="arch-text">
           <strong>QlikView → Qlik Sense</strong>
-          <span>.qvw para .qvf — novo modelo de objetos, novo paradigma de extensibilidade, Section Access reescrito, expressões com comportamento diferente em edge cases.</span>
+          <span>.qvw para .qvf - novo modelo de objetos, novo paradigma de extensibilidade, Section Access reescrito, expressões com comportamento diferente em edge cases.</span>
         </div>
       </div>
       <div class="arch-step">
         <div class="arch-num" style="background:linear-gradient(135deg,#0369a1,#0284c7);">2</div>
         <div class="arch-text">
           <strong>Qlik Sense On-Prem → Qlik Cloud</strong>
-          <span>Spaces, OAuth 2.0, Managed Spaces, Data Spaces — arquitetura de tenant completamente diferente. Extensions precisam de re-certificação. QVDs migram para cloud storage.</span>
+          <span>Spaces, OAuth 2.0, Managed Spaces, Data Spaces - arquitetura de tenant completamente diferente. Extensions precisam de re-certificação. QVDs migram para cloud storage.</span>
         </div>
       </div>
       <div class="arch-step">
@@ -182,7 +182,7 @@ footer span{color:#3b82f6 !important;}
     </div>
 
     <h3>O Que Muda no Load Script</h3>
-    <p>O load script do Qlik Sense é compatível com a sintaxe QlikView na maior parte — mas existem diferenças críticas que quebram silenciosamente.</p>
+    <p>O load script do Qlik Sense é compatível com a sintaxe QlikView na maior parte - mas existem diferenças críticas que quebram silenciosamente.</p>
 
     <h4>NullAsValue e SET NULLINTERPRET</h4>
     <div class="compare-grid">
@@ -207,12 +207,12 @@ LOAD * FROM vendas.qvd (qvd);</code></pre>
       </div>
     </div>
 
-    <h4>Section Access — Reescrita Obrigatória</h4>
+    <h4>Section Access - Reescrita Obrigatória</h4>
     <p>No QlikView, o Section Access usa campos <span class="inline-code">NTNAME</span>, <span class="inline-code">OMIT</span> e <span class="inline-code">ACCESS</span> com configuração via arquivo QMC. No Qlik Sense, o modelo é diferente: <span class="inline-code">USER.EMAIL</span> ou <span class="inline-code">USER.USERID</span> substituem <span class="inline-code">NTNAME</span>, e o campo <span class="inline-code">OMIT</span> foi descontinuado.</p>
 
     <div class="compare-grid">
       <div class="compare-bad">
-        <span class="compare-label">Section Access — QlikView</span>
+        <span class="compare-label">Section Access - QlikView</span>
         <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>Section Access;
 LOAD * INLINE [
   ACCESS, NTNAME,   REGION,   OMIT
@@ -223,7 +223,7 @@ LOAD * INLINE [
 Section Application;</code></pre>
       </div>
       <div class="compare-good">
-        <span class="compare-label">Section Access — Qlik Sense</span>
+        <span class="compare-label">Section Access - Qlik Sense</span>
         <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>Section Access;
 LOAD * INLINE [
   ACCESS, USERID,          REGION
@@ -240,19 +240,19 @@ Section Application;</code></pre>
 
     <h3>Objetos: O que Migra e o que Não Migra</h3>
     <ul class="checklist" id="cl1">
-      <li><span class="icon ok">✓</span><span><strong>Bar Charts, Line Charts, Pie Charts</strong> — migram com ajuste de expressões. <span class="tag tag-ok">compatível</span></span></li>
-      <li><span class="icon ok">✓</span><span><strong>Straight Tables</strong> — migram como Table no Sense, com revisão de expressões de dimensão. <span class="tag tag-ok">compatível</span></span></li>
-      <li><span class="icon warn">✗</span><span><strong>Grid Charts</strong> — não existem no Sense. Use Heatmap ou extensão customizada. <span class="tag tag-warn">reescrever</span></span></li>
-      <li><span class="icon warn">✗</span><span><strong>Multi-Box / Current Selections Box</strong> — substituídos por Filter Pane e Selections Bar. <span class="tag tag-warn">reescrever</span></span></li>
-      <li><span class="icon warn">✗</span><span><strong>Container Object</strong> — o conceito existe no Sense mas com comportamento diferente. Revisar lógica de show/hide. <span class="tag tag-warn">revisar</span></span></li>
-      <li><span class="icon warn">✗</span><span><strong>Macro (VBScript)</strong> — Qlik Sense não suporta macros VBScript. Reescrever como Extensions ou Automations. <span class="tag tag-warn">reescrever</span></span></li>
+      <li><span class="icon ok">✓</span><span><strong>Bar Charts, Line Charts, Pie Charts</strong> - migram com ajuste de expressões. <span class="tag tag-ok">compatível</span></span></li>
+      <li><span class="icon ok">✓</span><span><strong>Straight Tables</strong> - migram como Table no Sense, com revisão de expressões de dimensão. <span class="tag tag-ok">compatível</span></span></li>
+      <li><span class="icon warn">✗</span><span><strong>Grid Charts</strong> - não existem no Sense. Use Heatmap ou extensão customizada. <span class="tag tag-warn">reescrever</span></span></li>
+      <li><span class="icon warn">✗</span><span><strong>Multi-Box / Current Selections Box</strong> - substituídos por Filter Pane e Selections Bar. <span class="tag tag-warn">reescrever</span></span></li>
+      <li><span class="icon warn">✗</span><span><strong>Container Object</strong> - o conceito existe no Sense mas com comportamento diferente. Revisar lógica de show/hide. <span class="tag tag-warn">revisar</span></span></li>
+      <li><span class="icon warn">✗</span><span><strong>Macro (VBScript)</strong> - Qlik Sense não suporta macros VBScript. Reescrever como Extensions ou Automations. <span class="tag tag-warn">reescrever</span></span></li>
     </ul>
 
-    <h4>Expressão com TOTAL — Comportamento Idêntico nas Duas Plataformas</h4>
-    <p>O qualificador <span class="inline-code">TOTAL</span> sem especificação de campo ignora <strong>todas as dimensões do gráfico</strong> em ambas as plataformas. QlikView e Qlik Sense se comportam da mesma forma neste caso — a sintaxe básica migra sem alteração.</p>
+    <h4>Expressão com TOTAL - Comportamento Idêntico nas Duas Plataformas</h4>
+    <p>O qualificador <span class="inline-code">TOTAL</span> sem especificação de campo ignora <strong>todas as dimensões do gráfico</strong> em ambas as plataformas. QlikView e Qlik Sense se comportam da mesma forma neste caso - a sintaxe básica migra sem alteração.</p>
     <div class="compare-grid">
       <div class="compare-neutral">
-        <span class="compare-label">QlikView e Qlik Sense — idêntico</span>
+        <span class="compare-label">QlikView e Qlik Sense - idêntico</span>
         <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// TOTAL sem campo: ignora
 // todas as dimensões do gráfico
 // (comportamento igual nas duas plataformas)
@@ -268,12 +268,12 @@ Sum(TOTAL &lt;Regiao&gt; Vendas)</code></pre>
         <span class="compare-label">Onde diferenças reais existem</span>
         <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// Edge cases reais de migração:
 // 1. Set Analysis aninhado com TOTAL
-//    — ordem de avaliação pode diferir
+//    - ordem de avaliação pode diferir
 
 Sum({&lt;Ano={2024}&gt;} TOTAL Vendas)
 
 // 2. Master Visualizations no Qlik Cloud
-//    — contexto de seleção pode
+//    - contexto de seleção pode
 //    interagir de forma diferente
 //    com o qualificador TOTAL</code></pre>
       </div>
@@ -295,7 +295,7 @@ Sum({&lt;Ano={2024}&gt;} TOTAL Vendas)
     </div>
 
     <h3>O Novo Modelo de Spaces</h3>
-    <p>O Qlik Cloud substitui o modelo de Streams por <strong>Spaces</strong> — e entender a diferença entre eles é o primeiro passo para uma migração sem retrabalho.</p>
+    <p>O Qlik Cloud substitui o modelo de Streams por <strong>Spaces</strong> - e entender a diferença entre eles é o primeiro passo para uma migração sem retrabalho.</p>
     <div class="arch-flow">
       <div class="arch-step">
         <div class="arch-num" style="background:#1e40af;width:44px;height:44px;font-size:.75rem;border-radius:8px;">Personal</div>
@@ -329,7 +329,7 @@ Sum({&lt;Ano={2024}&gt;} TOTAL Vendas)
 
     <h3>Autenticação: API Keys → OAuth 2.0</h3>
     <p>No Sense on-prem, integrações usam Virtual Proxies com certificados ou JWT. No Cloud, o padrão é OAuth 2.0 com escopos declarados.</p>
-    <span class="code-label">Autenticação via OAuth 2.0 — Qlik Cloud API</span>
+    <span class="code-label">Autenticação via OAuth 2.0 - Qlik Cloud API</span>
     <pre><code># Obter access token (Client Credentials)
 curl -X POST https://SEU_TENANT.us.qlikcloud.com/oauth/token \
   -H "Content-Type: application/json" \
@@ -349,13 +349,13 @@ curl -X POST \
     <p>No on-prem, QVDs ficam em file shares ou diretórios locais. No Cloud, precisam de um Data Connection apontando para S3, ADLS Gen2, GCS ou Qlik Data Gateway para fontes on-premises.</p>
     <div class="compare-grid">
       <div class="compare-bad">
-        <span class="compare-label">On-Prem — path local</span>
+        <span class="compare-label">On-Prem - path local</span>
         <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>LOAD * FROM
 [lib://QVD_Store/vendas_$(vAno).qvd]
 (qvd);</code></pre>
       </div>
       <div class="compare-good">
-        <span class="compare-label">Cloud — conexão declarada</span>
+        <span class="compare-label">Cloud - conexão declarada</span>
         <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// Data Connection: "S3_DataLake"
 // configurada no Data Space
 
@@ -391,7 +391,7 @@ LOAD * FROM
       </div>
     </div>
 
-    <p>Esta é a trilha mais subestimada. Muitas equipes assumem que "o NPrinting vai continuar funcionando" após mover apps para o Cloud. Não vai — NPrinting conecta apenas ao Qlik Sense on-prem.</p>
+    <p>Esta é a trilha mais subestimada. Muitas equipes assumem que "o NPrinting vai continuar funcionando" após mover apps para o Cloud. Não vai - NPrinting conecta apenas ao Qlik Sense on-prem.</p>
 
     <div class="accent-block">
       <p>NPrinting não tem suporte ao Qlik Cloud. Se seus apps migrarem para o Cloud, sua distribuição de relatórios precisa migrar também.</p>
@@ -437,8 +437,8 @@ Pixel-perfect: via PDF export
 
     <h3>Bursting via Qlik Application Automation</h3>
     <p>No NPrinting, o bursting era declarativo: você apontava um campo e ele gerava um PDF por valor. No Cloud, o bursting é imperativo via Automation:</p>
-    <span class="code-label">Lógica de bursting — Qlik Application Automation (pseudocódigo)</span>
-    <pre><code>// Bloco: Start (Trigger: Schedule — todo dia 6h)
+    <span class="code-label">Lógica de bursting - Qlik Application Automation (pseudocódigo)</span>
+    <pre><code>// Bloco: Start (Trigger: Schedule - todo dia 6h)
 
 // 1. Buscar lista de regiões via REST API
 GET /api/v1/apps/{appId}/data
@@ -465,8 +465,8 @@ FOR EACH regiao IN lista_regioes:
     <ul class="checklist" id="cl3">
       <li><span class="icon warn">✗</span><span>Templates Excel com formatação condicional complexa (tabelas dinâmicas Qlik → Excel nativo). Não há equivalente direto. <span class="tag tag-warn">sem substituto</span></span></li>
       <li><span class="icon warn">✗</span><span>NewsStand (portal de relatórios auto-serviço do NPrinting). Substituir por Managed Space com acesso controlado. <span class="tag tag-warn">repensar</span></span></li>
-      <li><span class="icon ok">✓</span><span>Distribuição por email com PDF exportado do app — funcionalmente equivalente ao NPrinting para casos simples. <span class="tag tag-ok">disponível</span></span></li>
-      <li><span class="icon ok">✓</span><span>Agendamento com Automation é mais flexível que o Scheduler do NPrinting — suporta triggers de evento, não só temporais. <span class="tag tag-ok">melhor</span></span></li>
+      <li><span class="icon ok">✓</span><span>Distribuição por email com PDF exportado do app - funcionalmente equivalente ao NPrinting para casos simples. <span class="tag tag-ok">disponível</span></span></li>
+      <li><span class="icon ok">✓</span><span>Agendamento com Automation é mais flexível que o Scheduler do NPrinting - suporta triggers de evento, não só temporais. <span class="tag tag-ok">melhor</span></span></li>
     </ul>
 
     <div class="highlight-box">

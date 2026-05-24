@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Set Analysis with Alternate States in Qlik Sense - Complete Guide</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#08080f;--bg2:#0d0d1a;--bg3:#12121f;
+    --blue:#3b82f6;--blue2:#60a5fa;
+    --green:#22c55e;--yellow:#eab308;--red:#ef4444;--purple:#a855f7;--orange:#f97316;--teal:#14b8a6;
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+    --border:#1e293b;--border2:#334155;
+    --font:'Segoe UI',system-ui,sans-serif;--mono:'Cascadia Code','Fira Code',monospace
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.7;cursor:none;overflow-x:hidden}
+  #cursor{width:10px;height:10px;background:var(--teal);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;mix-blend-mode:screen}
+  #cursor-ring{width:36px;height:36px;border:1.5px solid var(--teal);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transition:all .18s cubic-bezier(.22,1,.36,1);opacity:.5}
+  nav{position:fixed;right:24px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:10px}
+  .nav-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);cursor:pointer;transition:all .3s;border:none;outline:none}
+  .nav-dot:hover,.nav-dot.active{background:var(--teal);transform:scale(1.5)}
+  header{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 24px;position:relative;overflow:hidden}
+  header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 40%,rgba(20,184,166,.12),transparent);pointer-events:none}
+  .badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border:1px solid rgba(20,184,166,.3);border-radius:100px;font-size:.78rem;color:var(--teal);background:rgba(20,184,166,.06);margin-bottom:32px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:clamp(2rem,5vw,3.6rem);font-weight:800;line-height:1.1;max-width:820px;margin-bottom:24px;letter-spacing:-.02em}
+  h1 span{background:linear-gradient(135deg,var(--teal),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .subtitle{font-size:1.15rem;color:var(--text2);max-width:660px;margin-bottom:48px}
+  .meta-row{display:flex;align-items:center;gap:24px;flex-wrap:wrap;justify-content:center}
+  .meta-chip{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--text3)}
+  .meta-chip svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+  .scroll-hint{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--text3);font-size:.78rem;animation:bounce 2s infinite}
+  @keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+  .scroll-hint svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2}
+  section{max-width:900px;margin:0 auto;padding:100px 24px;opacity:0;transform:translateY(30px);transition:all .7s cubic-bezier(.22,1,.36,1)}
+  section.visible{opacity:1;transform:none}
+  .section-label{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:16px;font-weight:600}
+  h2{font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:700;margin-bottom:12px;letter-spacing:-.02em;line-height:1.2}
+  .section-intro{color:var(--text2);font-size:1.05rem;margin-bottom:48px;max-width:700px}
+  h3{font-size:1.15rem;font-weight:700;margin:40px 0 16px;color:var(--teal)}
+  h4{font-size:.95rem;font-weight:700;margin:24px 0 10px;color:var(--text)}
+  p{color:var(--text2);margin-bottom:16px;font-size:.97rem}
+  pre{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:24px;overflow-x:auto;margin:20px 0;position:relative}
+  pre::before{content:attr(data-lang);position:absolute;top:10px;right:14px;font-size:.68rem;color:var(--text3);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase}
+  code{font-family:var(--mono);font-size:.87rem;line-height:1.75;color:#e2e8f0}
+  .kw{color:#93c5fd}.fn{color:#86efac}.str{color:#fca5a5}.cm{color:#475569}.num{color:#fdba74}.op{color:#c4b5fd}.var{color:#fde68a}.set{color:#6ee7b7}.st{color:#5eead4}
+  .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:20px;margin:24px 0}
+  .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin:24px 0}
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;transition:border-color .3s}
+  .card:hover{border-color:var(--border2)}
+  .card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:1.3rem}
+  .card h4{color:var(--text);font-size:1rem;margin:0 0 10px}
+  .card p{font-size:.88rem;margin:0}
+  .bg-teal{background:rgba(20,184,166,.12)}.bg-blue{background:rgba(59,130,246,.12)}.bg-green{background:rgba(34,197,94,.12)}
+  .bg-yellow{background:rgba(234,179,8,.12)}.bg-red{background:rgba(239,68,68,.12)}.bg-purple{background:rgba(168,85,247,.12)}.bg-orange{background:rgba(249,115,22,.12)}
+  .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+  .compare-card{border-radius:12px;padding:20px}
+  .compare-card.before{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2)}
+  .compare-card.after{background:rgba(20,184,166,.07);border:1px solid rgba(20,184,166,.2)}
+  .compare-label{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+  .compare-card.before .compare-label{color:var(--red)}
+  .compare-card.after .compare-label{color:var(--teal)}
+  .state-diagram{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;margin:32px 0;padding:24px;background:var(--bg2);border:1px solid var(--border);border-radius:16px}
+  .state-box{border-radius:12px;padding:16px;text-align:center}
+  .state-box.default{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3)}
+  .state-box.alt{background:rgba(20,184,166,.1);border:1px solid rgba(20,184,166,.3)}
+  .state-box .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;font-weight:600}
+  .state-box.default .label{color:var(--blue2)}.state-box.alt .label{color:var(--teal)}
+  .state-box .name{font-family:var(--mono);font-size:1.1rem;font-weight:700;margin-bottom:8px}
+  .state-box .selections{font-size:.82rem;color:var(--text2)}
+  .vs-badge{width:40px;height:40px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--text3);flex-shrink:0}
+  .callout{border-radius:12px;padding:20px 24px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+  .callout.info{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2)}
+  .callout.warn{background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.2)}
+  .callout.tip{background:rgba(20,184,166,.08);border:1px solid rgba(20,184,166,.2)}
+  .callout-icon{font-size:1.2rem;flex-shrink:0;margin-top:2px}
+  .callout-body{font-size:.9rem;color:var(--text2)}
+  .callout-body strong{color:var(--text)}
+  .checklist{list-style:none;display:flex;flex-direction:column;gap:10px;margin:20px 0}
+  .checklist li{display:flex;align-items:flex-start;gap:12px;font-size:.92rem;color:var(--text2)}
+  .checklist li::before{content:'✓';color:var(--teal);font-weight:700;flex-shrink:0;margin-top:2px}
+  .checklist.warn li::before{content:'!';color:var(--yellow)}
+  .table-wrap{overflow-x:auto;margin:24px 0}
+  table{width:100%;border-collapse:collapse;font-size:.88rem}
+  th{background:var(--bg3);color:var(--teal);font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;padding:12px 16px;text-align:left;border-bottom:1px solid var(--border2)}
+  td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+  tr:hover td{background:rgba(255,255,255,.02)}
+  td code{background:var(--bg3);padding:2px 6px;border-radius:4px;font-size:.82rem;color:var(--teal)}
+  .divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:60px 0}
+  footer{text-align:center;padding:80px 24px;color:var(--text3);font-size:.85rem}
+  footer a{color:var(--teal);text-decoration:none}
+  footer a:hover{text-decoration:underline}
+  .series-nav{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:32px}
+  .series-link{display:flex;align-items:center;gap:8px;padding:10px 20px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#94a3b8;text-decoration:none;font-size:.88rem;transition:all .3s}
+  .series-link:hover{border-color:var(--teal);color:var(--teal)}
+</style>
+</head>
+<body>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<nav id="nav-dots"></nav>
+
+<header id="s0">
+  <div class="badge">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg>
+    Advanced Set Analysis - Alternate States
+  </div>
+  <h1>Alternate States<br><span>in Qlik Sense</span></h1>
+  <p class="subtitle">The most underused Qlik Sense feature: compare two independent selection contexts simultaneously in the same chart, without duplicating objects or hardcoding filters.</p>
+  <div class="meta-row">
+    <span class="meta-chip"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>~18 min read</span>
+    <span class="meta-chip"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Qlik Sense / QlikView</span>
+    <span class="meta-chip"><svg viewBox="0 0 24 24"><path d="M2 20h20M6 20V10M12 20V4M18 20v-6"/></svg>Expert Level</span>
+  </div>
+  <div class="scroll-hint"><span>Scroll</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>
+</header>
+
+<section id="s1">
+  <div class="section-label">Section 01 - Core Concept</div>
+  <h2>What is an Alternate State?</h2>
+  <p class="section-intro">By default, a Qlik app has one selection state: the user clicks "Southeast" and every object reflects that selection. Alternate States break this constraint, enabling different objects to operate in independent, simultaneous selection contexts.</p>
+
+  <h3>The Problem It Solves</h3>
+  <p>Consider this scenario: an analyst needs to compare the performance of two products with different filters applied to each, without creating a second app, without opening two tabs, without hardcoded Set Analysis values. Alternate States is Qlik's native answer to this problem.</p>
+
+  <div class="state-diagram">
+    <div class="state-box default">
+      <div class="label">Default State</div>
+      <div class="name">{$}</div>
+      <div class="selections">Region: South<br>Year: 2024</div>
+    </div>
+    <div class="vs-badge">VS</div>
+    <div class="state-box alt">
+      <div class="label">Alternate State</div>
+      <div class="name">{Scenario_B}</div>
+      <div class="selections">Region: North<br>Year: 2023</div>
+    </div>
+  </div>
+
+  <p>Both states coexist in the same app at the same time. A single chart can display both values side by side. Users make selections in each state completely independently.</p>
+
+  <h3>Set Analysis Syntax with States</h3>
+  <pre data-lang="qlik"><code><span class="cm">// Default state - same as {$}</span>
+<span class="fn">Sum</span>({$} Revenue)
+
+<span class="cm">// Alternate state by name</span>
+<span class="fn">Sum</span>({<span class="st">Scenario_B</span>} Revenue)
+
+<span class="cm">// Alternate state + additional modifier</span>
+<span class="fn">Sum</span>({<span class="st">Scenario_B</span><span class="set">&lt;Status={'Active'}&gt;</span>} Revenue)
+
+<span class="cm">// Difference between the two states</span>
+<span class="fn">Sum</span>({$} Revenue) - <span class="fn">Sum</span>({<span class="st">Scenario_B</span>} Revenue)
+
+<span class="cm">// YoY % comparison between states</span>
+<span class="fn">Num</span>(
+    (<span class="fn">Sum</span>({$} Revenue) / <span class="fn">Sum</span>({<span class="st">Scenario_B</span>} Revenue)) - 1,
+    '+#,##0.0%;-#,##0.0%;0.0%'
+)</code></pre>
+
+  <div class="callout info">
+    <span class="callout-icon">💡</span>
+    <div class="callout-body">
+      <strong>Full syntax:</strong> <code>{StateName&lt;Field={'Value'}&gt;}</code>. The state name replaces the default identifier (<code>$</code> or <code>1</code>). The modifier <code>&lt;&gt;</code> is optional - without it, the expression uses exactly the selections active in that state at runtime.
+    </div>
+  </div>
+
+  <h3>State vs. Hardcoded Set Analysis</h3>
+  <div class="compare-grid">
+    <div class="compare-card before">
+      <div class="compare-label">Set with {1} - Static</div>
+      <pre data-lang="qlik"><code><span class="cm">// Always ignores ALL selections</span>
+<span class="cm">// Not interactive - never changes</span>
+<span class="fn">Sum</span>({1<span class="set">&lt;Region={'South'}&gt;</span>} Revenue)
+
+<span class="cm">// Value is fixed regardless of</span>
+<span class="cm">// what the user selects</span></code></pre>
+    </div>
+    <div class="compare-card after">
+      <div class="compare-label">Alternate State - Dynamic</div>
+      <pre data-lang="qlik"><code><span class="cm">// Uses selections of state Scenario_B</span>
+<span class="cm">// The user can change those selections!</span>
+<span class="fn">Sum</span>({<span class="st">Scenario_B</span>} Revenue)
+
+<span class="cm">// Value updates as user interacts</span>
+<span class="cm">// with objects assigned to that state</span></code></pre>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="s2">
+  <div class="section-label">Section 02 - Use Cases</div>
+  <h2>Why Use Alternate States?</h2>
+  <p class="section-intro">Alternate States are not a feature for simple scenarios. They exist to solve comparative analysis problems that would otherwise require complex, fragile workarounds.</p>
+
+  <div class="grid-3">
+    <div class="card"><div class="card-icon bg-teal">📊</div><h4>Period Comparison</h4><p>User selects January in State A and February in State B. A single bar chart shows both months side by side with the same dimensions, zero hardcoding.</p></div>
+    <div class="card"><div class="card-icon bg-blue">🗺️</div><h4>Region Benchmarking</h4><p>Live benchmark between two regions chosen by the analyst. South vs North, Branch A vs Branch B - the choice belongs to the user, not the developer.</p></div>
+    <div class="card"><div class="card-icon bg-purple">🔬</div><h4>What-If Analysis</h4><p>Current state vs simulated scenario. The default state reflects reality; the alternate state reflects a hypothesis with different filters, budget, or product mix.</p></div>
+    <div class="card"><div class="card-icon bg-orange">🛒</div><h4>Basket Analysis</h4><p>Customers who bought Product A (State A) vs customers who bought Product B (State B). Which basket has a higher average ticket? More repeat purchases?</p></div>
+    <div class="card"><div class="card-icon bg-green">💹</div><h4>Currency / Economic Scenario</h4><p>Same data with two different exchange rates. The CFO wants to see results in USD and BRL simultaneously with the same product and region filters.</p></div>
+    <div class="card"><div class="card-icon bg-yellow">🎯</div><h4>Actual vs Target</h4><p>Actual performance (default state) vs adjusted target (alternate state with modifiers). The variance is calculated directly in the expression.</p></div>
+  </div>
+
+  <h3>When NOT to Use Alternate States</h3>
+  <ul class="checklist warn">
+    <li>When the comparison data is fixed and comes from the model (e.g., a separate "Budget" column) - use simple Set Analysis with a field modifier.</li>
+    <li>When the comparison is a fixed period (YTD vs LY) - use the dynamic period expressions from Part 2.</li>
+    <li>When you need more than 3-4 states - maintenance complexity outweighs the benefit.</li>
+    <li>When end users do not understand the concept of "two independent filters" - the UX becomes confusing.</li>
+  </ul>
+</section>
+
+<div class="divider"></div>
+
+<section id="s3">
+  <div class="section-label">Section 03 - Setup</div>
+  <h2>Creating and Configuring States</h2>
+  <p class="section-intro">States are created in the Qlik Sense interface and then referenced in any Set Analysis expression by the exact name you defined.</p>
+
+  <h3>Step 1 - Create the State in the Interface</h3>
+  <div class="grid-3">
+    <div class="card"><div class="card-icon bg-teal">1</div><h4>Edit Sheet</h4><p>Click "Edit sheet" in the top right corner. In the sheet properties panel (not the object panel), find the <strong>Alternate States</strong> section.</p></div>
+    <div class="card"><div class="card-icon bg-blue">2</div><h4>Add State</h4><p>Click "Add state". Define a name without spaces or special characters - this is the name you will use in Set Analysis. Ex: <code>Scenario_B</code>, <code>Period_2</code>.</p></div>
+    <div class="card"><div class="card-icon bg-purple">3</div><h4>Assign to Object</h4><p>Select the object (filter pane, chart, KPI). In the object properties panel, find <strong>State</strong> and select the created state. That object now operates in the new state.</p></div>
+  </div>
+
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <div class="callout-body">
+      <strong>Naming convention:</strong> Use descriptive, consistent names. <code>Scenario_A</code> and <code>Scenario_B</code> are generic but functional. <code>Selected_Period</code> and <code>Benchmark_Region</code> are better for production dashboards. Never use spaces or special characters - the name must be valid as an expression identifier.
+    </div>
+  </div>
+
+  <h3>Step 2 - Create Filter Panes for Each State</h3>
+  <div class="grid-2">
+    <div class="card"><div class="card-icon bg-teal">Filter A</div><h4>Filter Pane - Default State ($)</h4><p>Displays dimensions (Region, Product, Year). Object is assigned to the default state. Selections here affect all objects using {$}.</p></div>
+    <div class="card"><div class="card-icon bg-blue">Filter B</div><h4>Filter Pane - Scenario_B</h4><p>Displays the same dimensions. Object is assigned to state <code>Scenario_B</code>. Selections here only affect objects that reference this state in their expressions.</p></div>
+  </div>
+
+  <h3>Step 3 - Reference in Set Analysis</h3>
+  <pre data-lang="qlik"><code><span class="cm">// The comparison chart stays in the default state</span>
+<span class="cm">// It simply has two measures:</span>
+
+<span class="cm">// Measure 1 - uses default state selections</span>
+<span class="fn">Sum</span>({$} Revenue)
+<span class="cm">// Label: "Revenue - Selection A"</span>
+
+<span class="cm">// Measure 2 - uses Scenario_B state selections</span>
+<span class="fn">Sum</span>({<span class="st">Scenario_B</span>} Revenue)
+<span class="cm">// Label: "Revenue - Selection B"</span>
+
+<span class="cm">// Measure 3 - absolute difference between both states</span>
+<span class="fn">Sum</span>({$} Revenue) - <span class="fn">Sum</span>({<span class="st">Scenario_B</span>} Revenue)
+<span class="cm">// Label: "Variance A vs B"</span>
+
+<span class="cm">// Measure 4 - percentage variation</span>
+<span class="fn">Num</span>(
+    (<span class="fn">Sum</span>({$} Revenue) / <span class="fn">Sum</span>({<span class="st">Scenario_B</span>} Revenue)) - 1,
+    '+#,##0.0%;-#,##0.0%;0.0%'
+)</code></pre>
+</section>
+
+<div class="divider"></div>
+
+<section id="s4">
+  <div class="section-label">Section 04 - Advanced Patterns</div>
+  <h2>Production Patterns with Alternate States</h2>
+  <p class="section-intro">These battle-tested patterns combine Alternate States with the techniques from the previous articles: modifiers, P(), dollar-sign expansion, and dynamic periods.</p>
+
+  <h3>Pattern 1 - Dynamic Regional Benchmark</h3>
+  <pre data-lang="qlik"><code><span class="cm">// Setup: Two Region filter panes (State $ and State Region_B)</span>
+<span class="cm">// User chooses any region in each filter independently</span>
+
+<span class="cm">// Dynamic label showing which region is active per state</span>
+<span class="str">'Selected: '</span> &amp; <span class="fn">Concat</span>({$} DISTINCT Region, ', ')
+<span class="str">'Benchmark: '</span> &amp; <span class="fn">Concat</span>({<span class="st">Region_B</span>} DISTINCT Region, ', ')
+
+<span class="cm">// Revenue comparison</span>
+<span class="fn">Sum</span>({$} Revenue)           <span class="cm">// Region A</span>
+<span class="fn">Sum</span>({<span class="st">Region_B</span>} Revenue)  <span class="cm">// Region B</span>
+
+<span class="cm">// Variance</span>
+<span class="fn">Num</span>(
+    <span class="fn">Sum</span>({$} Revenue) / <span class="fn">Sum</span>({<span class="st">Region_B</span>} Revenue) - 1,
+    '+#,##0.0%;-#,##0.0%;0.0%'
+)</code></pre>
+
+  <h3>Pattern 2 - Cohort Analysis with State + P()</h3>
+  <pre data-lang="qlik"><code><span class="cm">// Default state: customers who bought Product A</span>
+<span class="cm">// State Cohort_B: customers who bought Product B</span>
+<span class="cm">// Question: what is the cross-revenue between both groups?</span>
+
+<span class="cm">// Customers exclusive to State A (bought A but not B)</span>
+<span class="fn">Count</span>(
+    {$<span class="set">&lt;CustomerID =
+        P({$} CustomerID)
+        -
+        P({<span class="st">Cohort_B</span>} CustomerID)
+    &gt;</span>}
+    DISTINCT CustomerID
+)
+
+<span class="cm">// Customers in BOTH states (bought A and B)</span>
+<span class="fn">Count</span>(
+    {$<span class="set">&lt;CustomerID =
+        P({$} CustomerID)
+        *
+        P({<span class="st">Cohort_B</span>} CustomerID)
+    &gt;</span>}
+    DISTINCT CustomerID
+)
+
+<span class="cm">// Revenue from overlapping customers</span>
+<span class="fn">Sum</span>(
+    {$<span class="set">&lt;CustomerID =
+        P({$} CustomerID) * P({<span class="st">Cohort_B</span>} CustomerID)
+    &gt;</span>}
+    Revenue
+)</code></pre>
+
+  <h3>Pattern 3 - State + Dynamic Period</h3>
+  <pre data-lang="qlik"><code><span class="cm">// State A: South Region, user's default period</span>
+<span class="cm">// State Period_2: North Region, different period</span>
+
+<span class="cm">// YTD for default selection</span>
+<span class="fn">Sum</span>({$<span class="set">&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)<span class="op">)</span>},
+     Month={"&lt;=<span class="op">$(</span>=<span class="fn">Month</span>(<span class="fn">Today</span>())<span class="op">)</span>"}&gt;</span>} Revenue)
+
+<span class="cm">// YTD for alternate state - same period logic, different selections</span>
+<span class="fn">Sum</span>({<span class="st">Period_2</span><span class="set">&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)<span class="op">)</span>},
+              Month={"&lt;=<span class="op">$(</span>=<span class="fn">Month</span>(<span class="fn">Today</span>())<span class="op">)</span>"}&gt;</span>} Revenue)</code></pre>
+
+  <h3>Pattern 4 - What-If Scenario</h3>
+  <pre data-lang="qlik"><code><span class="cm">// Default state: actual performance</span>
+<span class="cm">// State WhatIf: simulated scenario with different filters</span>
+
+<span class="cm">// Actual</span>
+<span class="fn">Sum</span>({$} Revenue)
+
+<span class="cm">// Simulated: WhatIf state + Premium segment only</span>
+<span class="fn">Sum</span>({<span class="st">WhatIf</span><span class="set">&lt;Segment={'Premium'}&gt;</span>} Revenue)
+
+<span class="cm">// Impact (absolute)</span>
+<span class="fn">Sum</span>({$} Revenue) - <span class="fn">Sum</span>({<span class="st">WhatIf</span>} Revenue)
+
+<span class="cm">// Impact (percentage, signed)</span>
+<span class="fn">Num</span>(
+    (<span class="fn">Sum</span>({$} Revenue) - <span class="fn">Sum</span>({<span class="st">WhatIf</span>} Revenue)) /
+    <span class="fn">Abs</span>(<span class="fn">Sum</span>({<span class="st">WhatIf</span>} Revenue)),
+    '+#,##0.0%;-#,##0.0%;0.0%'
+)</code></pre>
+</section>
+
+<div class="divider"></div>
+
+<section id="s5">
+  <div class="section-label">Section 05 - Reference</div>
+  <h2>Quick Reference and Common Mistakes</h2>
+
+  <h3>Full Syntax Reference</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Expression</th><th>Meaning</th><th>When to Use</th></tr></thead>
+      <tbody>
+        <tr><td><code>Sum({$} Revenue)</code></td><td>Default state (current selections)</td><td>Base reference measure</td></tr>
+        <tr><td><code>Sum({1} Revenue)</code></td><td>All records, ignores selections</td><td>Fixed absolute total</td></tr>
+        <tr><td><code>Sum({Scenario_B} Revenue)</code></td><td>Scenario_B state selections</td><td>A vs B comparison</td></tr>
+        <tr><td><code>Sum({Scenario_B&lt;Status={'Active'}&gt;} Revenue)</code></td><td>State B + additional modifier</td><td>State B with extra condition</td></tr>
+        <tr><td><code>Count({$} DISTINCT ID) - Count({Scenario_B} DISTINCT ID)</code></td><td>Count difference between states</td><td>Customer base growth/decline</td></tr>
+        <tr><td><code>P({$} CustomerID) * P({Scenario_B} CustomerID)</code></td><td>Customer intersection between states</td><td>Basket / cohort analysis</td></tr>
+        <tr><td><code>Sum(TOTAL {Scenario_B} Revenue)</code></td><td>State B total, ignores chart dimensions</td><td>Cross-state share %</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Common Mistakes and Fixes</h3>
+  <div class="grid-2">
+    <div class="card"><div class="card-icon bg-red">✗</div><h4>Wrong State Name Case</h4><p>The name in Set Analysis must be identical to the name created in the interface, including upper/lowercase and underscores. <code>{scenario_b}</code> is different from <code>{Scenario_B}</code>.</p></div>
+    <div class="card"><div class="card-icon bg-red">✗</div><h4>Object Not Assigned to State</h4><p>Creating the state is not enough. Each object (filter pane, button) must be explicitly assigned to the correct state via the properties panel. A filter pane in the default state does not feed an alternate state.</p></div>
+    <div class="card"><div class="card-icon bg-red">✗</div><h4>Chart Responding to Wrong State</h4><p>The comparison chart must be in the default state ($) to show both measures. If the chart itself is assigned to a specific state, it only reflects that state's selections.</p></div>
+    <div class="card"><div class="card-icon bg-red">✗</div><h4>Confusing State with Modifier</h4><p><code>{Scenario_B&lt;Field={'Val'}&gt;}</code> uses State B selections AND adds the modifier. <code>{$&lt;Field={'Val'}&gt;}</code> uses default state with modifier. These are different contexts.</p></div>
+  </div>
+
+  <h3>Production Checklist</h3>
+  <ul class="checklist">
+    <li>Clear naming: <code>Comparison_Period</code> is better than <code>State2</code></li>
+    <li>Document which objects are in which state - use different background colors on filter panes to visually signal the state</li>
+    <li>Limit to 2-3 states per app. More than that usually means the solution architecture needs rethinking</li>
+    <li>Always add a "Clear State" button for each alternate state linked to <code>ClearAll()</code> for that state</li>
+    <li>Use <code>Concat({StateName} DISTINCT Field, ', ')</code> in text objects to show users what is selected in each state</li>
+    <li>Test with empty alternate state: what happens when the user has not selected anything in State B? Does the expression return total or zero?</li>
+    <li>In QlikView, Alternate States exist but the configuration path differs: Tools &gt; Document Properties &gt; Alternate States</li>
+  </ul>
+</section>
+
+<footer>
+  <div class="series-nav">
+    <a href="set-analysis-advanced-part1-operators-modifiers.html" class="series-link">← Part 1: Operators &amp; Modifiers</a>
+    <a href="set-analysis-advanced-part2-periods-indirect-nesting.html" class="series-link">← Part 2: Periods &amp; Nesting</a>
+  </div>
+  <p>Rafael Veloso - Senior BI &amp; Data Engineer</p>
+  <p style="margin-top:8px"><a href="https://radsveloso.github.io/Linkedin/artigos/" target="_blank">radsveloso.github.io/Linkedin/artigos/</a></p>
+  <p style="margin-top:16px;font-size:.78rem;color:var(--text3)">Set Analysis with Alternate States - Part 3 of 3</p>
+</footer>
+
+<script>
+  const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx-5+'px';cur.style.top=my-5+'px'});
+  (function animRing(){rx+=(mx-rx-18)*.12;ry+=(my-ry-18)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)})();
+  const sections=document.querySelectorAll('section,header');
+  const navEl=document.getElementById('nav-dots');
+  sections.forEach((_,i)=>{const b=document.createElement('button');b.className='nav-dot';b.title='Section '+(i+1);b.onclick=()=>sections[i].scrollIntoView({behavior:'smooth'});navEl.appendChild(b)});
+  const dots=navEl.querySelectorAll('.nav-dot');
+  const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');const idx=[...sections].indexOf(e.target);if(idx>=0)dots.forEach((d,i)=>d.classList.toggle('active',i===idx))}})},{threshold:.15});
+  sections.forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>

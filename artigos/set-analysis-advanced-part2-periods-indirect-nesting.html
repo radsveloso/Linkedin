@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Set Analysis in Qlik Sense - Part 2: Periods, Indirect and Nesting</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#08080f;--bg2:#0d0d1a;--bg3:#12121f;
+    --blue:#3b82f6;--blue2:#60a5fa;--blue3:#1d4ed8;
+    --green:#22c55e;--yellow:#eab308;--red:#ef4444;--purple:#a855f7;--orange:#f97316;
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+    --border:#1e293b;--border2:#334155;
+    --font:'Segoe UI',system-ui,sans-serif;--mono:'Cascadia Code','Fira Code',monospace
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.7;cursor:none;overflow-x:hidden}
+  #cursor{width:10px;height:10px;background:var(--blue);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transition:transform .1s;mix-blend-mode:screen}
+  #cursor-ring{width:36px;height:36px;border:1.5px solid var(--blue);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transition:all .18s cubic-bezier(.22,1,.36,1);opacity:.5}
+
+  /* NAV */
+  nav{position:fixed;right:24px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:10px}
+  .nav-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);cursor:pointer;transition:all .3s;border:none;outline:none}
+  .nav-dot:hover,.nav-dot.active{background:var(--blue);transform:scale(1.5)}
+
+  /* HEADER */
+  header{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 24px;position:relative;overflow:hidden}
+  header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 40%,rgba(59,130,246,.12),transparent);pointer-events:none}
+  .badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border:1px solid rgba(59,130,246,.3);border-radius:100px;font-size:.78rem;color:var(--blue2);background:rgba(59,130,246,.06);margin-bottom:32px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:clamp(2rem,5vw,3.6rem);font-weight:800;line-height:1.1;max-width:820px;margin-bottom:24px;letter-spacing:-.02em}
+  h1 span{background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .subtitle{font-size:1.15rem;color:var(--text2);max-width:640px;margin-bottom:48px}
+  .meta-row{display:flex;align-items:center;gap:24px;flex-wrap:wrap;justify-content:center}
+  .meta-chip{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--text3)}
+  .meta-chip svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+  .scroll-hint{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--text3);font-size:.78rem;animation:bounce 2s infinite}
+  @keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+  .scroll-hint svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2}
+
+  /* SECTIONS */
+  section{max-width:900px;margin:0 auto;padding:100px 24px;opacity:0;transform:translateY(30px);transition:all .7s cubic-bezier(.22,1,.36,1)}
+  section.visible{opacity:1;transform:none}
+  .section-label{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:16px;font-weight:600}
+  h2{font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:700;margin-bottom:12px;letter-spacing:-.02em;line-height:1.2}
+  .section-intro{color:var(--text2);font-size:1.05rem;margin-bottom:48px;max-width:700px}
+  h3{font-size:1.15rem;font-weight:700;margin:40px 0 16px;color:var(--blue2)}
+  h4{font-size:.95rem;font-weight:700;margin:24px 0 10px;color:var(--text)}
+  p{color:var(--text2);margin-bottom:16px;font-size:.97rem}
+
+  /* CODE */
+  pre{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:24px;overflow-x:auto;margin:20px 0;position:relative}
+  pre::before{content:attr(data-lang);position:absolute;top:10px;right:14px;font-size:.68rem;color:var(--text3);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase}
+  code{font-family:var(--mono);font-size:.87rem;line-height:1.75;color:#e2e8f0}
+  .kw{color:#93c5fd}  /* keyword */
+  .fn{color:#86efac}  /* function */
+  .str{color:#fca5a5} /* string */
+  .cm{color:#475569}  /* comment */
+  .num{color:#fdba74} /* number */
+  .op{color:#c4b5fd}  /* operator */
+  .var{color:#fde68a} /* variable */
+  .set{color:#6ee7b7} /* set analysis */
+
+  /* CARDS */
+  .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:20px;margin:24px 0}
+  .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin:24px 0}
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;transition:border-color .3s}
+  .card:hover{border-color:var(--border2)}
+  .card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:1.3rem}
+  .card h4{color:var(--text);font-size:1rem;margin:0 0 10px}
+  .card p{font-size:.88rem;margin:0}
+
+  /* BADGE COLORS */
+  .bg-blue{background:rgba(59,130,246,.12)}
+  .bg-green{background:rgba(34,197,94,.12)}
+  .bg-yellow{background:rgba(234,179,8,.12)}
+  .bg-red{background:rgba(239,68,68,.12)}
+  .bg-purple{background:rgba(168,85,247,.12)}
+  .bg-orange{background:rgba(249,115,22,.12)}
+
+  /* COMPARE TABLE */
+  .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+  .compare-card{border-radius:12px;padding:20px}
+  .compare-card.before{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2)}
+  .compare-card.after{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2)}
+  .compare-label{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+  .compare-card.before .compare-label{color:var(--red)}
+  .compare-card.after .compare-label{color:var(--green)}
+
+  /* CALLOUT */
+  .callout{border-radius:12px;padding:20px 24px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+  .callout.info{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2)}
+  .callout.warn{background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.2)}
+  .callout.tip{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)}
+  .callout.danger{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)}
+  .callout-icon{font-size:1.2rem;flex-shrink:0;margin-top:2px}
+  .callout-body{font-size:.9rem;color:var(--text2)}
+  .callout-body strong{color:var(--text)}
+
+  /* CHECKLIST */
+  .checklist{list-style:none;display:flex;flex-direction:column;gap:10px;margin:20px 0}
+  .checklist li{display:flex;align-items:flex-start;gap:12px;font-size:.92rem;color:var(--text2)}
+  .checklist li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;margin-top:2px}
+  .checklist.danger li::before{content:'✗';color:var(--red)}
+
+  /* TABLE */
+  .table-wrap{overflow-x:auto;margin:24px 0}
+  table{width:100%;border-collapse:collapse;font-size:.88rem}
+  th{background:var(--bg3);color:var(--blue2);font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;padding:12px 16px;text-align:left;border-bottom:1px solid var(--border2)}
+  td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+  tr:hover td{background:rgba(255,255,255,.02)}
+  td code{background:var(--bg3);padding:2px 6px;border-radius:4px;font-size:.82rem;color:var(--blue2)}
+
+  /* DIVIDER */
+  .divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:60px 0}
+
+  /* FOOTER */
+  footer{text-align:center;padding:80px 24px;color:var(--text3);font-size:.85rem}
+  footer a{color:var(--blue);text-decoration:none}
+  footer a:hover{text-decoration:underline}
+  .series-nav{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:32px}
+  .series-link{display:flex;align-items:center;gap:8px;padding:10px 20px;border:1px solid var(--border);border-radius:8px;color:var(--text2);text-decoration:none;font-size:.88rem;transition:all .3s}
+  .series-link:hover{border-color:var(--blue);color:var(--blue)}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<nav id="nav-dots"></nav>
+
+<!-- HEADER -->
+<header id="s0">
+  <div class="badge">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+    Advanced Set Analysis | Part 2 of 2
+  </div>
+  <h1>Periods, Indirect Sets<br><span>&amp; Deep Nesting</span></h1>
+  <p class="subtitle">Dynamic period comparisons, variable-driven flexibility, and production-grade patterns for enterprise Qlik Sense dashboards.</p>
+  <div class="meta-row">
+    <span class="meta-chip">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      ~22 min read
+    </span>
+    <span class="meta-chip">
+      <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      Qlik Sense / QlikView
+    </span>
+    <span class="meta-chip">
+      <svg viewBox="0 0 24 24"><path d="M2 20h20M6 20V10M12 20V4M18 20v-6"/></svg>
+      Expert Level
+    </span>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+  </div>
+</header>
+
+<!-- SECTION 1 - PERIOD COMPARISONS -->
+<section id="s1">
+  <div class="section-label">Section 01 - Temporal Intelligence</div>
+  <h2>Dynamic Period Comparisons</h2>
+  <p class="section-intro">Hardcoding years in Set Analysis is the most common mistake in production dashboards. Every comparison - YTD, LY, QTD, Rolling 12M - must self-adjust as time moves forward.</p>
+
+  <h3>The Cardinal Rule: Never Hardcode Dates</h3>
+  <div class="compare-grid">
+    <div class="compare-card before">
+      <div class="compare-label">Wrong - Hardcoded</div>
+      <pre data-lang="qlik"><code><span class="cm">// Breaks every Jan 1st</span>
+<span class="fn">Sum</span>(<span class="set">{&lt;Year={2024}&gt;}</span> Sales)
+
+<span class="cm">// Needs manual update every year</span>
+<span class="fn">Sum</span>(<span class="set">{&lt;Year={2024},Month={&lt;=3}&gt;}</span>
+    Sales)</code></pre>
+    </div>
+    <div class="compare-card after">
+      <div class="compare-label">Correct - Dynamic</div>
+      <pre data-lang="qlik"><code><span class="cm">// Always current year</span>
+<span class="fn">Sum</span>(<span class="set">{&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>(Year)<span class="op">)</span>}&gt;}</span> Sales)
+
+<span class="cm">// Always current year, Q1-present</span>
+<span class="fn">Sum</span>(<span class="set">{$&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>(Year)<span class="op">)</span>},
+    Month={<span class="op">$(</span>=<span class="fn">Month</span>(<span class="fn">Today</span>())<span class="op">)</span>}&gt;}</span>
+    Sales)</code></pre>
+    </div>
+  </div>
+
+  <h3>YTD - Year to Date</h3>
+  <p>Returns all data from January 1st of the current year through today's date:</p>
+  <pre data-lang="qlik"><code><span class="cm">// Pattern 1 - using Year + Month modifiers</span>
+<span class="fn">Sum</span>({$<span class="set">&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)<span class="op">)</span>},
+     Month={"<span class="op">&lt;=</span><span class="op">$(</span>=<span class="fn">Month</span>(<span class="fn">Today</span>())<span class="op">)</span>"}&gt;</span>} Sales)
+
+<span class="cm">// Pattern 2 - using Date range with YearStart()</span>
+<span class="fn">Sum</span>({$<span class="set">&lt;Date={"<span class="op">&gt;=</span><span class="op">$(</span>=<span class="fn">YearStart</span>(<span class="fn">Today</span>())<span class="op">)</span>&lt;<span class="op">$(</span>=<span class="fn">Today</span>()<span class="op">)</span>"}&gt;</span>} Sales)
+
+<span class="cm">// Pattern 3 - most readable (recommended)</span>
+<span class="fn">Sum</span>({1<span class="set">&lt;Date={<span class="op">$(</span>=<span class="fn">Chr</span>(34)&amp;<span class="fn">YearStart</span>(<span class="fn">Today</span>())&amp;<span class="fn">Chr</span>(34)
+           &amp;"&lt;"&amp;<span class="fn">Chr</span>(34)&amp;<span class="fn">Today</span>()&amp;<span class="fn">Chr</span>(34)}&gt;</span>} Sales)</code></pre>
+
+  <div class="callout info">
+    <span class="callout-icon">💡</span>
+    <div class="callout-body">
+      <strong>Max({1}Year) vs Max(Year):</strong> Using <code>{1}</code> bypasses all selections, so the maximum year returned is always the global maximum in the data model - not filtered by current user selections. Use this when the "current year" anchor must be independent of what the user has selected.
+    </div>
+  </div>
+
+  <h3>LY - Last Year</h3>
+  <p>Same period as YTD but one year earlier. The key is subtracting 1 from the dynamic year:</p>
+  <pre data-lang="qlik"><code><span class="cm">// LY - same months as current YTD, prior year</span>
+<span class="fn">Sum</span>({$<span class="set">&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)-1<span class="op">)</span>},
+     Month={"<span class="op">&lt;=</span><span class="op">$(</span>=<span class="fn">Month</span>(<span class="fn">Today</span>())<span class="op">)</span>"}&gt;</span>} Sales)
+
+<span class="cm">// YoY Growth % - complete KPI expression</span>
+<span class="fn">Num</span>(
+    (<span class="fn">Sum</span>({$} Sales) / <span class="fn">Sum</span>({$<span class="set">&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)-1<span class="op">)</span>}&gt;</span>} Sales)) - 1,
+    '+#,##0.0%;-#,##0.0%;0.0%'
+)
+
+<span class="cm">// Full year LY (not YTD-aligned)</span>
+<span class="fn">Sum</span>({1<span class="set">&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)-1<span class="op">)</span>}&gt;</span>} Sales)</code></pre>
+
+  <h3>QTD - Quarter to Date</h3>
+  <p>Current quarter only, dynamically computed from today's date:</p>
+  <pre data-lang="qlik"><code><span class="cm">// QTD - current quarter using QuarterStart()</span>
+<span class="fn">Sum</span>({$<span class="set">&lt;Date={"<span class="op">&gt;=</span><span class="op">$(</span>=<span class="fn">QuarterStart</span>(<span class="fn">Today</span>())<span class="op">)</span>"}&gt;</span>} Sales)
+
+<span class="cm">// Quarter number modifier - cleaner for month-based models</span>
+<span class="fn">Sum</span>({$<span class="set">&lt;Year={<span class="op">$(</span>=<span class="fn">Year</span>(<span class="fn">Today</span>())<span class="op">)</span>},
+     Quarter={<span class="op">$(</span>=<span class="fn">Ceil</span>(<span class="fn">Month</span>(<span class="fn">Today</span>())/3)<span class="op">)</span>}&gt;</span>} Sales)
+
+<span class="cm">// LQT - Last Quarter Total</span>
+<span class="fn">Sum</span>({1<span class="set">&lt;Date={"<span class="op">&gt;=</span><span class="op">$(</span>=<span class="fn">QuarterStart</span>(<span class="fn">AddMonths</span>(<span class="fn">Today</span>(),-3))<span class="op">)</span>
+              &lt;<span class="op">$(</span>=<span class="fn">QuarterStart</span>(<span class="fn">Today</span>())<span class="op">)</span>"}&gt;</span>} Sales)</code></pre>
+
+  <h3>Rolling 12 Months (R12M)</h3>
+  <p>The most powerful trend indicator - a true rolling window that moves with every passing month:</p>
+  <pre data-lang="qlik"><code><span class="cm">// Rolling 12M - last 365 days from today</span>
+<span class="fn">Sum</span>({$<span class="set">&lt;Date={"<span class="op">&gt;=</span><span class="op">$(</span>=<span class="fn">AddMonths</span>(<span class="fn">Today</span>(),-12)<span class="op">)</span>"}&gt;</span>} Sales)
+
+<span class="cm">// Rolling 12M - month-aligned (cleaner for YoY comparison)</span>
+<span class="fn">Sum</span>({$<span class="set">&lt;Date={"<span class="op">&gt;=</span><span class="op">$(</span>=<span class="fn">MonthStart</span>(<span class="fn">AddMonths</span>(<span class="fn">Today</span>(),-12))<span class="op">)</span>
+              &lt;<span class="op">$(</span>=<span class="fn">MonthStart</span>(<span class="fn">Today</span>())<span class="op">)</span>"}&gt;</span>} Sales)
+
+<span class="cm">// R12M vs Prior R12M</span>
+<span class="var">R12M_Current:</span>
+<span class="fn">Sum</span>({$<span class="set">&lt;Date={"<span class="op">&gt;=</span><span class="op">$(</span>=<span class="fn">AddMonths</span>(<span class="fn">Today</span>(),-12)<span class="op">)</span>"}&gt;</span>} Sales)
+
+<span class="var">R12M_Prior:</span>
+<span class="fn">Sum</span>({$<span class="set">&lt;Date={"<span class="op">&gt;=</span><span class="op">$(</span>=<span class="fn">AddMonths</span>(<span class="fn">Today</span>(),-24)<span class="op">)</span>
+              &lt;<span class="op">$(</span>=<span class="fn">AddMonths</span>(<span class="fn">Today</span>(),-12)<span class="op">)</span>"}&gt;</span>} Sales)</code></pre>
+
+  <div class="callout tip">
+    <span class="callout-icon">✅</span>
+    <div class="callout-body">
+      <strong>Production tip:</strong> For dashboards with both YTD and R12M KPIs, define the date anchors as variables in the data load script (<code>LET vMaxDate = Date(Max(SaleDate))</code>) rather than computing <code>Today()</code> in every expression. This ensures temporal consistency across all KPIs and allows you to test with historical data.
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION 2 - INDIRECT SET ANALYSIS -->
+<section id="s2">
+  <div class="section-label">Section 02 - DRY Architecture</div>
+  <h2>Indirect Set Analysis</h2>
+  <p class="section-intro">When the same filter logic appears in 15 expressions, changing one condition means 15 edits and 15 opportunities for bugs. Indirect Set Analysis solves this with variables as single sources of truth.</p>
+
+  <h3>Pattern 1 - Field Value Variables</h3>
+  <p>The simplest form: a variable holds a filter value used across multiple expressions.</p>
+  <pre data-lang="qlik"><code><span class="cm">// In the load script or Variables panel:</span>
+<span class="kw">LET</span> <span class="var">vActiveStatus</span> = <span class="str">'Active'</span>;
+<span class="kw">LET</span> <span class="var">vKeyAccount</span>  = <span class="str">'Key Account'</span>;
+<span class="kw">LET</span> <span class="var">vCurrentYear</span> = <span class="fn">Year</span>(<span class="fn">Today</span>());
+
+<span class="cm">// Usage - clean and consistent across all objects</span>
+<span class="fn">Sum</span>({$<span class="set">&lt;Status={'<span class="op">$(</span><span class="var">vActiveStatus</span><span class="op">)</span>'}&gt;</span>} Revenue)
+<span class="fn">Count</span>({$<span class="set">&lt;CustomerTier={'<span class="op">$(</span><span class="var">vKeyAccount</span><span class="op">)</span>'},Status={'<span class="op">$(</span><span class="var">vActiveStatus</span><span class="op">)</span>'}&gt;</span>} DISTINCT CustomerID)
+<span class="fn">Sum</span>({$<span class="set">&lt;Year={'<span class="op">$(</span><span class="var">vCurrentYear</span><span class="op">)</span>'}&gt;</span>} Revenue)</code></pre>
+
+  <h3>Pattern 2 - Full Set Analysis in a Variable</h3>
+  <p>The variable holds the <em>entire</em> set modifier. This enables true single-point-of-change architecture:</p>
+  <pre data-lang="qlik"><code><span class="cm">// Variable contains the complete set modifier</span>
+<span class="kw">LET</span> <span class="var">vSetStrategic</span> = <span class="str">"&lt;CustomerTier={'Strategic'},Status={'Active'}&gt;"</span>;
+<span class="kw">LET</span> <span class="var">vSetYTD</span>       = <span class="str">"&lt;Year={'$(=Max({1}Year))'},Month={'&lt;=$(=Month(Today()))'}&gt;"</span>;
+
+<span class="cm">// These two expressions are now DRY - change the variable, update everywhere</span>
+<span class="fn">Sum</span>({$<span class="op">$(</span><span class="var">vSetStrategic</span><span class="op">)</span>} Revenue)
+<span class="fn">Count</span>({$<span class="op">$(</span><span class="var">vSetStrategic</span><span class="op">)</span>} DISTINCT CustomerID)
+
+<span class="fn">Sum</span>({$<span class="op">$(</span><span class="var">vSetYTD</span><span class="op">)</span>} Revenue)
+<span class="fn">Avg</span>({$<span class="op">$(</span><span class="var">vSetYTD</span><span class="op">)</span>} TicketSize)</code></pre>
+
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <div class="callout-body">
+      <strong>Quoting gotcha:</strong> When a variable contains a full set modifier string, use <code>$(vMySet)</code> without extra braces. The expansion inserts the literal string <code>&lt;Field={'Value'}&gt;</code> directly into the expression. Adding <code>{}</code> around the variable is a common mistake that produces syntax errors.
+    </div>
+  </div>
+
+  <h3>Pattern 3 - Toggle Mode with If()</h3>
+  <p>The most powerful indirect pattern: a variable acts as a switch between two different data contexts. Critical rule: the If() must be at the expression level, not inside the aggregation.</p>
+
+  <div class="compare-grid">
+    <div class="compare-card before">
+      <div class="compare-label">Wrong - If() inside aggregation</div>
+      <pre data-lang="qlik"><code><span class="cm">// This does NOT toggle the Set context</span>
+<span class="cm">// It filters rows AFTER aggregation</span>
+<span class="fn">Sum</span>(<span class="kw">If</span>(<span class="var">vMode</span>=1,
+    <span class="set">{&lt;Status={'Active'}&gt;}</span> Rev,
+    <span class="set">{&lt;Status={'All'}&gt;}</span> Rev))</code></pre>
+    </div>
+    <div class="compare-card after">
+      <div class="compare-label">Correct - If() at expression level</div>
+      <pre data-lang="qlik"><code><span class="cm">// This properly toggles the Set Analysis</span>
+<span class="kw">If</span>(<span class="var">vMode</span>=1,
+    <span class="fn">Sum</span>(<span class="set">{&lt;Status={'Active'}&gt;}</span> Revenue),
+    <span class="fn">Sum</span>(<span class="set">{&lt;Status={'Churned'}&gt;}</span> Revenue)
+)</code></pre>
+    </div>
+  </div>
+
+  <h4>Full toggle pattern with variable-controlled mode</h4>
+  <pre data-lang="qlik"><code><span class="cm">// vDisplayMode is set by a button or input box (0 or 1)</span>
+<span class="cm">// Button Action: Set variable vDisplayMode to '1' (or toggle)</span>
+
+<span class="cm">// KPI expression with toggle</span>
+<span class="kw">If</span>(<span class="var">vDisplayMode</span> = 0,
+
+    <span class="cm">// Mode 0: Current Year Performance</span>
+    <span class="fn">Sum</span>({$<span class="set">&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)<span class="op">)</span>}&gt;</span>} Revenue),
+
+    <span class="cm">// Mode 1: Prior Year Performance</span>
+    <span class="fn">Sum</span>({$<span class="set">&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)-1<span class="op">)</span>}&gt;</span>} Revenue)
+)
+
+<span class="cm">// Dynamic label for the KPI title</span>
+<span class="kw">If</span>(<span class="var">vDisplayMode</span> = 0,
+    <span class="str">'Revenue '</span> &amp; <span class="fn">Max</span>({1}Year),
+    <span class="str">'Revenue '</span> &amp; (<span class="fn">Max</span>({1}Year)-1)
+)</code></pre>
+
+  <h3>Pattern 4 - Parameterized Set with Multiple Variables</h3>
+  <pre data-lang="qlik"><code><span class="cm">// Variables set by user input or app logic</span>
+<span class="kw">LET</span> <span class="var">vRegionFilter</span>  = <span class="str">'North America'</span>;
+<span class="kw">LET</span> <span class="var">vChannelFilter</span> = <span class="str">'Online'</span>;
+<span class="kw">LET</span> <span class="var">vProductFilter</span> = <span class="str">'*'</span>;  <span class="cm">// wildcard = all</span>
+
+<span class="cm">// Single expression, parametrized via variables</span>
+<span class="fn">Sum</span>({$<span class="set">&lt;
+    Region   = {'<span class="op">$(</span><span class="var">vRegionFilter</span><span class="op">)</span>'},
+    Channel  = {'<span class="op">$(</span><span class="var">vChannelFilter</span><span class="op">)</span>'},
+    Product  = {'<span class="op">$(</span><span class="var">vProductFilter</span><span class="op">)</span>'}
+&gt;</span>} Revenue)</code></pre>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION 3 - NESTING -->
+<section id="s3">
+  <div class="section-label">Section 03 - Deep Nesting</div>
+  <h2>Nested Set Analysis</h2>
+  <p class="section-intro">Nesting brings Set Analysis to its full power: P() and E() element functions can be composed with operators and modifiers, enabling cohort detection, cross-field filtering, and multi-dimensional analysis that would be impossible with simple modifiers.</p>
+
+  <h3>Quick P() and E() Recap</h3>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-icon bg-blue">P</div>
+      <h4>P() - Possible Values</h4>
+      <p>Returns the set of field values that exist in the <em>qualifying</em> records of a set expression. Used to bring associated values into a modifier.</p>
+      <pre data-lang="qlik"><code><span class="cm">// Customers who bought in 2024</span>
+<span class="set">CustomerID = P({&lt;Year={2024}&gt;} CustomerID)</span></code></pre>
+    </div>
+    <div class="card">
+      <div class="card-icon bg-purple">E</div>
+      <h4>E() - Excluded Values</h4>
+      <p>Returns values that are <em>excluded</em> from the qualifying set. The logical complement of P(). Essential for "never bought" or churned customer patterns.</p>
+      <pre data-lang="qlik"><code><span class="cm">// Customers who never bought in 2024</span>
+<span class="set">CustomerID = E({&lt;Year={2024}&gt;} CustomerID)</span></code></pre>
+    </div>
+  </div>
+
+  <h3>Multi-Level Nesting</h3>
+  <p>P() inside P() - each level further restricts the cohort. Read inside out:</p>
+  <pre data-lang="qlik"><code><span class="cm">// Level 1: Customers who purchased Product A</span>
+<span class="cm">// Level 2: From those, who also purchased Product B</span>
+<span class="cm">// Count of those cross-buy customers in current selections</span>
+<span class="fn">Count</span>(
+    {$<span class="set">&lt;CustomerID =
+        P({$&lt;Product={'B'}&gt;}
+            P({$&lt;Product={'A'}&gt;} CustomerID)
+         )
+    &gt;</span>}
+    DISTINCT CustomerID
+)
+
+<span class="cm">// 3-level: Customers in Strategic tier, who bought in Q4,</span>
+<span class="cm">// and who also bought in Q1 of the following year (loyalty signal)</span>
+<span class="fn">Count</span>(
+    {$<span class="set">&lt;CustomerID =
+        P({$&lt;Quarter={1},Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)<span class="op">)</span>}&gt;}
+            P({$&lt;Quarter={4},Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)-1<span class="op">)</span>}&gt;}
+                P({$&lt;Tier={'Strategic'}&gt;} CustomerID)
+             )
+         )
+    &gt;</span>}
+    DISTINCT CustomerID
+)</code></pre>
+
+  <h3>P() Combined with Set Operators</h3>
+  <pre data-lang="qlik"><code><span class="cm">// Customers who bought A OR B (Union)</span>
+<span class="fn">Count</span>({$<span class="set">&lt;CustomerID =
+    P({$&lt;Product={'A'}&gt;} CustomerID)
+    +
+    P({$&lt;Product={'B'}&gt;} CustomerID)
+&gt;</span>} DISTINCT CustomerID)
+
+<span class="cm">// Customers who bought A AND B (Intersection)</span>
+<span class="fn">Count</span>({$<span class="set">&lt;CustomerID =
+    P({$&lt;Product={'A'}&gt;} CustomerID)
+    *
+    P({$&lt;Product={'B'}&gt;} CustomerID)
+&gt;</span>} DISTINCT CustomerID)
+
+<span class="cm">// Customers who bought A but NOT B (Difference)</span>
+<span class="fn">Count</span>({$<span class="set">&lt;CustomerID =
+    P({$&lt;Product={'A'}&gt;} CustomerID)
+    -
+    P({$&lt;Product={'B'}&gt;} CustomerID)
+&gt;</span>} DISTINCT CustomerID)</code></pre>
+
+  <h3>TOTAL Qualifier with Set Analysis</h3>
+  <p>TOTAL bypasses chart dimensions but does not bypass Set Analysis. Combining them enables percentage-of-total calculations with full filter awareness:</p>
+  <pre data-lang="qlik"><code><span class="cm">// % share of each product within current selections</span>
+<span class="cm">// (TOTAL still respects Set Analysis filters)</span>
+<span class="fn">Sum</span>({$} Revenue) /
+<span class="fn">Sum</span>(<span class="kw">TOTAL</span> {$} Revenue)
+
+<span class="cm">// % of YTD sales per region, out of full YTD total</span>
+<span class="fn">Sum</span>({$<span class="set">&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)<span class="op">)</span>}&gt;</span>} Revenue) /
+<span class="fn">Sum</span>(<span class="kw">TOTAL</span> {$<span class="set">&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)<span class="op">)</span>}&gt;</span>} Revenue)
+
+<span class="cm">// % vs unfiltered total (ignores ALL selections)</span>
+<span class="fn">Sum</span>({$} Revenue) /
+<span class="fn">Sum</span>(<span class="kw">TOTAL</span> {1} Revenue)</code></pre>
+
+  <div class="callout info">
+    <span class="callout-icon">💡</span>
+    <div class="callout-body">
+      <strong>TOTAL scope:</strong> <code>TOTAL &lt;DimA&gt;</code> computes the total while keeping DimA in scope and removing all other dimensions. This lets you calculate "% of dimension A subtotal" rather than grand total. Example: <code>Sum(TOTAL &lt;Region&gt; {$} Revenue)</code> returns the regional total regardless of other chart dimensions.
+    </div>
+  </div>
+
+  <h3>Cross-Field P() - The Cohort Bridge</h3>
+  <p>P() does not have to return the same field it filters on. This enables cross-field cohort bridges:</p>
+  <pre data-lang="qlik"><code><span class="cm">// Products purchased by customers in 'Strategic' tier</span>
+<span class="cm">// (bridge: Customer filter → Product set)</span>
+<span class="fn">Sum</span>({$<span class="set">&lt;ProductID =
+    P({$&lt;CustomerTier={'Strategic'}&gt;} ProductID)
+&gt;</span>} Revenue)
+
+<span class="cm">// Orders from cities where we have physical stores</span>
+<span class="fn">Sum</span>({$<span class="set">&lt;CityID =
+    P({1&lt;HasPhysicalStore={'Yes'}&gt;} CityID)
+&gt;</span>} OnlineRevenue)
+
+<span class="cm">// Sales reps who hit quota last year</span>
+<span class="fn">Count</span>({$<span class="set">&lt;SalesRepID =
+    P({1&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)-1<span class="op">)</span>},
+         QuotaAchieved={'Yes'}&gt;} SalesRepID)
+&gt;</span>} DISTINCT OpportunityID)</code></pre>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION 4 - PRODUCTION PATTERNS -->
+<section id="s4">
+  <div class="section-label">Section 04 - Production Patterns</div>
+  <h2>Enterprise-Grade Expressions</h2>
+  <p class="section-intro">Four battle-tested patterns you can drop into any Qlik Sense project. Each one combines the techniques from both parts of this series.</p>
+
+  <h3>Pattern 1 - KPI Card with YoY Variation</h3>
+  <pre data-lang="qlik"><code><span class="cm">// === KPI: Current Revenue ===</span>
+<span class="fn">Sum</span>({$} Revenue)
+
+<span class="cm">// === KPI: YoY % Variation (with color-coded formatting) ===</span>
+<span class="fn">Num</span>(
+    (<span class="fn">Sum</span>({$} Revenue) /
+     <span class="fn">Sum</span>({$<span class="set">&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)-1<span class="op">)</span>}&gt;</span>} Revenue)) - 1,
+    '+#,##0.0%;-#,##0.0%;0.0%'
+)
+
+<span class="cm">// === Background color expression (green = positive, red = negative) ===</span>
+<span class="kw">If</span>(
+    (<span class="fn">Sum</span>({$} Revenue) / <span class="fn">Sum</span>({$<span class="set">&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)-1<span class="op">)</span>}&gt;</span>} Revenue)) - 1 > 0,
+    <span class="fn">RGB</span>(34,197,94),   <span class="cm">// Green</span>
+    <span class="fn">RGB</span>(239,68,68)    <span class="cm">// Red</span>
+)
+
+<span class="cm">// === Trend icon ===</span>
+<span class="kw">If</span>(
+    (<span class="fn">Sum</span>({$} Revenue) / <span class="fn">Sum</span>({$<span class="set">&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)-1<span class="op">)</span>}&gt;</span>} Revenue)) - 1 > 0,
+    <span class="str">'▲'</span>,
+    <span class="str">'▼'</span>
+)</code></pre>
+
+  <h3>Pattern 2 - Active Customers &amp; Churn Detection</h3>
+  <pre data-lang="qlik"><code><span class="cm">// === Active customers: purchased in last 90 days ===</span>
+<span class="fn">Count</span>(
+    {$<span class="set">&lt;CustomerID =
+        P({1&lt;OrderDate={"<span class="op">&gt;=</span><span class="op">$(</span>=<span class="fn">Today</span>()-90<span class="op">)</span>"}&gt;}
+            CustomerID)
+    &gt;</span>}
+    DISTINCT CustomerID
+)
+
+<span class="cm">// === Churned: bought last year but NOT in last 90 days ===</span>
+<span class="fn">Count</span>(
+    {$<span class="set">&lt;CustomerID =
+        P({1&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)-1<span class="op">)</span>}&gt;} CustomerID)
+        -
+        P({1&lt;OrderDate={"<span class="op">&gt;=</span><span class="op">$(</span>=<span class="fn">Today</span>()-90<span class="op">)</span>"}&gt;} CustomerID)
+    &gt;</span>}
+    DISTINCT CustomerID
+)
+
+<span class="cm">// === Churn rate ===</span>
+<span class="fn">Num</span>(
+    <span class="fn">Count</span>({$<span class="set">&lt;CustomerID =
+        P({1&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)-1<span class="op">)</span>}&gt;} CustomerID)
+        -
+        P({1&lt;OrderDate={"<span class="op">&gt;=</span><span class="op">$(</span>=<span class="fn">Today</span>()-90<span class="op">)</span>"}&gt;} CustomerID)
+    &gt;</span>} DISTINCT CustomerID)
+    /
+    <span class="fn">Count</span>({$<span class="set">&lt;CustomerID =
+        P({1&lt;Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)-1<span class="op">)</span>}&gt;} CustomerID)
+    &gt;</span>} DISTINCT CustomerID),
+    '#,##0.0%'
+)</code></pre>
+
+  <h3>Pattern 3 - Pareto Analysis (80/20)</h3>
+  <pre data-lang="qlik"><code><span class="cm">// === Running cumulative % share ===</span>
+<span class="cm">// (sort the chart by Revenue descending)</span>
+<span class="fn">RangeSum</span>(<span class="kw">Above</span>(<span class="fn">Sum</span>({$} Revenue), 0, <span class="fn">RowNo</span>())) /
+<span class="fn">Sum</span>(<span class="kw">TOTAL</span> {$} Revenue)
+
+<span class="cm">// === Flag products in top 80% ===</span>
+<span class="kw">If</span>(
+    <span class="fn">RangeSum</span>(<span class="kw">Above</span>(<span class="fn">Sum</span>({$} Revenue), 0, <span class="fn">RowNo</span>())) /
+    <span class="fn">Sum</span>(<span class="kw">TOTAL</span> {$} Revenue) &lt;= 0.8,
+    <span class="str">'Top 80%'</span>,
+    <span class="str">'Long Tail'</span>
+)
+
+<span class="cm">// === Revenue from top 80% products ===</span>
+<span class="fn">Sum</span>({$<span class="set">&lt;ProductID =
+    P({$&lt;ParetoCategory={'Top 80%'}&gt;} ProductID)
+&gt;</span>} Revenue)
+<span class="cm">// Note: ParetoCategory must be a field in the data model,</span>
+<span class="cm">// or use a calculated dimension approach in a straight table</span></code></pre>
+
+  <h3>Pattern 4 - Budget vs. Actual with Completeness Guard</h3>
+  <pre data-lang="qlik"><code><span class="cm">// === Actual (from selections) ===</span>
+<span class="fn">Sum</span>({$<span class="set">&lt;RecordType={'Actual'}&gt;</span>} Amount)
+
+<span class="cm">// === Budget (locked - never filtered by user) ===</span>
+<span class="fn">Sum</span>({1<span class="set">&lt;RecordType={'Budget'},
+     Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)<span class="op">)</span>}&gt;</span>} Amount)
+
+<span class="cm">// === Attainment % with null guard ===</span>
+<span class="kw">If</span>(
+    <span class="fn">Sum</span>({1<span class="set">&lt;RecordType={'Budget'}&gt;</span>} Amount) > 0,
+    <span class="fn">Num</span>(
+        <span class="fn">Sum</span>({$<span class="set">&lt;RecordType={'Actual'}&gt;</span>} Amount) /
+        <span class="fn">Sum</span>({1<span class="set">&lt;RecordType={'Budget'}&gt;</span>} Amount),
+        '#,##0.0%'
+    ),
+    <span class="str">'No Budget'</span>
+)
+
+<span class="cm">// === Gap (Actual minus Budget) ===</span>
+<span class="fn">Sum</span>({$<span class="set">&lt;RecordType={'Actual'}&gt;</span>} Amount)
+-
+<span class="fn">Sum</span>({1<span class="set">&lt;RecordType={'Budget'},
+     Year={<span class="op">$(</span>=<span class="fn">Max</span>({1}Year)<span class="op">)</span>}&gt;</span>} Amount)</code></pre>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION 5 - DEBUG -->
+<section id="s5">
+  <div class="section-label">Section 05 - Troubleshooting</div>
+  <h2>Debug Techniques &amp; Common Mistakes</h2>
+  <p class="section-intro">Set Analysis expressions fail silently - instead of errors, they return 0 or NULL. Here is a systematic approach to isolate exactly where an expression breaks down.</p>
+
+  <h3>3-Step Isolation Protocol</h3>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-icon bg-blue">1</div>
+      <h4>Isolate the Set</h4>
+      <p>Replace the aggregation with Count() and verify the record count is what you expect before worrying about the measure.</p>
+      <pre data-lang="qlik"><code><span class="cm">// Replace this...</span>
+<span class="fn">Sum</span>({<span class="var">$set</span>} Revenue)
+<span class="cm">// ...with this first</span>
+<span class="fn">Count</span>({<span class="var">$set</span>} CustomerID)</code></pre>
+    </div>
+    <div class="card">
+      <div class="card-icon bg-purple">2</div>
+      <h4>Verify Dollar-Sign Expansion</h4>
+      <p>Add a text box showing the raw expansion result. If the value is wrong, the set cannot work correctly.</p>
+      <pre data-lang="qlik"><code><span class="cm">// Text box expression</span>
+<span class="str">'Max Year: '</span>
+  &amp; <span class="fn">Max</span>({1}Year)
+<span class="str">'Today: '</span>
+  &amp; <span class="fn">Today</span>()
+<span class="str">'vMyVar: '</span>
+  &amp; <span class="op">$(</span><span class="var">vMyVar</span><span class="op">)</span></code></pre>
+    </div>
+    <div class="card">
+      <div class="card-icon bg-green">3</div>
+      <h4>Build Incrementally</h4>
+      <p>Start with the simplest valid set and add modifiers one at a time. The step that breaks it is the bug.</p>
+      <pre data-lang="qlik"><code><span class="fn">Count</span>({1} OrderID)
+<span class="fn">Count</span>({$} OrderID)
+<span class="fn">Count</span>({$<span class="set">&lt;Region={'US'}&gt;</span>} OrderID)
+<span class="fn">Count</span>({$<span class="set">&lt;Region={'US'},Year={2024}&gt;</span>} OrderID)</code></pre>
+    </div>
+  </div>
+
+  <h3>8 Common Mistakes and Fixes</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Mistake</th><th>Symptom</th><th>Fix</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Hardcoded year in modifier</td>
+          <td>Correct today, wrong next year</td>
+          <td>Use <code>{$(=Max({1}Year))}</code></td>
+        </tr>
+        <tr>
+          <td>Missing quotes around expression</td>
+          <td>Returns 0 or ignored</td>
+          <td><code>Field={"&gt;=$(=Min(Date))"}</code> - curly + double quotes</td>
+        </tr>
+        <tr>
+          <td>Set 1 when set $ was intended</td>
+          <td>Ignores all user selections</td>
+          <td>Check whether you need {1} or {$} as identifier</td>
+        </tr>
+        <tr>
+          <td>If() inside aggregation for toggle</td>
+          <td>Toggle appears to work but uses wrong set context</td>
+          <td>Move If() outside - wrap the entire aggregation</td>
+        </tr>
+        <tr>
+          <td>P() on a field with no association</td>
+          <td>Always returns empty or full set</td>
+          <td>Verify the data model - fields must be in related tables</td>
+        </tr>
+        <tr>
+          <td>Variable with quotes inside modifier</td>
+          <td>Syntax error or wrong filter value</td>
+          <td>Test the raw expansion: <code>'vMyVar = ' &amp; vMyVar</code></td>
+        </tr>
+        <tr>
+          <td>Forgetting <code>{1}</code> inside P() for global cohort</td>
+          <td>Cohort changes with user selections</td>
+          <td><code>P({1&lt;...&gt;} Field)</code> for a fixed reference cohort</td>
+        </tr>
+        <tr>
+          <td>TOTAL without Set Analysis on % expressions</td>
+          <td>Denominator changes unexpectedly with selections</td>
+          <td>Add explicit set to TOTAL: <code>Sum(TOTAL {$} Revenue)</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Complete Mastery Checklist - Both Parts</h3>
+  <ul class="checklist">
+    <li>Understand set identifiers: <code>{1}</code>, <code>{$}</code>, <code>{$_1}</code>, named bookmarks</li>
+    <li>Combine set operators (+, -, *, /) to build union, intersection, and complement sets</li>
+    <li>Write modifiers using direct assignment, exclusion (<code>=</code>), expression-derived, and wildcards</li>
+    <li>Apply dollar-sign expansion safely, including <code>$(#var)</code> for locale-safe numbers</li>
+    <li>Use P() and E() for cohort filtering and cross-field bridges</li>
+    <li>Write fully dynamic period comparisons (YTD, LY, QTD, R12M) that never require manual updates</li>
+    <li>Implement indirect Set Analysis with variables as DRY filter containers</li>
+    <li>Apply the If() toggle pattern at expression level - never inside the aggregation</li>
+    <li>Compose multi-level P() nesting for advanced cohort logic</li>
+    <li>Combine TOTAL qualifier with Set Analysis for correct % share calculations</li>
+    <li>Build production KPIs: YoY variation, churn detection, Pareto, budget vs actual</li>
+    <li>Debug silently failing expressions with the 3-step isolation protocol</li>
+  </ul>
+</section>
+
+<footer>
+  <div class="series-nav">
+    <a href="set-analysis-advanced-part1-operators-modifiers.html" class="series-link">← Part 1: Operators &amp; Modifiers</a>
+    <a href="set-analysis-alternate-states-complete-guide.html" class="series-link">Part 3: Alternate States →</a>
+  </div>
+  <p>Rafael Veloso &bull; Senior BI &amp; Data Engineer</p>
+  <p style="margin-top:8px"><a href="https://radsveloso.github.io/Linkedin/artigos/" target="_blank">radsveloso.github.io/Linkedin/artigos/</a></p>
+  <p style="margin-top:16px;font-size:.78rem;color:var(--text3)">Advanced Qlik Sense Set Analysis | Part 2 of 3</p>
+</footer>
+
+<script>
+  // Cursor
+  const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx-5+'px';cur.style.top=my-5+'px'});
+  (function animRing(){rx+=(mx-rx-18)*.12;ry+=(my-ry-18)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)})();
+
+  // Sections
+  const sections=document.querySelectorAll('section,header');
+  const navEl=document.getElementById('nav-dots');
+  sections.forEach((_,i)=>{const b=document.createElement('button');b.className='nav-dot';b.title='Section '+(i+1);b.onclick=()=>sections[i].scrollIntoView({behavior:'smooth'});navEl.appendChild(b)});
+  const dots=navEl.querySelectorAll('.nav-dot');
+
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('visible');
+        const idx=[...sections].indexOf(e.target);
+        if(idx>=0)dots.forEach((d,i)=>d.classList.toggle('active',i===idx));
+      }
+    });
+  },{threshold:.15});
+  sections.forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>

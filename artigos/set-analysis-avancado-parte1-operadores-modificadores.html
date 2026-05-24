@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="color-scheme" content="dark"/>
+<title>Set Analysis Avançado Parte 1: Operadores, Modificadores e Dollar-Sign Expansion</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{background:#08080f;}
+body{background:#08080f !important;color:#e2e8f0 !important;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.7;cursor:none;}
+.cursor{position:fixed;width:12px;height:12px;background:#3b82f6;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .15s ease;}
+.cursor-ring{position:fixed;width:36px;height:36px;border:1.5px solid rgba(59,130,246,.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .25s ease,width .2s,height .2s;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,8,15,.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(59,130,246,.15);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{font-size:.85rem;font-weight:700;color:#3b82f6;letter-spacing:.12em;text-transform:uppercase;}
+.nav-dots{display:flex;gap:8px;}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:rgba(59,130,246,.25);cursor:pointer;transition:background .2s;}
+.nav-dot.active{background:#3b82f6;}
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px 56px;text-align:center;position:relative;overflow:hidden;background:#08080f !important;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:999px;padding:6px 16px;font-size:.75rem;font-weight:600;color:#93c5fd;letter-spacing:.1em;text-transform:uppercase;margin-bottom:32px;}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:#3b82f6;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;line-height:1.15;max-width:860px;margin-bottom:24px;background:linear-gradient(135deg,#e2e8f0 0%,#93c5fd 50%,#3b82f6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-size:1.1rem;color:#94a3b8;max-width:640px;margin:0 auto 40px;}
+.typewriter{color:#3b82f6;font-weight:600;border-right:2px solid #3b82f6;padding-right:4px;white-space:nowrap;overflow:hidden;width:0;animation:typing 3.5s steps(60,end) 1s forwards,blink .75s step-end infinite;}
+@keyframes typing{from{width:0;}to{width:100%;}}
+@keyframes blink{50%{border-color:transparent;}}
+.hero-stats{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:40px;}
+.stat-card{background:#0d0d18 !important;border:1px solid rgba(59,130,246,.2);border-radius:12px;padding:20px 28px;text-align:center;min-width:150px;transition:transform .3s,border-color .3s;cursor:default;}
+.stat-card:hover{transform:translateY(-6px);border-color:rgba(59,130,246,.5);}
+.stat-num{font-size:2rem;font-weight:800;color:#3b82f6;display:block;}
+.stat-label{font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em;}
+.scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:#475569;font-size:.75rem;}
+.scroll-arrow{width:24px;height:24px;border-right:2px solid #3b82f6;border-bottom:2px solid #3b82f6;transform:rotate(45deg);animation:bounce 1.5s infinite;}
+@keyframes bounce{0%,100%{transform:rotate(45deg) translateY(0);}50%{transform:rotate(45deg) translateY(6px);}}
+.s-dark{background:#08080f !important;padding:56px 24px;}
+.s-mid{background:#0d0d18 !important;padding:56px 24px;}
+.s-card{background:#101020 !important;padding:56px 24px;}
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(59,130,246,.3),transparent);margin:0;}
+.container{max-width:820px;margin:0 auto;}
+h2{font-size:clamp(1.5rem,3vw,2.1rem);font-weight:700;color:#e2e8f0 !important;margin-bottom:20px;line-height:1.3;}
+h3{font-size:1.15rem;font-weight:600;color:#93c5fd !important;margin:28px 0 12px;}
+h4{font-size:.95rem;font-weight:700;color:#7dd3fc !important;margin:20px 0 8px;text-transform:uppercase;letter-spacing:.06em;}
+p{color:#cbd5e1 !important;margin-bottom:16px;font-size:1rem;}
+strong{color:#e2e8f0 !important;}
+.accent-block{border-left:3px solid #3b82f6;padding:20px 24px;background:rgba(59,130,246,.06) !important;border-radius:0 8px 8px 0;margin:24px 0;}
+.accent-block p{color:#cbd5e1 !important;margin:0;font-style:italic;}
+pre{background:#060610 !important;border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:20px;overflow-x:auto;margin:16px 0;}
+code{font-family:'Fira Code','Cascadia Code',monospace;font-size:.83rem;color:#93c5fd !important;line-height:1.6;}
+.code-label{font-size:.7rem;color:#475569;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;display:block;}
+.inline-code{font-family:'Fira Code','Cascadia Code',monospace;font-size:.85rem;color:#7dd3fc !important;background:rgba(59,130,246,.1);padding:2px 7px;border-radius:4px;}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0;}
+.compare-bad{background:#1a0a0a !important;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:16px;}
+.compare-good{background:#0a1a0a !important;border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:16px;}
+.compare-neutral{background:#0a0a1a !important;border:1px solid rgba(99,102,241,.3);border-radius:8px;padding:16px;}
+.compare-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;display:block;}
+.compare-bad .compare-label{color:#f87171 !important;}
+.compare-good .compare-label{color:#4ade80 !important;}
+.compare-neutral .compare-label{color:#a5b4fc !important;}
+.compare-bad code{color:#fca5a5 !important;}
+.compare-good code{color:#86efac !important;}
+.compare-neutral code{color:#c7d2fe !important;}
+.checklist{list-style:none;margin:16px 0;}
+.checklist li{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;background:#0d0d18 !important;border-radius:8px;border:1px solid rgba(59,130,246,.1);color:#cbd5e1 !important;font-size:.95rem;opacity:0;transform:translateX(-20px);transition:opacity .4s,transform .4s;}
+.checklist li.visible{opacity:1;transform:none;}
+.checklist li .icon{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
+.checklist li .icon.warn{color:#f87171 !important;}
+.checklist li .icon.ok{color:#4ade80 !important;}
+.checklist li .icon.info{color:#60a5fa !important;}
+.arch-flow{display:flex;flex-direction:column;gap:12px;margin:24px 0;}
+.arch-step{display:flex;align-items:flex-start;gap:16px;background:#0d0d18 !important;border:1px solid rgba(59,130,246,.15);border-radius:8px;padding:16px 20px;}
+.arch-num{width:36px;height:36px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:#08080f !important;flex-shrink:0;margin-top:2px;}
+.arch-text strong{color:#93c5fd !important;display:block;margin-bottom:4px;}
+.arch-text span{color:#94a3b8 !important;font-size:.88rem;}
+.trail-header{display:flex;align-items:center;gap:14px;margin:32px 0 20px;}
+.trail-num{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:#fff !important;flex-shrink:0;}
+.trail-num.t1{background:linear-gradient(135deg,#7c3aed,#4f46e5);}
+.trail-num.t2{background:linear-gradient(135deg,#0369a1,#0284c7);}
+.trail-num.t3{background:linear-gradient(135deg,#065f46,#059669);}
+.trail-num.t4{background:linear-gradient(135deg,#92400e,#d97706);}
+.trail-title{font-size:1.1rem;font-weight:700;color:#e2e8f0 !important;}
+.syntax-box{background:#060610 !important;border:1px solid rgba(99,102,241,.3);border-radius:10px;padding:20px 24px;margin:20px 0;}
+.syntax-box .syntax-title{font-size:.75rem;font-weight:700;color:#a5b4fc !important;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;}
+.syntax-row{display:flex;gap:12px;align-items:baseline;margin-bottom:8px;flex-wrap:wrap;}
+.syntax-token{font-family:'Fira Code','Cascadia Code',monospace;font-size:.88rem;padding:3px 10px;border-radius:5px;}
+.syntax-token.op{background:rgba(251,146,60,.15);color:#fdba74 !important;border:1px solid rgba(251,146,60,.3);}
+.syntax-token.kw{background:rgba(59,130,246,.15);color:#93c5fd !important;border:1px solid rgba(59,130,246,.3);}
+.syntax-token.eg{color:#86efac !important;font-size:.82rem;}
+.syntax-desc{font-size:.85rem;color:#94a3b8 !important;}
+.tag-row{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 20px;}
+.tag{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:999px;padding:4px 12px;font-size:.75rem;color:#93c5fd !important;font-weight:600;}
+footer{background:#08080f !important;border-top:1px solid rgba(59,130,246,.1);padding:48px 24px;text-align:center;}
+footer p{color:#475569 !important;font-size:.85rem;}
+footer a{color:#3b82f6 !important;text-decoration:none;}
+.series-nav{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:32px}
+.series-link{display:flex;align-items:center;gap:8px;padding:10px 20px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#94a3b8;text-decoration:none;font-size:.88rem;transition:all .3s}
+.series-link:hover{border-color:#3b82f6;color:#3b82f6}
+.fade-in{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease;}
+.fade-in.visible{opacity:1;transform:none;}
+@media(max-width:640px){.compare-grid{grid-template-columns:1fr;}.hero-stats{flex-direction:column;align-items:center;}.syntax-row{flex-direction:column;gap:6px;}}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="ring"></div>
+
+<nav>
+  <span class="nav-logo">Rafael Veloso · Set Analysis</span>
+  <div class="nav-dots" id="navDots">
+    <div class="nav-dot active" data-sec="0"></div>
+    <div class="nav-dot" data-sec="1"></div>
+    <div class="nav-dot" data-sec="2"></div>
+    <div class="nav-dot" data-sec="3"></div>
+    <div class="nav-dot" data-sec="4"></div>
+    <div class="nav-dot" data-sec="5"></div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" data-sec="0">
+  <div class="hero-badge"><span class="hero-badge-dot"></span>Guia Avançado · Parte 1 de 2</div>
+  <h1>Set Analysis Avançado</h1>
+  <p class="hero-sub">Operadores, modificadores, dollar-sign expansion e as funções P() e E(): o foundation que separa o desenvolvedor intermediário do sênior.</p>
+  <div class="typewriter">Set Analysis não é filtro. É álgebra de conjuntos.</div>
+  <div class="hero-stats">
+    <div class="stat-card"><span class="stat-num">6</span><span class="stat-label">Operadores de conjunto</span></div>
+    <div class="stat-card"><span class="stat-num">3</span><span class="stat-label">Tipos de modificador</span></div>
+    <div class="stat-card"><span class="stat-num">P() E()</span><span class="stat-label">Funções avançadas</span></div>
+    <div class="stat-card"><span class="stat-num">$( )</span><span class="stat-label">Expansão dinâmica</span></div>
+  </div>
+  <div class="scroll-hint"><span>scroll para explorar</span><div class="scroll-arrow"></div></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION 1: ANATOMIA -->
+<section class="s-mid" data-sec="1">
+<div class="container">
+  <div class="fade-in">
+    <h2>1. Anatomia Completa de uma Expressão Set Analysis</h2>
+    <p>Antes de avançar para os padrões complexos, é essencial dominar a anatomia exata. Cada parte de uma expressão Set Analysis tem um papel específico - e confundi-las é a origem de 90% dos bugs.</p>
+  </div>
+
+  <div class="syntax-box fade-in">
+    <div class="syntax-title">Estrutura completa</div>
+    <pre><code>
+Sum( { set_identifier  &lt; set_modifier &gt; }  expression )
+      ^                ^               ^
+      |                |               |
+  Identificador    Modificador     Expressão
+  do conjunto      do conjunto     de aggregation
+    </code></pre>
+  </div>
+
+  <h3>Identificadores de Conjunto</h3>
+  <div class="arch-flow fade-in">
+    <div class="arch-step"><div class="arch-num">1</div><div class="arch-text"><strong>{ 1 } - Conjunto completo (todos os registros)</strong><span>Ignora completamente as seleções do usuário. Calcula sobre 100% dos dados, independente do que foi filtrado.</span></div></div>
+    <div class="arch-step"><div class="arch-num">$</div><div class="arch-text"><strong>{ $ } - Conjunto atual (seleção ativa)</strong><span>Equivale à expressão sem Set Analysis. Representa exatamente o que o usuário selecionou. É o ponto de partida para modificadores.</span></div></div>
+    <div class="arch-step"><div class="arch-num">_</div><div class="arch-text"><strong>{ $_1 } - Seleção anterior</strong><span>Conjunto representando a seleção imediatamente anterior à atual. Útil para comparações interativas de "antes e depois".</span></div></div>
+    <div class="arch-step"><div class="arch-num">BM</div><div class="arch-text"><strong>{ BM01 } - Bookmark como conjunto</strong><span>Um bookmark salvo pode ser usado como identificador de conjunto. Permite expressar "vendas no estado salvo como BM01".</span></div></div>
+  </div>
+
+  <pre class="fade-in"><code class="code-label">// Exemplos práticos de identificadores</code><code>
+// Vendas totais - ignora qualquer seleção de Região, Produto, Ano
+Sum({1} Valor)
+
+// Vendas na seleção atual - idêntico a Sum(Valor) sem Set Analysis
+Sum({$} Valor)
+
+// Vendas com a seleção anterior
+Sum({$_1} Valor)
+
+// Vendas no estado do bookmark "BM01" (ex.: Top 10 clientes)
+Sum({BM01} Valor)
+</code></pre>
+
+  <div class="accent-block fade-in">
+    <p>Atenção crítica: <span class="inline-code">{1}</span> ignora TODAS as seleções, incluindo seleções no próprio campo da expressão. <span class="inline-code">{$}</span> respeita a seleção atual. Escolher o identificador errado é o erro mais silencioso e perigoso em Set Analysis.</p>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION 2: OPERADORES -->
+<section class="s-card" data-sec="2">
+<div class="container">
+  <div class="fade-in">
+    <h2>2. Operadores de Conjunto</h2>
+    <p>Os operadores de conjunto permitem combinar, subtrair, intersectar e modificar conjuntos de dados de forma precisa. São a base da álgebra de conjuntos no Qlik - e o que torna o Set Analysis genuinamente poderoso.</p>
+  </div>
+
+  <div class="syntax-box fade-in">
+    <div class="syntax-title">Operadores disponíveis</div>
+    <div class="syntax-row"><span class="syntax-token op">+</span><span class="syntax-desc">União - inclui todos os elementos de ambos os conjuntos</span></div>
+    <div class="syntax-row"><span class="syntax-token op">-</span><span class="syntax-desc">Diferença - elementos do primeiro conjunto que não estão no segundo</span></div>
+    <div class="syntax-row"><span class="syntax-token op">*</span><span class="syntax-desc">Intersecção - apenas elementos presentes em ambos os conjuntos</span></div>
+    <div class="syntax-row"><span class="syntax-token op">/</span><span class="syntax-desc">Diferença simétrica - elementos em um OU no outro, mas não em ambos</span></div>
+  </div>
+
+  <div class="trail-header fade-in"><div class="trail-num t1">+</div><div class="trail-title">Operador de União</div></div>
+  <p>Combina dois conjuntos: o resultado contém todos os elementos de ambos. Equivalente ao OR lógico quando aplicado a diferentes subconjuntos do mesmo campo.</p>
+
+  <pre class="fade-in"><code>
+// Vendas de Eletrônicos OU Móveis (independente da seleção atual)
+Sum({&lt;Categoria={'Eletrônicos'}&gt; + &lt;Categoria={'Móveis'}&gt;} Valor)
+
+// Equivalente mais conciso para o mesmo campo:
+Sum({&lt;Categoria={'Eletrônicos', 'Móveis'}&gt;} Valor)
+
+// União mais poderosa: conjuntos de campos diferentes
+// Seleção atual + registros de Novembro de qualquer ano
+Sum({$ + &lt;Mes={'Novembro'}&gt;} Valor)
+
+// Caso real: clientes na seleção atual OU clientes VIP (independente da seleção)
+Count({$ + &lt;SegmentoCliente={'VIP'}&gt;} DISTINCT ClienteID)
+</code></pre>
+
+  <div class="trail-header fade-in"><div class="trail-num t2">-</div><div class="trail-title">Operador de Diferença</div></div>
+  <p>Retorna o primeiro conjunto menos os elementos que também estão no segundo. Fundamental para análises de exclusão: "tudo menos X".</p>
+
+  <pre class="fade-in"><code>
+// Todos os registros EXCETO devoluções
+Sum({1 - &lt;Status={'Devolução'}&gt;} Valor)
+
+// Seleção atual EXCETO o produto 'Produto X'
+Sum({$ - &lt;Produto={'Produto X'}&gt;} Valor)
+
+// Caso real: receita líquida = bruta menos cancelamentos e devoluções
+Sum({1 - &lt;TipoTransacao={'Cancelamento', 'Devolução'}&gt;} ValorBruto)
+
+// Todos os clientes que NÃO compraram no último mês
+// (usado para análise de churn)
+Count({
+  &lt;ClienteID=P({1}&lt;Mes={$(=Month(Today()))}&gt; ClienteID)&gt;
+  -
+  &lt;ClienteID=P({1}&lt;Mes={$(=Month(AddMonths(Today(),-1)))}&gt; ClienteID)&gt;
+} DISTINCT ClienteID)
+</code></pre>
+
+  <div class="trail-header fade-in"><div class="trail-num t3">*</div><div class="trail-title">Operador de Intersecção</div></div>
+  <p>Retorna apenas os elementos presentes em ambos os conjuntos simultaneamente. Equivalente ao AND lógico entre conjuntos distintos.</p>
+
+  <pre class="fade-in"><code>
+// Clientes que compraram Eletrônicos E que estão na seleção atual
+Count({
+  &lt;ClienteID=P({1}&lt;Categoria={'Eletrônicos'}&gt; ClienteID)&gt;
+  *
+  $
+} DISTINCT ClienteID)
+
+// Caso real: ticket médio dos clientes que compraram
+// TANTO em Q1 QUANTO em Q4 (clientes recorrentes sazonais)
+Avg({
+  &lt;ClienteID=P({1}&lt;Trimestre={'Q1'}&gt; ClienteID)&gt;
+  *
+  &lt;ClienteID=P({1}&lt;Trimestre={'Q4'}&gt; ClienteID)&gt;
+} ValorPedido)
+
+// Operador * é a ferramenta correta para cohort analysis:
+// "qual o LTV dos clientes que passaram por ambas as condições"
+</code></pre>
+
+  <div class="trail-header fade-in"><div class="trail-num t4">/</div><div class="trail-title">Diferença Simétrica - O Operador Esquecido</div></div>
+  <p>Retorna elementos que estão em um conjunto OU no outro, mas não em ambos. Útil para análises de comparação onde você quer destacar o que é exclusivo de cada conjunto.</p>
+
+  <pre class="fade-in"><code>
+// Produtos vendidos em 2023 OU em 2024, mas não em ambos
+// (produtos que entraram ou saíram do portfólio)
+Count({
+  &lt;ProdutoID=P({1}&lt;Ano={2023}&gt; ProdutoID)&gt;
+  /
+  &lt;ProdutoID=P({1}&lt;Ano={2024}&gt; ProdutoID)&gt;
+} DISTINCT ProdutoID)
+
+// Interpretação:
+// Conjunto A: produtos com vendas em 2023
+// Conjunto B: produtos com vendas em 2024
+// A / B = produtos novos (só em 2024) + produtos descontinuados (só em 2023)
+</code></pre>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION 3: MODIFICADORES -->
+<section class="s-mid" data-sec="3">
+<div class="container">
+  <div class="fade-in">
+    <h2>3. Modificadores Avançados</h2>
+    <p>Modificadores alteram a seleção ativa de um campo específico dentro do conjunto. São expressos entre <span class="inline-code">&lt; &gt;</span> e determinam exatamente quais valores de cada dimensão participam do cálculo.</p>
+  </div>
+
+  <h3>Tipos de Modificadores</h3>
+
+  <div class="compare-grid fade-in">
+    <div class="compare-neutral">
+      <span class="compare-label">Atribuição direta - valores literais</span>
+      <pre><code>
+// Define exatamente quais valores
+// o campo deve ter no conjunto
+
+Sum({&lt;Ano={2024}&gt;} Valor)
+
+Sum({&lt;Região={'Sul', 'Sudeste'}&gt;} Valor)
+
+Sum({&lt;Status={'Ativo'}&gt;,
+     Ano={2024}&gt;} Valor)
+
+// Ignora a seleção atual do campo
+// e usa os valores especificados
+</code></pre>
+    </div>
+    <div class="compare-neutral">
+      <span class="compare-label">Modificador de exclusão - remove campo</span>
+      <pre><code>
+// Remove a seleção de um campo específico
+// mantendo as seleções de outros campos
+
+// Ignora seleção de Ano, mantém o resto
+Sum({&lt;Ano=&gt;} Valor)
+
+// Ignora Mês E Trimestre, mantém demais
+Sum({&lt;Mes=, Trimestre=&gt;} Valor)
+
+// Prático para "total do ano" dentro
+// de um contexto filtrado por semana
+</code></pre>
+    </div>
+  </div>
+
+  <h3>Modificador com Valor Derivado de Expressão</h3>
+  <p>O modificador mais poderoso: o conjunto de valores é determinado por uma expressão avaliada em tempo de renderização. Combina Set Analysis com lógica dinâmica.</p>
+
+  <pre class="fade-in"><code>
+// Ano atual derivado de expressão - dinâmico, nunca precisa ser atualizado
+Sum({&lt;Ano={$(=Year(Today()))}&gt;} Valor)
+
+// Mês anterior calculado dinamicamente
+Sum({&lt;Mes={$(=Month(AddMonths(Today(), -1)))},
+     Ano={$(=Year(AddMonths(Today(), -1)))}&gt;} Valor)
+
+// Top N valores do campo Produto (definido por variável vN)
+// $(vN) expande para o valor da variável em tempo de cálculo
+Sum({&lt;ProdutoID=Top(Rank(Sum(Valor)), 1, $(vN))&gt;} Valor)
+
+// Período dinâmico: do início do ano até hoje
+Sum({&lt;Data={">=$(=YearStart(Today()))<=$(=Today())"}&gt;} Valor)
+</code></pre>
+
+  <div class="accent-block fade-in">
+    <p>A diferença entre <span class="inline-code">Ano={2024}</span> e <span class="inline-code">Ano={$(=Year(Today()))}</span> parece pequena, mas é crítica em produção. O segundo sempre calcula o ano correto - sem precisar atualizar a expressão a cada virada de ano.</p>
+  </div>
+
+  <h3>Modificadores com Correspondência Parcial - Wildcards</h3>
+  <pre class="fade-in"><code>
+// Produtos cujo nome começa com "Pro"
+Sum({&lt;Produto={"Pro*"}&gt;} Valor)
+
+// Clientes cujo e-mail é do domínio @empresa.com
+Count({&lt;Email={"*@empresa.com"}&gt;} DISTINCT ClienteID)
+
+// Registros com código que contém "BR" em qualquer posição
+Sum({&lt;CodigoPais={"*BR*"}&gt;} Valor)
+
+// Combinando wildcard com expressão:
+// Produtos que começam com a letra selecionada pelo usuário
+// (vLetra é uma variável definida por um input box)
+Sum({&lt;Produto={"$(vLetra)*"}&gt;} Valor)
+</code></pre>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION 4: DOLLAR-SIGN EXPANSION -->
+<section class="s-card" data-sec="4">
+<div class="container">
+  <div class="fade-in">
+    <h2>4. Dollar-Sign Expansion em Set Analysis</h2>
+    <p>A dollar-sign expansion <span class="inline-code">$( )</span> é o mecanismo que torna o Set Analysis verdadeiramente dinâmico. Ela resolve o conteúdo da expansão <strong>antes</strong> que o Set Analysis seja avaliado - permitindo que variáveis, expressões e até mesmo outras expressões Set Analysis definam os parâmetros do conjunto.</p>
+  </div>
+
+  <div class="arch-flow fade-in">
+    <div class="arch-step"><div class="arch-num">1</div><div class="arch-text"><strong>$(variavel) - expansão de variável</strong><span>Substitui o token pelo valor atual da variável. Acontece antes da avaliação do Set Analysis.</span></div></div>
+    <div class="arch-step"><div class="arch-num">2</div><div class="arch-text"><strong>$(=expressão) - expansão de expressão</strong><span>Avalia a expressão e usa o resultado como parte do Set Analysis. Permite cálculos dinâmicos nos parâmetros do conjunto.</span></div></div>
+    <div class="arch-step"><div class="arch-num">3</div><div class="arch-text"><strong>$(#variavel) - expansão numérica</strong><span>Retorna o valor numérico sem formatação regional. Crítico quando separadores de milhar/decimal variam entre locales.</span></div></div>
+  </div>
+
+  <h3>Padrões de Dollar-Sign Expansion</h3>
+
+  <pre class="fade-in"><code class="code-label">// Padrão 1: variável como filtro dinâmico</code><code>
+// Script: SET vAnoAtual = Year(Today());
+// Na expressão:
+Sum({&lt;Ano={$(vAnoAtual)}&gt;} Valor)
+// Expande para: Sum({&lt;Ano={2025}&gt;} Valor)
+// Atualiza automaticamente a cada reload sem alterar expressões
+
+// Padrão 2: expressão dinâmica como parâmetro
+// Período: do primeiro dia do mês até hoje
+Sum({&lt;Data={">=$(=MonthStart(Today()))<=$(=Today())"}&gt;} Valor)
+
+// Padrão 3: variável contendo uma expressão Set Analysis completa
+// Script: SET vFiltroVIP = '{&lt;SegmentoCliente={''VIP''}&gt;}';
+// Na expressão:
+Sum($(vFiltroVIP) Valor)
+// Expande para: Sum({&lt;SegmentoCliente={'VIP'}&gt;} Valor)
+// Reuso do filtro em múltiplos gráficos sem repetição
+</code></pre>
+
+  <pre class="fade-in"><code class="code-label">// Padrão 4: expansão numérica para evitar problemas de locale</code><code>
+// Variável: LET vMeta = 150000.50;
+// Problema: em locales com vírgula como decimal,
+// $(vMeta) pode expandir para "150.000,50" - inválido no Set Analysis
+
+// Errado (pode quebrar em locales diferentes):
+Sum({&lt;Valor={&gt;$(vMeta)}&gt;} Pedidos)
+
+// Correto - $(#vMeta) retorna sempre o número sem formatação:
+Sum({&lt;Valor={&gt;$(#vMeta)}&gt;} Pedidos)
+// Sempre expande para: Sum({&lt;Valor={&gt;150000.5}&gt;} Pedidos)
+</code></pre>
+
+  <div class="accent-block fade-in">
+    <p>Regra prática: sempre que o valor do modificador vier de uma variável numérica, use <span class="inline-code">$(#variavel)</span> ao invés de <span class="inline-code">$(variavel)</span>. Evita bugs silenciosos em ambientes com configuração regional diferente do ambiente de desenvolvimento.</p>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION 5: P() E E() -->
+<section class="s-mid" data-sec="5">
+<div class="container">
+  <div class="fade-in">
+    <h2>5. Funções P() e E() - Element Functions</h2>
+    <p>As funções P() (Possible Values) e E() (Excluded Values) são as ferramentas mais sofisticadas do Set Analysis. Permitem usar conjuntos de valores possíveis ou excluídos de um campo como parâmetro de outro campo - criando filtros cruzados de alta precisão.</p>
+  </div>
+
+  <div class="compare-grid fade-in">
+    <div class="compare-neutral">
+      <span class="compare-label">P() - Possible Values (valores possíveis)</span>
+      <pre><code>
+// P(campo) retorna o conjunto de valores
+// POSSÍVEIS (não excluídos) de um campo
+// na seleção atual ou em um conjunto definido
+
+// Clientes que compraram na seleção atual
+P(ClienteID)
+
+// Produtos possíveis no conjunto {1} filtrado por Categoria
+P({1}&lt;Categoria={'Eletrônicos'}&gt; ProdutoID)
+
+// Uso: filtrar OUTRO campo pelos valores possíveis deste
+Sum({&lt;ClienteID=P({1}&lt;Regiao={'Sul'}&gt; ClienteID)&gt;} Valor)
+// "Vendas de clientes que são da região Sul"
+</code></pre>
+    </div>
+    <div class="compare-neutral">
+      <span class="compare-label">E() - Excluded Values (valores excluídos)</span>
+      <pre><code>
+// E(campo) retorna o conjunto de valores
+// EXCLUÍDOS (cinza no Qlik) de um campo
+// na seleção atual
+
+// Clientes excluídos pela seleção atual
+E(ClienteID)
+
+// Uso: calcular sobre o que foi excluído
+// (análise de "o que ficou de fora")
+Sum({&lt;ClienteID=E(ClienteID)&gt;} Valor)
+// "Vendas dos clientes que foram excluídos
+//  pela seleção atual" - análise de impacto
+</code></pre>
+    </div>
+  </div>
+
+  <h3>P() na Prática - Cohort Filtering</h3>
+  <p>O uso mais poderoso de P() é o filtro cruzado entre campos relacionados. Em vez de listar valores explícitos, você instrui o Qlik a "usar os valores do campo X que satisfazem a condição Y como filtro para o campo Z".</p>
+
+  <pre class="fade-in"><code>
+// Caso 1: vendas geradas por clientes que compraram um produto específico
+// Sem P(): impossível sem JOIN no script
+// Com P(): elegante e direto
+
+Sum({
+  &lt;ClienteID = P({1}&lt;ProdutoID={'PROD-LAPTOP-001'}&gt; ClienteID)&gt;
+} Valor)
+// Passo a passo:
+// 1. P({1}&lt;ProdutoID={'PROD-LAPTOP-001'}&gt; ClienteID)
+//    → retorna todos os ClienteIDs que compraram PROD-LAPTOP-001
+// 2. &lt;ClienteID = [esse conjunto de IDs]&gt;
+//    → filtra os dados para esses clientes
+// 3. Sum(Valor) sobre esses dados filtrados
+
+// Caso 2: análise de cross-sell
+// Quanto os compradores de A também gastam em outras categorias?
+Sum({
+  &lt;ClienteID = P({1}&lt;Categoria={'Eletrônicos'}&gt; ClienteID),
+   Categoria = {'Eletrodomésticos'}&gt;
+} Valor)
+// "Vendas na categoria Eletrodomésticos
+//  feitas por clientes que também compraram Eletrônicos"
+
+// Caso 3: hierarquia - vendas de gerentes cujos liderados atingiram a meta
+Sum({
+  &lt;GerenteID = P({1}&lt;PercentualMeta={&gt;100}&gt; GerenteID)&gt;
+} ValorBonificacao)
+</code></pre>
+
+  <h3>Combinando P() com Operadores de Conjunto</h3>
+  <pre class="fade-in"><code>
+// Cohort intersection: clientes que compraram em AMBOS os períodos
+// (clientes de alta retenção - compraram Q1 E Q3)
+Count({
+  &lt;ClienteID =
+    P({1}&lt;Trimestre={'Q1'}&gt; ClienteID)
+    *
+    P({1}&lt;Trimestre={'Q3'}&gt; ClienteID)
+  &gt;
+} DISTINCT ClienteID)
+
+// Cohort difference: novos clientes no período atual
+// (compraram agora, mas NÃO compraram no período anterior)
+Sum({
+  &lt;ClienteID =
+    P({1}&lt;Ano={$(=Year(Today()))}&gt; ClienteID)
+    -
+    P({1}&lt;Ano={$(=Year(Today())-1)}&gt; ClienteID)
+  &gt;
+} Valor)
+// "Receita gerada por clientes que compraram pela primeira vez este ano"
+</code></pre>
+
+  <div class="accent-block fade-in">
+    <p>P() e E() são avaliadas no contexto do conjunto que as envolve. <span class="inline-code">P({1} Campo)</span> e <span class="inline-code">P({$} Campo)</span> são resultados completamente diferentes: o primeiro ignora a seleção, o segundo a respeita. Sempre seja explícito sobre qual contexto você quer.</p>
+  </div>
+
+  <h3>Checklist de Revisão - Set Analysis Parte 1</h3>
+  <ul class="checklist fade-in" id="checklistSA">
+    <li><span class="icon ok">✅</span><div><strong>Identificador correto:</strong> use <span class="inline-code">{1}</span> para ignorar seleções, <span class="inline-code">{$}</span> para respeitar.</div></li>
+    <li><span class="icon ok">✅</span><div><strong>Dollar-sign numérico:</strong> use <span class="inline-code">$(#variavel)</span> quando o modificador é numérico para evitar bugs de locale.</div></li>
+    <li><span class="icon ok">✅</span><div><strong>Operador correto:</strong> + é união (OR), * é intersecção (AND), - é exclusão.</div></li>
+    <li><span class="icon warn">⚠️</span><div><strong>P() precisa de contexto explícito:</strong> nunca escreva <span class="inline-code">P(Campo)</span> sem especificar <span class="inline-code">{1}</span> ou <span class="inline-code">{$}</span> dentro.</div></li>
+    <li><span class="icon warn">⚠️</span><div><strong>Aspas duplas em wildcards, simples em strings:</strong> <span class="inline-code">{"Pro*"}</span> para wildcard, <span class="inline-code">{'Produto A'}</span> para valor literal.</div></li>
+    <li><span class="icon info">ℹ️</span><div><strong>Teste com pequeno conjunto:</strong> antes de usar operadores complexos em produção, valide com um conjunto de dados reduzido onde você conhece o resultado esperado.</div></li>
+  </ul>
+
+  <div class="tag-row fade-in">
+    <span class="tag">SetAnalysis</span>
+    <span class="tag">QlikSense</span>
+    <span class="tag">BI</span>
+    <span class="tag">QlikDeveloper</span>
+    <span class="tag">DataAnalytics</span>
+    <span class="tag">BusinessIntelligence</span>
+    <span class="tag">QlikView</span>
+    <span class="tag">DashboardDesign</span>
+    <span class="tag">DataModeling</span>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="series-nav">
+    <a href="set-analysis-avancado-parte2-periodos-indireto-aninhamento.html" class="series-link">Parte 2: Periodos, Indireto e Aninhamento →</a>
+    <a href="set-analysis-estado-alternativo-alternate-states.html" class="series-link">Parte 3: Estados Alternativos →</a>
+  </div>
+  <p>Escrito por <a href="https://www.linkedin.com/in/rafaelveloso/">Rafael Veloso</a> · Set Analysis Avançado Parte 1 · 2025</p>
+  <p style="margin-top:8px;">Série completa: <a href="https://radsveloso.github.io/Linkedin/artigos/">radsveloso.github.io/Linkedin/artigos</a></p>
+</footer>
+
+<script>
+const cur=document.getElementById('cur'),ring=document.getElementById('ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+(function animRing(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing);})();
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      if(e.target.classList.contains('fade-in')){
+        const items=e.target.querySelectorAll('.checklist li');
+        items.forEach((li,i)=>setTimeout(()=>li.classList.add('visible'),i*80));
+      }
+    }
+  });
+},{threshold:.12});
+document.querySelectorAll('.fade-in').forEach(el=>io.observe(el));
+document.querySelectorAll('.checklist li').forEach(li=>io.observe(li));
+const sections=document.querySelectorAll('[data-sec]');
+const dots=document.querySelectorAll('.nav-dot');
+const sio=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const sec=e.target.dataset.sec;
+      dots.forEach(d=>d.classList.remove('active'));
+      const dot=document.querySelector(`.nav-dot[data-sec="${sec}"]`);
+      if(dot)dot.classList.add('active');
+    }
+  });
+},{threshold:.4});
+sections.forEach(s=>sio.observe(s));
+dots.forEach(d=>{
+  d.addEventListener('click',()=>{
+    const sec=d.dataset.sec;
+    const target=document.querySelector(`[data-sec="${sec}"]`);
+    if(target)target.scrollIntoView({behavior:'smooth'});
+  });
+});
+</script>
+</body>
+</html>

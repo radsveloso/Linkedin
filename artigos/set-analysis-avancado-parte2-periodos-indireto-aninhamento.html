@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="color-scheme" content="dark"/>
+<title>Set Analysis Avançado Parte 2: Períodos, Set Analysis Indireto e Aninhamento</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{background:#08080f;}
+body{background:#08080f !important;color:#e2e8f0 !important;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.7;cursor:none;}
+.cursor{position:fixed;width:12px;height:12px;background:#3b82f6;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .15s ease;}
+.cursor-ring{position:fixed;width:36px;height:36px;border:1.5px solid rgba(59,130,246,.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .25s ease,width .2s,height .2s;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,8,15,.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(59,130,246,.15);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{font-size:.85rem;font-weight:700;color:#3b82f6;letter-spacing:.12em;text-transform:uppercase;}
+.nav-dots{display:flex;gap:8px;}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:rgba(59,130,246,.25);cursor:pointer;transition:background .2s;}
+.nav-dot.active{background:#3b82f6;}
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px 56px;text-align:center;position:relative;overflow:hidden;background:#08080f !important;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:999px;padding:6px 16px;font-size:.75rem;font-weight:600;color:#93c5fd;letter-spacing:.1em;text-transform:uppercase;margin-bottom:32px;}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:#3b82f6;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;line-height:1.15;max-width:860px;margin-bottom:24px;background:linear-gradient(135deg,#e2e8f0 0%,#93c5fd 50%,#3b82f6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-size:1.1rem;color:#94a3b8;max-width:640px;margin:0 auto 40px;}
+.typewriter{color:#3b82f6;font-weight:600;border-right:2px solid #3b82f6;padding-right:4px;white-space:nowrap;overflow:hidden;width:0;animation:typing 3.5s steps(60,end) 1s forwards,blink .75s step-end infinite;}
+@keyframes typing{from{width:0;}to{width:100%;}}
+@keyframes blink{50%{border-color:transparent;}}
+.hero-stats{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:40px;}
+.stat-card{background:#0d0d18 !important;border:1px solid rgba(59,130,246,.2);border-radius:12px;padding:20px 28px;text-align:center;min-width:150px;transition:transform .3s,border-color .3s;cursor:default;}
+.stat-card:hover{transform:translateY(-6px);border-color:rgba(59,130,246,.5);}
+.stat-num{font-size:2rem;font-weight:800;color:#3b82f6;display:block;}
+.stat-label{font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em;}
+.scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:#475569;font-size:.75rem;}
+.scroll-arrow{width:24px;height:24px;border-right:2px solid #3b82f6;border-bottom:2px solid #3b82f6;transform:rotate(45deg);animation:bounce 1.5s infinite;}
+@keyframes bounce{0%,100%{transform:rotate(45deg) translateY(0);}50%{transform:rotate(45deg) translateY(6px);}}
+.s-dark{background:#08080f !important;padding:56px 24px;}
+.s-mid{background:#0d0d18 !important;padding:56px 24px;}
+.s-card{background:#101020 !important;padding:56px 24px;}
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(59,130,246,.3),transparent);margin:0;}
+.container{max-width:820px;margin:0 auto;}
+h2{font-size:clamp(1.5rem,3vw,2.1rem);font-weight:700;color:#e2e8f0 !important;margin-bottom:20px;line-height:1.3;}
+h3{font-size:1.15rem;font-weight:600;color:#93c5fd !important;margin:28px 0 12px;}
+h4{font-size:.95rem;font-weight:700;color:#7dd3fc !important;margin:20px 0 8px;text-transform:uppercase;letter-spacing:.06em;}
+p{color:#cbd5e1 !important;margin-bottom:16px;font-size:1rem;}
+strong{color:#e2e8f0 !important;}
+.accent-block{border-left:3px solid #3b82f6;padding:20px 24px;background:rgba(59,130,246,.06) !important;border-radius:0 8px 8px 0;margin:24px 0;}
+.accent-block p{color:#cbd5e1 !important;margin:0;font-style:italic;}
+pre{background:#060610 !important;border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:20px;overflow-x:auto;margin:16px 0;}
+code{font-family:'Fira Code','Cascadia Code',monospace;font-size:.83rem;color:#93c5fd !important;line-height:1.6;}
+.code-label{font-size:.7rem;color:#475569;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;display:block;}
+.inline-code{font-family:'Fira Code','Cascadia Code',monospace;font-size:.85rem;color:#7dd3fc !important;background:rgba(59,130,246,.1);padding:2px 7px;border-radius:4px;}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0;}
+.compare-bad{background:#1a0a0a !important;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:16px;}
+.compare-good{background:#0a1a0a !important;border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:16px;}
+.compare-neutral{background:#0a0a1a !important;border:1px solid rgba(99,102,241,.3);border-radius:8px;padding:16px;}
+.compare-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;display:block;}
+.compare-bad .compare-label{color:#f87171 !important;}
+.compare-good .compare-label{color:#4ade80 !important;}
+.compare-neutral .compare-label{color:#a5b4fc !important;}
+.compare-bad code{color:#fca5a5 !important;}
+.compare-good code{color:#86efac !important;}
+.compare-neutral code{color:#c7d2fe !important;}
+.checklist{list-style:none;margin:16px 0;}
+.checklist li{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;background:#0d0d18 !important;border-radius:8px;border:1px solid rgba(59,130,246,.1);color:#cbd5e1 !important;font-size:.95rem;opacity:0;transform:translateX(-20px);transition:opacity .4s,transform .4s;}
+.checklist li.visible{opacity:1;transform:none;}
+.checklist li .icon{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
+.checklist li .icon.warn{color:#f87171 !important;}
+.checklist li .icon.ok{color:#4ade80 !important;}
+.checklist li .icon.info{color:#60a5fa !important;}
+.trail-header{display:flex;align-items:center;gap:14px;margin:32px 0 20px;}
+.trail-num{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:#fff !important;flex-shrink:0;}
+.trail-num.t1{background:linear-gradient(135deg,#7c3aed,#4f46e5);}
+.trail-num.t2{background:linear-gradient(135deg,#0369a1,#0284c7);}
+.trail-num.t3{background:linear-gradient(135deg,#065f46,#059669);}
+.trail-num.t4{background:linear-gradient(135deg,#92400e,#d97706);}
+.trail-title{font-size:1.1rem;font-weight:700;color:#e2e8f0 !important;}
+.tag-row{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 20px;}
+.tag{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:999px;padding:4px 12px;font-size:.75rem;color:#93c5fd !important;font-weight:600;}
+footer{background:#08080f !important;border-top:1px solid rgba(59,130,246,.1);padding:48px 24px;text-align:center;}
+footer p{color:#475569 !important;font-size:.85rem;}
+footer a{color:#3b82f6 !important;text-decoration:none;}
+.series-nav{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:32px}
+.series-link{display:flex;align-items:center;gap:8px;padding:10px 20px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#94a3b8;text-decoration:none;font-size:.88rem;transition:all .3s}
+.series-link:hover{border-color:#3b82f6;color:#3b82f6}
+.fade-in{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease;}
+.fade-in.visible{opacity:1;transform:none;}
+@media(max-width:640px){.compare-grid{grid-template-columns:1fr;}.hero-stats{flex-direction:column;align-items:center;}}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="ring"></div>
+
+<nav>
+  <span class="nav-logo">Rafael Veloso · Set Analysis</span>
+  <div class="nav-dots" id="navDots">
+    <div class="nav-dot active" data-sec="0"></div>
+    <div class="nav-dot" data-sec="1"></div>
+    <div class="nav-dot" data-sec="2"></div>
+    <div class="nav-dot" data-sec="3"></div>
+    <div class="nav-dot" data-sec="4"></div>
+    <div class="nav-dot" data-sec="5"></div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" data-sec="0">
+  <div class="hero-badge"><span class="hero-badge-dot"></span>Guia Avançado · Parte 2 de 2</div>
+  <h1>Set Analysis Avançado</h1>
+  <p class="hero-sub">Comparações de período (YTD, LY, Rolling 12M), Set Analysis indireto via variáveis, aninhamento e os padrões mais complexos usados em dashboards enterprise.</p>
+  <div class="typewriter">YTD, LY, Rolling 12M - tudo com uma expressão Set Analysis.</div>
+  <div class="hero-stats">
+    <div class="stat-card"><span class="stat-num">YTD</span><span class="stat-label">Year to Date</span></div>
+    <div class="stat-card"><span class="stat-num">LY</span><span class="stat-label">Last Year</span></div>
+    <div class="stat-card"><span class="stat-num">R12M</span><span class="stat-label">Rolling 12 Months</span></div>
+    <div class="stat-card"><span class="stat-num">%YoY</span><span class="stat-label">Growth YoY</span></div>
+  </div>
+  <div class="scroll-hint"><span>scroll para explorar</span><div class="scroll-arrow"></div></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION 1: PERIOD COMPARISONS -->
+<section class="s-mid" data-sec="1">
+<div class="container">
+  <div class="fade-in">
+    <h2>1. Comparações de Período - YTD, LY e Rolling 12M</h2>
+    <p>Comparações de período são o caso de uso mais frequente em dashboards executivos. O segredo está em combinar modificadores de Ano e Mês com dollar-sign expansion para criar expressões que funcionam independente do período selecionado pelo usuário.</p>
+  </div>
+
+  <div class="trail-header fade-in"><div class="trail-num t1">YTD</div><div class="trail-title">Year to Date - Do Início do Ano até Hoje</div></div>
+  <p>YTD representa a acumulação do início do ano corrente até o mês mais recente disponível nos dados (ou até hoje). A chave é não hardcodar o ano - usar expressão dinâmica.</p>
+
+  <pre class="fade-in"><code>
+// YTD simples - ignora todas as seleções de período
+Sum({
+  &lt;Ano={$(=Year(Today()))},
+   Mes={"&lt;=$(=Month(Today()))"}&gt;
+} Valor)
+
+// YTD respeitando outras seleções (ex.: Região, Produto selecionados)
+// mas ignorando seleção de Ano e Mês do usuário
+Sum({
+  $&lt;Ano={$(=Year(Today()))},
+    Mes={"&lt;=$(=Month(Today()))"}&gt;
+} Valor)
+
+// YTD usando campo Data diretamente (mais preciso)
+Sum({
+  &lt;Data={">=$(=YearStart(Today()))<=$(=Today())"}&gt;
+} Valor)
+
+// YTD com seleção do usuário respeitada para outros campos:
+Sum({
+  $&lt;Data={">=$(=YearStart(Today()))<=$(=Today())"}&gt;
+} Valor)
+</code></pre>
+
+  <div class="trail-header fade-in"><div class="trail-num t2">LY</div><div class="trail-title">Last Year - Mesmo Período do Ano Anterior</div></div>
+  <p>LY (Last Year) precisa corresponder exatamente ao mesmo período do YTD, mas um ano antes. A expressão deve ser consistente: se o YTD vai até junho de 2025, o LY deve ir até junho de 2024.</p>
+
+  <pre class="fade-in"><code>
+// LY YTD - acumulado do ano anterior até o mesmo mês
+Sum({
+  &lt;Ano={$(=Year(Today())-1)},
+   Mes={"&lt;=$(=Month(Today()))"}&gt;
+} Valor)
+
+// LY com campo Data - exatamente o mesmo intervalo 1 ano atrás
+Sum({
+  &lt;Data={">=$(=AddYears(YearStart(Today()),-1))&lt;=$(=AddYears(Today(),-1))"}&gt;
+} Valor)
+
+// Variação percentual YoY - crescimento ano a ano
+(
+  Sum({$&lt;Ano={$(=Year(Today()))},Mes={"&lt;=$(=Month(Today()))}"}&gt;} Valor)
+  /
+  Sum({$&lt;Ano={$(=Year(Today())-1)},Mes={"&lt;=$(=Month(Today()))}"}&gt;} Valor)
+) - 1
+// Formatar como percentual: num(expressao, '#0.0%')
+
+// Comparação mês a mês (MTD vs MTD anterior)
+// Mês atual:
+Sum({&lt;Ano={$(=Year(Today()))},Mes={$(=Month(Today()))}&gt;} Valor)
+// Mês anterior:
+Sum({&lt;Ano={$(=Year(AddMonths(Today(),-1)))},Mes={$(=Month(AddMonths(Today(),-1)))}&gt;} Valor)
+</code></pre>
+
+  <div class="trail-header fade-in"><div class="trail-num t3">R12</div><div class="trail-title">Rolling 12 Months - Janela Móvel de 12 Meses</div></div>
+  <p>Rolling 12M é diferente de YTD: enquanto o YTD sempre começa em 1 de janeiro, o Rolling 12M é uma janela que desliza - cobre os 12 meses anteriores à data atual independente do ano. Elimina sazonalidade e permite comparações contínuas.</p>
+
+  <pre class="fade-in"><code>
+// Rolling 12M usando campo Data
+Sum({
+  &lt;Data={">=$(=AddMonths(Today(),-12))<=$(=Today())"}&gt;
+} Valor)
+
+// Rolling 12M using Ano + Mes fields (common pattern)
+// Requires a numeric representation: AnoMes = Year*100 + Month
+Sum({
+  &lt;AnoMes={">=$(=Year(AddMonths(Today(),-12))*100+Month(AddMonths(Today(),-12)))
+            &lt;=$(=Year(Today())*100+Month(Today()))"}&gt;
+} Valor)
+
+// Comparação Rolling 12M atual vs Rolling 12M anterior
+// (janela de 12M que terminou 12 meses atrás)
+// Período atual (R12M):
+Sum({&lt;Data={">=$(=AddMonths(Today(),-12))<=$(=Today())"}&gt;} Valor)
+// Período anterior (R12M -1 ano):
+Sum({&lt;Data={">=$(=AddMonths(Today(),-24))<=$(=AddMonths(Today(),-12))"}&gt;} Valor)
+</code></pre>
+
+  <div class="accent-block fade-in">
+    <p>Padrão avançado: nunca hardcode anos ou meses em expressões de período. Uma expressão com <span class="inline-code">Ano={2024}</span> envelhece e fica errada. Uma expressão com <span class="inline-code">Ano={$(=Year(Today()))}</span> funciona para sempre.</p>
+  </div>
+
+  <h3>Comparação de Trimestres - QTD</h3>
+  <pre class="fade-in"><code>
+// QTD - Quarter to Date (acumulado do trimestre atual)
+Sum({
+  &lt;Data={">=$(=QuarterStart(Today()))<=$(=Today())"}&gt;
+} Valor)
+
+// Trimestre anterior completo
+Sum({
+  &lt;Data={">=$(=QuarterStart(AddMonths(Today(),-3)))&lt;=$(=QuarterEnd(AddMonths(Today(),-3)))"}&gt;
+} Valor)
+
+// Mesmo trimestre do ano anterior (para comparar Q2 2025 vs Q2 2024)
+Sum({
+  &lt;Data={">=$(=AddYears(QuarterStart(Today()),-1))&lt;=$(=AddYears(QuarterEnd(Today()),-1))"}&gt;
+} Valor)
+</code></pre>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION 2: INDIRECT SET ANALYSIS -->
+<section class="s-card" data-sec="2">
+<div class="container">
+  <div class="fade-in">
+    <h2>2. Set Analysis Indireto - Controle via Variáveis</h2>
+    <p>Set Analysis indireto é o padrão onde o conteúdo do conjunto é definido por variáveis - e essas variáveis podem ser alteradas pelo próprio usuário via input boxes ou botões. Transforma um dashboard estático em um sistema de análise configurável sem alterar uma linha de expressão.</p>
+  </div>
+
+  <h3>Arquitetura do Set Analysis Indireto</h3>
+  <p>A ideia é separar a lógica de filtro da expressão de cálculo. A variável funciona como uma "chave" que define o comportamento do conjunto - e o desenvolvedor ou o próprio usuário controla essa chave.</p>
+
+  <pre class="fade-in"><code class="code-label">// Configuração no script (ou inline)</code><code>
+// Variáveis de período - configuráveis pelo usuário via input box
+SET vAnoComparacao = 2023;   // usuário pode alterar para 2022, 2021 etc
+SET vMesInicio     = 1;       // início do intervalo de análise
+SET vMesFim        = 6;       // fim do intervalo de análise
+
+// Variáveis de filtro de negócio
+SET vSegmento     = 'Enterprise';
+SET vRegiaoFoco   = 'Sul,Sudeste';  // múltiplos valores
+
+// Na expressão - usa as variáveis:
+Sum({
+  &lt;Ano={$(#vAnoComparacao)},
+   Mes={">=$(#vMesInicio)&lt;=$(#vMesFim)"}&gt;
+} Valor)
+
+// A expressão funciona para qualquer configuração de variável.
+// Alterar vAnoComparacao de 2023 para 2021
+// muda imediatamente o resultado sem editar a expressão.
+</code></pre>
+
+  <h3>Pattern: Toggle de Modo de Análise</h3>
+  <p>Um padrão elegante é criar uma variável que seleciona o "modo" de análise - e as expressões respondem a esse modo automaticamente.</p>
+
+  <pre class="fade-in"><code>
+// Variável de modo (definida via botão ou input box pelo usuário)
+// vModo = 'YTD' | 'LY' | 'R12M'
+SET vModo = 'YTD';
+
+// Expressão que responde ao modo:
+// (usando If() no NÍVEL DA EXPRESSÃO - não dentro da aggregation!)
+If(vModo = 'YTD',
+   Sum({&lt;Data={">=$(=YearStart(Today()))<=$(=Today())"}&gt;} Valor),
+If(vModo = 'LY',
+   Sum({&lt;Data={">=$(=AddYears(YearStart(Today()),-1))&lt;=$(=AddYears(Today(),-1))"}&gt;} Valor),
+   Sum({&lt;Data={">=$(=AddMonths(Today(),-12))<=$(=Today())"}&gt;} Valor)
+))
+
+// IMPORTANTE: o If() aqui está FORA do Sum() - ele escolre qual Sum() calcular.
+// Isso é diferente de Sum(If(...)) que é lento.
+// Este padrão é eficiente: apenas uma das expressões é avaliada.
+</code></pre>
+
+  <h3>Variável como Set Analysis Completo - Reutilização Máxima</h3>
+  <pre class="fade-in"><code>
+// Definir o filtro completo como variável:
+// (Aspas simples duplicadas para escapar dentro da string)
+SET vFiltroVIP       = '{&lt;SegmentoCliente={''VIP''}&gt;}';
+SET vFiltroEletro    = '{&lt;Categoria={''Eletrônicos''}&gt;}';
+SET vFiltroQ1Atual   = '{&lt;Trimestre={''Q1''},Ano={$(=Year(Today()))}&gt;}';
+
+// Uso em qualquer expressão do app:
+Sum($(vFiltroVIP) Valor)
+Count($(vFiltroVIP) DISTINCT ClienteID)
+Avg($(vFiltroEletro) TicketMedio)
+
+// Combinando variáveis (intersecção):
+// VIP E Eletrônicos
+Sum($(vFiltroVIP) $(vFiltroEletro) Valor)
+// Expande para: Sum({&lt;SegmentoCliente={'VIP'}&gt;} {&lt;Categoria={'Eletrônicos'}&gt;} Valor)
+// Qlik interpreta múltiplos modificadores como intersecção (AND)
+</code></pre>
+
+  <div class="accent-block fade-in">
+    <p>Cuidado com aspas: dentro de um SET em script, aspas simples dentro de strings precisam ser duplicadas. <span class="inline-code">SET v = "{'VIP'}"</span> é inválido. O correto é <span class="inline-code">SET v = "{''VIP''}"</span>. Verifique sempre no console de debug do Qlik antes de ir para produção.</p>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION 3: NESTED SET ANALYSIS -->
+<section class="s-mid" data-sec="3">
+<div class="container">
+  <div class="fade-in">
+    <h2>3. Aninhamento - Set Analysis dentro de Set Analysis</h2>
+    <p>Set Analysis aninhado ocorre quando o modificador de um conjunto é determinado por outro conjunto. É o nível mais avançado de Set Analysis - e o padrão que responde a perguntas de negócio que seriam impossíveis de outra forma.</p>
+  </div>
+
+  <div class="trail-header fade-in"><div class="trail-num t1">N1</div><div class="trail-title">Aninhamento Básico - P() dentro de Modificador</div></div>
+  <p>O padrão mais comum de aninhamento: usar P() com um conjunto interno para definir o modificador de um conjunto externo. Vimos isso brevemente na Parte 1 - agora em profundidade.</p>
+
+  <pre class="fade-in"><code>
+// Pergunta: "quais são as vendas dos produtos que
+//            tiveram pelo menos 1 venda no mês anterior?"
+// Sem aninhamento: impossível sem join no script.
+
+Sum({
+  &lt;ProdutoID = P({1}&lt;Mes={$(=Month(AddMonths(Today(),-1)))},
+                    Ano={$(=Year(AddMonths(Today(),-1)))}&gt; ProdutoID)&gt;
+} Valor)
+
+// Leitura:
+// P({1}&lt;Mes=MesAnterior, Ano=AnoAnterior&gt; ProdutoID)
+//   → conjunto de ProdutoIDs que venderam no mês anterior
+// &lt;ProdutoID = [esse conjunto]&gt;
+//   → filtra os dados para esses produtos
+// Sum(Valor)
+//   → soma as vendas desses produtos no período atual (seleção do usuário)
+</code></pre>
+
+  <div class="trail-header fade-in"><div class="trail-num t2">N2</div><div class="trail-title">Aninhamento com Múltiplos Níveis</div></div>
+  <p>É possível aninhar mais de dois níveis, mas cada nível adiciona complexidade e potencial custo de performance. Use com moderação - e sempre documente a lógica.</p>
+
+  <pre class="fade-in"><code>
+// Pergunta: "vendas dos produtos que foram comprados por clientes
+//            que também compraram o Produto X"
+// Nível 1: clientes que compraram Produto X
+// Nível 2: produtos comprados por esses clientes
+// Nível 3: vendas desses produtos na seleção atual
+
+Sum({
+  &lt;ProdutoID = P({
+    &lt;ClienteID = P({1}&lt;ProdutoID={'PROD-X-001'}&gt; ClienteID)&gt;
+  } ProdutoID)&gt;
+} Valor)
+
+// Leitura de dentro para fora:
+// 1. P({1}&lt;ProdutoID={'PROD-X-001'}&gt; ClienteID)
+//    → ClienteIDs que compraram PROD-X-001
+// 2. P({&lt;ClienteID=[clientes acima]&gt;} ProdutoID)
+//    → ProdutoIDs comprados por esses clientes
+// 3. &lt;ProdutoID=[produtos acima]&gt; + Sum(Valor)
+//    → vendas desses produtos
+
+// Aviso de performance: aninhamento de 3+ níveis pode ser lento
+// em datasets > 10M linhas. Considere pré-calcular no script.
+</code></pre>
+
+  <div class="trail-header fade-in"><div class="trail-num t3">N3</div><div class="trail-title">Set Analysis com TOTAL - Porcentagem do Total</div></div>
+  <p>Combinar Set Analysis com o qualifier TOTAL é o padrão correto para calcular percentuais de participação. O TOTAL calcula o denominador ignorando as dimensões do gráfico.</p>
+
+  <pre class="fade-in"><code>
+// Participação de mercado por categoria - % do total geral
+Sum(Valor) / Sum(TOTAL Valor)
+
+// Participação dentro de um conjunto específico:
+// % que cada produto representa nas vendas de Eletrônicos
+Sum({&lt;Categoria={'Eletrônicos'}&gt;} Valor)
+/
+Sum(TOTAL {&lt;Categoria={'Eletrônicos'}&gt;} Valor)
+
+// Participação do cliente no total de vendas da sua região
+// (respeitando a seleção de Região, mas ignorando a dimensão ClienteID do gráfico)
+Sum(Valor) / Sum(TOTAL &lt;ClienteID&gt; Valor)
+// TOTAL &lt;ClienteID&gt; = ignora a dimensão ClienteID,
+//                     mas mantém outras seleções de contexto
+
+// Comparação: participação este ano vs ano anterior
+Sum({$&lt;Ano={$(=Year(Today()))}&gt;} Valor)
+/
+Sum(TOTAL {$&lt;Ano={$(=Year(Today()))}&gt;} Valor)
+</code></pre>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION 4: REAL-WORLD PATTERNS -->
+<section class="s-card" data-sec="4">
+<div class="container">
+  <div class="fade-in">
+    <h2>4. Padrões de Produção - Dashboard Enterprise</h2>
+    <p>Os padrões a seguir são derivados de implementações reais em dashboards executivos. Cada um resolve um problema específico de negócio usando Set Analysis como ferramenta principal.</p>
+  </div>
+
+  <h3>Padrão 1: KPI Card Dinâmico com Variação</h3>
+  <pre class="fade-in"><code>
+// KPI: vendas do período selecionado + comparação com mesmo período do ano anterior
+// Período atual (respeita seleção do usuário de Ano e Mês):
+LET vVendasAtual = Sum({$} Valor);
+
+// Mesmo período no ano anterior (substitui apenas o Ano, mantém Mês selecionado):
+LET vVendasAnterior = Sum({$&lt;Ano={$(=Max({$} Ano)-1)}&gt;} Valor);
+
+// Variação percentual:
+Num((vVendasAtual / vVendasAnterior) - 1, '+#0.0%;-#0.0%;0.0%')
+
+// Na prática - expressão completa no KPI:
+Num(
+  (Sum({$} Valor) / Sum({$&lt;Ano={$(=Max({$}Ano)-1)}&gt;} Valor)) - 1,
+  '+#0.0%;-#0.0%;0.0%'
+)
+// Formatação com sinal positivo/negativo automático e cor via expression-based color
+</code></pre>
+
+  <h3>Padrão 2: Análise de Cobertura - Clientes Ativos vs Inativos</h3>
+  <pre class="fade-in"><code>
+// Definição: cliente "ativo" = comprou nos últimos 90 dias
+// Definição: cliente "inativo" = não comprou nos últimos 90 dias
+
+// Total de clientes ativos:
+Count({
+  &lt;ClienteID = P({1}&lt;Data={">=$(=Today()-90)"}&gt; ClienteID)&gt;
+} DISTINCT ClienteID)
+
+// Total de clientes inativos (todos os clientes MENOS os ativos):
+Count({
+  1
+  -
+  &lt;ClienteID = P({1}&lt;Data={">=$(=Today()-90)"}&gt; ClienteID)&gt;
+} DISTINCT ClienteID)
+
+// Taxa de ativação (% de clientes que compraram no período):
+Count({
+  &lt;ClienteID = P({1}&lt;Data={">=$(=Today()-90)"}&gt; ClienteID)&gt;
+} DISTINCT ClienteID)
+/
+Count({1} DISTINCT ClienteID)
+</code></pre>
+
+  <h3>Padrão 3: Análise de Pareto - Top 20% que Geram 80% da Receita</h3>
+  <pre class="fade-in"><code>
+// Identificar quais clientes estão no top 20% por receita
+// e calcular o total de receita que eles representam
+
+// Passo 1: calcular receita por cliente
+// (feito no script para performance - AGGR() caro em gráfico)
+ReceitaCliente:
+LOAD ClienteID, Sum(Valor) AS ReceitaTotal
+RESIDENT FactVendas GROUP BY ClienteID;
+
+// Passo 2: no gráfico, usar Set Analysis para filtrar top 20%
+// (usando função Rank com threshold percentual)
+Sum({
+  &lt;ClienteID = P({1}&lt;ClienteID={"=Rank(Sum(Valor)) &lt;= $(=Ceil(Count(DISTINCT ClienteID)*0.2))"}&gt; ClienteID)&gt;
+} Valor)
+
+// Percentual sobre o total:
+Sum({
+  &lt;ClienteID = P({1}&lt;ClienteID={"=Rank(Sum(Valor)) &lt;= $(=Ceil(Count(DISTINCT ClienteID)*0.2))"}&gt; ClienteID)&gt;
+} Valor)
+/
+Sum({1} Valor)
+</code></pre>
+
+  <div class="accent-block fade-in">
+    <p>Padrão Pareto é custoso computacionalmente porque envolve uma ordenação interna. Em datasets > 5M linhas, considere pré-calcular o rank no script e armazená-lo como um campo: <span class="inline-code">RankReceita = Rank(ReceitaTotal)</span>. A expressão Set Analysis fica simples: <span class="inline-code">Sum({&lt;RankReceita={"&lt;=$(=Ceil(Count(DISTINCT ClienteID)*0.2))"}&gt;} Valor)</span>.</p>
+  </div>
+
+  <h3>Padrão 4: Comparação Orçado vs Realizado Respeitando Seleção</h3>
+  <pre class="fade-in"><code>
+// Scenario: tabelas separadas - FactVendas e Orcamento
+// Desafio: comparar os dois mantendo a seleção do usuário de Produto, Região etc.
+
+// Realizado (seleção completa do usuário):
+Sum({$} Valor)
+
+// Orçado (mesma seleção de Produto e Região, mas forçando Ano/Mês do orçamento)
+// Assume que Orcamento tem a mesma estrutura de campos:
+Sum({
+  $&lt;TipoRegistro={'Orcamento'},
+    Ano={$(=Year(Today()))}&gt;
+} Valor)
+
+// Variação absoluta:
+Sum({$&lt;TipoRegistro={'Realizado'}&gt;} Valor)
+-
+Sum({$&lt;TipoRegistro={'Orcamento'}&gt;} Valor)
+
+// Variação % (Atingimento):
+Num(
+  Sum({$&lt;TipoRegistro={'Realizado'}&gt;} Valor)
+  /
+  Sum({$&lt;TipoRegistro={'Orcamento'}&gt;} Valor),
+  '#0.0%'
+)
+</code></pre>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION 5: DEBUGGING AND CHECKLIST -->
+<section class="s-mid" data-sec="5">
+<div class="container">
+  <div class="fade-in">
+    <h2>5. Debug de Set Analysis e Checklist Final</h2>
+    <p>Expressões Set Analysis complexas são notoriamente difíceis de debugar porque o Qlik não exibe mensagens de erro claras - ele simplesmente retorna 0 ou NULL. Conhecer as técnicas de diagnóstico é indispensável.</p>
+  </div>
+
+  <h3>Técnicas de Debug</h3>
+
+  <div class="compare-grid fade-in">
+    <div class="compare-neutral">
+      <span class="compare-label">Técnica 1 - Isolar o conjunto</span>
+      <pre><code>
+// Para entender o que o conjunto retorna,
+// use Count() com DISTINCT antes de Sum():
+
+Count({
+  &lt;ClienteID = P({1}&lt;Categoria={'Eletrônicos'}&gt; ClienteID)&gt;
+} DISTINCT ClienteID)
+// Se retornar 0 - o conjunto está vazio.
+// Se retornar o esperado - o conjunto está correto,
+// o problema pode ser na expressão agregada.
+</code></pre>
+    </div>
+    <div class="compare-neutral">
+      <span class="compare-label">Técnica 2 - Verificar dollar-sign expansion</span>
+      <pre><code>
+// Use uma caixa de texto com a expressão
+// para ver o valor expandido antes do Set Analysis:
+
+// Adicione um objeto de texto com:
+=Year(Today())          // deve retornar 2025
+=Month(Today())         // deve retornar o mês atual
+=MonthStart(Today())    // data de início do mês
+// Se esses valores estão incorretos,
+// a dollar-sign expansion no Set Analysis
+// também estará errada.
+</code></pre>
+    </div>
+  </div>
+
+  <pre class="fade-in"><code class="code-label">// Técnica 3 - Construção incremental</code><code>
+// Nunca escreva uma expressão complexa de uma vez.
+// Construa peça por peça e valide cada parte:
+
+// Passo 1: teste o identificador
+Sum({1} Valor)  // deve retornar o total geral
+
+// Passo 2: adicione um modificador simples
+Sum({1}&lt;Ano={2024}&gt;} Valor)  // deve retornar vendas de 2024
+
+// Passo 3: torne dinâmico
+Sum({1}&lt;Ano={$(=Year(Today()))}&gt;} Valor)  // deve retornar o mesmo
+
+// Passo 4: adicione o segundo modificador
+Sum({1}&lt;Ano={$(=Year(Today()))},Mes={"&lt;=$(=Month(Today()))}"}&gt;} Valor)
+
+// Passo 5: troque {1} por {$} se precisar respeitar seleção
+Sum({$}&lt;Ano={$(=Year(Today()))},Mes={"&lt;=$(=Month(Today()))}"}&gt;} Valor)
+
+// Construção incremental elimina ambiguidade sobre onde está o erro.
+</code></pre>
+
+  <h3>Erros Comuns e Correções</h3>
+  <ul class="checklist fade-in" id="checklistDebug">
+    <li><span class="icon warn">⚠️</span><div><strong>Retornando 0 com {$}:</strong> verifique se o modificador não está conflitando com a seleção atual. Ex.: <span class="inline-code">{$&lt;Ano={2022}&gt;}</span> + usuário selecionou 2024 = conjunto vazio.</div></li>
+    <li><span class="icon warn">⚠️</span><div><strong>Aspas erradas em wildcard:</strong> wildcards exigem aspas duplas: <span class="inline-code">{"Pro*"}</span>, não <span class="inline-code">{'Pro*'}</span>. Aspas simples são para valores literais exatos.</div></li>
+    <li><span class="icon warn">⚠️</span><div><strong>Variável numérica com problema de locale:</strong> use <span class="inline-code">$(#variavel)</span> para variáveis numéricas. Evita que o separador decimal regional quebre a expressão.</div></li>
+    <li><span class="icon warn">⚠️</span><div><strong>P() sem contexto explícito:</strong> <span class="inline-code">P(ClienteID)</span> usa o conjunto corrente ({$}) por padrão. Se você quer todos os possíveis, escreva <span class="inline-code">P({1} ClienteID)</span>.</div></li>
+    <li><span class="icon ok">✅</span><div><strong>Para comparações de período:</strong> sempre use funções de data (<span class="inline-code">YearStart</span>, <span class="inline-code">AddMonths</span>, <span class="inline-code">AddYears</span>) ao invés de hardcodes.</div></li>
+    <li><span class="icon ok">✅</span><div><strong>Documentar expressões complexas:</strong> use a description field do objeto para descrever o que a expressão calcula. Uma expressão com 5 modificadores sem documentação é uma armadilha de manutenção.</div></li>
+    <li><span class="icon info">ℹ️</span><div><strong>Set Analysis aninhado lento:</strong> se uma expressão com P() aninhado é lenta, pré-calcule o conjunto intermediário no script como uma tabela de mapping e use um JOIN para criar um campo derivado.</div></li>
+  </ul>
+
+  <h3>Checklist Final - Set Analysis Série Completa</h3>
+  <ul class="checklist fade-in" id="checklistFinal">
+    <li><span class="icon ok">✅</span><div>Identificadores: <span class="inline-code">{1}</span> vs <span class="inline-code">{$}</span> - escolha consciente em cada expressão.</div></li>
+    <li><span class="icon ok">✅</span><div>Operadores: + (união), - (diferença), * (intersecção), / (diferença simétrica).</div></li>
+    <li><span class="icon ok">✅</span><div>Modificadores: direto, exclusão (<span class="inline-code">Campo=</span>) e expressão dinâmica com <span class="inline-code">$(=...)</span>.</div></li>
+    <li><span class="icon ok">✅</span><div>Dollar-sign: <span class="inline-code">$(variavel)</span>, <span class="inline-code">$(=expressao)</span>, <span class="inline-code">$(#numerico)</span>.</div></li>
+    <li><span class="icon ok">✅</span><div>P() e E(): sempre com contexto explícito <span class="inline-code">{1}</span> ou <span class="inline-code">{$}</span> dentro.</div></li>
+    <li><span class="icon ok">✅</span><div>Períodos: YTD, LY, Rolling 12M, QTD - todos dinâmicos, nunca hardcoded.</div></li>
+    <li><span class="icon ok">✅</span><div>Set Analysis indireto: variáveis como containers de filtro - DRY (Don't Repeat Yourself).</div></li>
+    <li><span class="icon ok">✅</span><div>Aninhamento: construção incremental, documentação obrigatória, performance monitorada.</div></li>
+  </ul>
+
+  <div class="tag-row fade-in">
+    <span class="tag">SetAnalysis</span>
+    <span class="tag">QlikSense</span>
+    <span class="tag">YTD</span>
+    <span class="tag">YoY</span>
+    <span class="tag">BI</span>
+    <span class="tag">QlikDeveloper</span>
+    <span class="tag">DataAnalytics</span>
+    <span class="tag">BusinessIntelligence</span>
+    <span class="tag">Qlik</span>
+    <span class="tag">DashboardDesign</span>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="series-nav">
+    <a href="set-analysis-avancado-parte1-operadores-modificadores.html" class="series-link">← Parte 1: Operadores e Modificadores</a>
+    <a href="set-analysis-estado-alternativo-alternate-states.html" class="series-link">Parte 3: Estados Alternativos →</a>
+  </div>
+  <p>Escrito por <a href="https://www.linkedin.com/in/rafaelveloso/">Rafael Veloso</a> · Set Analysis Avançado Parte 2 · 2025</p>
+  <p style="margin-top:8px;">Série completa: <a href="https://radsveloso.github.io/Linkedin/artigos/">radsveloso.github.io/Linkedin/artigos</a></p>
+</footer>
+
+<script>
+const cur=document.getElementById('cur'),ring=document.getElementById('ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+(function animRing(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing);})();
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      if(e.target.classList.contains('fade-in')){
+        const items=e.target.querySelectorAll('.checklist li');
+        items.forEach((li,i)=>setTimeout(()=>li.classList.add('visible'),i*80));
+      }
+    }
+  });
+},{threshold:.12});
+document.querySelectorAll('.fade-in').forEach(el=>io.observe(el));
+document.querySelectorAll('.checklist li').forEach(li=>io.observe(li));
+const sections=document.querySelectorAll('[data-sec]');
+const dots=document.querySelectorAll('.nav-dot');
+const sio=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const sec=e.target.dataset.sec;
+      dots.forEach(d=>d.classList.remove('active'));
+      const dot=document.querySelector(`.nav-dot[data-sec="${sec}"]`);
+      if(dot)dot.classList.add('active');
+    }
+  });
+},{threshold:.4});
+sections.forEach(s=>sio.observe(s));
+dots.forEach(d=>{
+  d.addEventListener('click',()=>{
+    const sec=d.dataset.sec;
+    const target=document.querySelector(`[data-sec="${sec}"]`);
+    if(target)target.scrollIntoView({behavior:'smooth'});
+  });
+});
+</script>
+</body>
+</html>

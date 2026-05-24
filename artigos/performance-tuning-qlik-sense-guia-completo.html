@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="color-scheme" content="dark"/>
+<title>Performance Tuning Qlik Sense: Diagnóstico e Otimização de Ponta a Ponta</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{background:#08080f;}
+body{background:#08080f !important;color:#e2e8f0 !important;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.7;cursor:none;}
+.cursor{position:fixed;width:12px;height:12px;background:#3b82f6;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .15s ease;}
+.cursor-ring{position:fixed;width:36px;height:36px;border:1.5px solid rgba(59,130,246,.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .25s ease,width .2s,height .2s;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,8,15,.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(59,130,246,.15);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{font-size:.85rem;font-weight:700;color:#3b82f6;letter-spacing:.12em;text-transform:uppercase;}
+.nav-dots{display:flex;gap:8px;}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:rgba(59,130,246,.25);cursor:pointer;transition:background .2s;}
+.nav-dot.active{background:#3b82f6;}
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px 56px;text-align:center;position:relative;overflow:hidden;background:#08080f !important;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:999px;padding:6px 16px;font-size:.75rem;font-weight:600;color:#93c5fd;letter-spacing:.1em;text-transform:uppercase;margin-bottom:32px;}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:#3b82f6;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;line-height:1.15;max-width:860px;margin-bottom:24px;background:linear-gradient(135deg,#e2e8f0 0%,#93c5fd 50%,#3b82f6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-size:1.1rem;color:#94a3b8;max-width:640px;margin:0 auto 40px;}
+.typewriter{color:#3b82f6;font-weight:600;border-right:2px solid #3b82f6;padding-right:4px;white-space:nowrap;overflow:hidden;width:0;animation:typing 3.5s steps(60,end) 1s forwards,blink .75s step-end infinite;}
+@keyframes typing{from{width:0;}to{width:100%;}}
+@keyframes blink{50%{border-color:transparent;}}
+.hero-stats{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:40px;}
+.stat-card{background:#0d0d18 !important;border:1px solid rgba(59,130,246,.2);border-radius:12px;padding:20px 28px;text-align:center;min-width:150px;transition:transform .3s,border-color .3s;cursor:default;}
+.stat-card:hover{transform:translateY(-6px);border-color:rgba(59,130,246,.5);}
+.stat-num{font-size:2rem;font-weight:800;color:#3b82f6;display:block;}
+.stat-label{font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em;}
+.scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:#475569;font-size:.75rem;}
+.scroll-arrow{width:24px;height:24px;border-right:2px solid #3b82f6;border-bottom:2px solid #3b82f6;transform:rotate(45deg);animation:bounce 1.5s infinite;}
+@keyframes bounce{0%,100%{transform:rotate(45deg) translateY(0);}50%{transform:rotate(45deg) translateY(6px);}}
+.s-dark{background:#08080f !important;padding:56px 24px;}
+.s-mid{background:#0d0d18 !important;padding:56px 24px;}
+.s-card{background:#101020 !important;padding:56px 24px;}
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(59,130,246,.3),transparent);margin:0;}
+.container{max-width:820px;margin:0 auto;}
+h2{font-size:clamp(1.5rem,3vw,2.1rem);font-weight:700;color:#e2e8f0 !important;margin-bottom:20px;line-height:1.3;}
+h3{font-size:1.15rem;font-weight:600;color:#93c5fd !important;margin:28px 0 12px;}
+h4{font-size:.95rem;font-weight:700;color:#7dd3fc !important;margin:20px 0 8px;text-transform:uppercase;letter-spacing:.06em;}
+p{color:#cbd5e1 !important;margin-bottom:16px;font-size:1rem;}
+strong{color:#e2e8f0 !important;}
+.accent-block{border-left:3px solid #3b82f6;padding:20px 24px;background:rgba(59,130,246,.06) !important;border-radius:0 8px 8px 0;margin:24px 0;}
+.accent-block p{color:#cbd5e1 !important;margin:0;font-style:italic;}
+pre{background:#060610 !important;border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:20px;overflow-x:auto;margin:16px 0;}
+code{font-family:'Fira Code','Cascadia Code',monospace;font-size:.83rem;color:#93c5fd !important;line-height:1.6;}
+.code-label{font-size:.7rem;color:#475569;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;display:block;}
+.inline-code{font-family:'Fira Code','Cascadia Code',monospace;font-size:.85rem;color:#7dd3fc !important;background:rgba(59,130,246,.1);padding:2px 7px;border-radius:4px;}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0;}
+.compare-bad{background:#1a0a0a !important;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:16px;}
+.compare-good{background:#0a1a0a !important;border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:16px;}
+.compare-neutral{background:#0a0a1a !important;border:1px solid rgba(99,102,241,.3);border-radius:8px;padding:16px;}
+.compare-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;display:block;}
+.compare-bad .compare-label{color:#f87171 !important;}
+.compare-good .compare-label{color:#4ade80 !important;}
+.compare-neutral .compare-label{color:#a5b4fc !important;}
+.compare-bad code{color:#fca5a5 !important;}
+.compare-good code{color:#86efac !important;}
+.compare-neutral code{color:#c7d2fe !important;}
+.checklist{list-style:none;margin:16px 0;}
+.checklist li{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;background:#0d0d18 !important;border-radius:8px;border:1px solid rgba(59,130,246,.1);color:#cbd5e1 !important;font-size:.95rem;opacity:0;transform:translateX(-20px);transition:opacity .4s,transform .4s;}
+.checklist li.visible{opacity:1;transform:none;}
+.checklist li .icon{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
+.checklist li .icon.warn{color:#f87171 !important;}
+.checklist li .icon.ok{color:#4ade80 !important;}
+.checklist li .icon.info{color:#60a5fa !important;}
+.arch-flow{display:flex;flex-direction:column;gap:12px;margin:24px 0;}
+.arch-step{display:flex;align-items:flex-start;gap:16px;background:#0d0d18 !important;border:1px solid rgba(59,130,246,.15);border-radius:8px;padding:16px 20px;}
+.arch-num{width:36px;height:36px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:#08080f !important;flex-shrink:0;margin-top:2px;}
+.arch-text strong{color:#93c5fd !important;display:block;margin-bottom:4px;}
+.arch-text span{color:#94a3b8 !important;font-size:.88rem;}
+.trail-header{display:flex;align-items:center;gap:14px;margin:32px 0 20px;}
+.trail-num{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:#fff !important;flex-shrink:0;}
+.trail-num.t1{background:linear-gradient(135deg,#7c3aed,#4f46e5);}
+.trail-num.t2{background:linear-gradient(135deg,#0369a1,#0284c7);}
+.trail-num.t3{background:linear-gradient(135deg,#065f46,#059669);}
+.trail-num.t4{background:linear-gradient(135deg,#92400e,#d97706);}
+.trail-title{font-size:1.3rem;font-weight:700;color:#e2e8f0 !important;}
+.trail-sub{font-size:.8rem;color:#64748b;margin-top:2px;}
+.highlight-box{background:rgba(59,130,246,.08) !important;border:1px solid rgba(59,130,246,.25);border-radius:12px;padding:28px;margin:24px 0;text-align:center;}
+.highlight-box p{color:#93c5fd !important;font-size:1.05rem;font-weight:500;margin:0;}
+.warn-box{background:rgba(239,68,68,.06) !important;border:1px solid rgba(239,68,68,.25);border-radius:12px;padding:24px;margin:24px 0;}
+.warn-box p{color:#fca5a5 !important;margin:0;font-size:.95rem;}
+.tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin:2px;}
+.tag-warn{background:rgba(239,68,68,.15);color:#f87171 !important;border:1px solid rgba(239,68,68,.25);}
+.tag-ok{background:rgba(34,197,94,.15);color:#4ade80 !important;border:1px solid rgba(34,197,94,.25);}
+.tag-info{background:rgba(59,130,246,.15);color:#93c5fd !important;border:1px solid rgba(59,130,246,.25);}
+.tag-amber{background:rgba(251,191,36,.1);color:#fbbf24 !important;border:1px solid rgba(251,191,36,.25);}
+.perf-meter{background:#0d0d18 !important;border:1px solid rgba(59,130,246,.15);border-radius:8px;padding:16px 20px;margin:8px 0;}
+.perf-label{font-size:.8rem;color:#94a3b8;margin-bottom:8px;display:flex;justify-content:space-between;}
+.perf-bar{height:8px;background:#1e293b;border-radius:4px;overflow:hidden;}
+.perf-fill{height:100%;border-radius:4px;transition:width 1s ease;}
+.perf-fill.bad{background:linear-gradient(90deg,#ef4444,#f87171);}
+.perf-fill.good{background:linear-gradient(90deg,#22c55e,#4ade80);}
+.cta-section{background:#0d0d18 !important;border:1px solid rgba(59,130,246,.25);border-radius:16px;padding:40px;text-align:center;margin:0 auto;max-width:640px;}
+.cta-section h2{color:#e2e8f0 !important;}
+.cta-section p{color:#94a3b8 !important;}
+.cta-btn{display:inline-block;margin-top:20px;padding:14px 36px;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff !important;font-weight:700;border-radius:8px;text-decoration:none;font-size:1rem;transition:transform .2s,box-shadow .2s;}
+.cta-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(59,130,246,.4);}
+footer{background:#08080f !important;padding:32px 24px;text-align:center;border-top:1px solid rgba(59,130,246,.1);}
+footer p{color:#475569 !important;font-size:.8rem;}
+footer span{color:#3b82f6 !important;}
+@media(max-width:600px){.compare-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="curR"></div>
+<nav>
+  <div class="nav-logo">Rafael Veloso</div>
+  <div class="nav-dots">
+    <div class="nav-dot active" data-sec="0"></div>
+    <div class="nav-dot" data-sec="1"></div>
+    <div class="nav-dot" data-sec="2"></div>
+    <div class="nav-dot" data-sec="3"></div>
+    <div class="nav-dot" data-sec="4"></div>
+    <div class="nav-dot" data-sec="5"></div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" data-sec="0">
+  <div class="hero-badge"><span class="hero-badge-dot"></span>Qlik Sense &bull; Performance &bull; Otimização</div>
+  <h1>Performance Tuning Qlik Sense:<br>Diagnóstico e Otimização de Ponta a Ponta</h1>
+  <p class="hero-sub">80% dos problemas de lentidão têm origem no modelo de dados. O resto é script, expressão e arquitetura de objeto. Aqui está o mapa completo com scripts reais.</p>
+  <div style="overflow:hidden;max-width:680px;margin:0 auto;">
+    <div class="typewriter">Se está lento, é diagnóstico antes de otimização.</div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-card"><span class="stat-num" data-target="80">0</span><span class="stat-label">% dos problemas no modelo de dados</span></div>
+    <div class="stat-card"><span class="stat-num" data-target="10">0</span><span class="stat-label">x ganho com incremental load</span></div>
+    <div class="stat-card"><span class="stat-num" data-target="60">0</span><span class="stat-label">% memória economizável com DROP FIELDS</span></div>
+  </div>
+  <div class="scroll-hint"><span>Role para baixo</span><div class="scroll-arrow"></div></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- DIAGNÓSTICO -->
+<section class="s-mid" data-sec="1">
+  <div class="container">
+    <div class="hero-badge" style="margin-bottom:24px;"><span class="hero-badge-dot"></span>Por Onde Começar</div>
+    <h2>Diagnóstico Antes de Otimização</h2>
+    <p>Antes de qualquer mudança, você precisa saber <strong>onde está o gargalo</strong>. Qlik Sense lento pode ter origem em quatro lugares distintos - e a solução para cada um é diferente.</p>
+
+    <div class="arch-flow">
+      <div class="arch-step">
+        <div class="arch-num" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);">1</div>
+        <div class="arch-text">
+          <strong>Modelo de dados</strong>
+          <span>Synthetic keys ocultos, campos desnecessários em RAM, tabelas não normalizadas corretamente, NULLs não tratados. Causa a maioria dos problemas de reload lento e consumo de memória excessivo.</span>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-num" style="background:linear-gradient(135deg,#0369a1,#0284c7);">2</div>
+        <div class="arch-text">
+          <strong>Script de carga</strong>
+          <span>Ausência de camada QVD, reloads completos onde deveria ser incremental, ordem ineficiente de LOADs, joins desnecessários no script. Impacta diretamente o tempo de reload.</span>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-num" style="background:linear-gradient(135deg,#065f46,#059669);">3</div>
+        <div class="arch-text">
+          <strong>Expressões e gráficos</strong>
+          <span>IF() onde deveria ser Set Analysis, AGGR() mal aplicado, cálculos complexos repetidos sem uso de variáveis, sheets sobrecarregados com objetos demais.</span>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-num" style="background:linear-gradient(135deg,#92400e,#d97706);">4</div>
+        <div class="arch-text">
+          <strong>Infraestrutura e configuração</strong>
+          <span>Sizing incorreto de servidor, número excessivo de usuários simultâneos sem throttling, ausência de On-Demand App Generation para datasets grandes.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="accent-block">
+      <p>"Otimizar expressão em um app com synthetic key não resolvido é pintar a parede de uma casa com fundação rachada."</p>
+    </div>
+
+    <h3>Como Ler o Log de Reload para Diagnóstico</h3>
+    <p>O primeiro passo de qualquer tuning é ler o log de reload com atenção. No Qlik Cloud, acesse: <span class="inline-code">Data Integration &rarr; Spaces &rarr; [app] &rarr; Reload History</span>.</p>
+    <span class="code-label">Estrutura do log de reload - o que observar</span>
+    <pre><code>0000   Starting reload...
+0001   LOAD statement executed: 2.450.000 rows in 4.2s      ← tempo por tabela
+0002   Synthetic key warning: [OrderID, ProductID]          ← ALERTA CRÍTICO
+0003   Store INTO vendas.qvd: 2.450.000 rows in 1.8s
+0004   LOAD FROM vendas.qvd: 2.450.000 rows in 0.9s
+...
+0089   Finished reload. Duration: 00:04:32
+       RAM peak: 8.4 GB                                     ← consumo de memória
+       Fields: 847                                          ← muitos campos = problema</code></pre>
+    <p>Synthetic key warning no log é o sinal mais claro de problema de modelo. Mais de 200 campos por app é outro sinal de alerta - provavelmente há campos desnecessários em memória.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- TRILHA 1: MODELO DE DADOS -->
+<section class="s-card" data-sec="2">
+  <div class="container">
+    <div class="trail-header">
+      <div class="trail-num t1">1</div>
+      <div>
+        <div class="trail-title">Modelo de Dados</div>
+        <div class="trail-sub">Synthetic keys, star schema, DROP FIELDS e NULLs</div>
+      </div>
+    </div>
+
+    <h3>Synthetic Keys: Detecção e Correção</h3>
+    <p>Synthetic keys são criados automaticamente pelo Qlik quando duas ou mais tabelas compartilham <strong>mais de um campo com o mesmo nome</strong>. Cada synthetic key gera uma tabela intermediária invisível que consome memória e degrada performance de associação.</p>
+
+    <div class="compare-grid">
+      <div class="compare-bad">
+        <span class="compare-label">Problema - cria synthetic key</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// Pedidos e Produtos compartilham
+// OrderID E ProductID - synthetic key!
+Pedidos:
+LOAD OrderID, ProductID,
+     CustomerID, Amount
+FROM pedidos.qvd (qvd);
+
+Produtos:
+LOAD ProductID, OrderID,
+     ProductName, Category
+FROM produtos.qvd (qvd);</code></pre>
+      </div>
+      <div class="compare-good">
+        <span class="compare-label">Solução - alias para desambiguar</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// Renomear o campo duplicado
+// que não deve ser chave de join
+Pedidos:
+LOAD OrderID, ProductID,
+     CustomerID, Amount
+FROM pedidos.qvd (qvd);
+
+Produtos:
+LOAD ProductID,
+     OrderID AS PedidoRef,  // alias
+     ProductName, Category
+FROM produtos.qvd (qvd);</code></pre>
+      </div>
+    </div>
+
+    <h4>DROP FIELDS - Libere Memória Imediatamente</h4>
+    <p>Todo campo carregado no script ocupa memória RAM durante o reload e no app em uso. Campos que existem na fonte mas não são usados em nenhum gráfico ou expressão são desperdício puro.</p>
+
+    <div class="compare-grid">
+      <div class="compare-bad">
+        <span class="compare-label">Carrega tudo - memória desperdiçada</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// LOAD * traz 40+ campos da fonte
+// incluindo campos técnicos que
+// ninguém usa no dashboard
+Vendas:
+LOAD * FROM vendas.qvd (qvd);</code></pre>
+      </div>
+      <div class="compare-good">
+        <span class="compare-label">Seletivo - RAM otimizada</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// Carrega apenas o necessário
+// ou usa DROP após LOAD *
+Vendas:
+LOAD VendaID, ClienteID,
+     ProdutoID, Valor,
+     DataVenda, Regiao
+FROM vendas.qvd (qvd);
+
+// Alternativa: DROP após LOAD *
+DROP FIELDS ETLTimestamp,
+            BatchID, InternalRef,
+            LegacyCode;</code></pre>
+      </div>
+    </div>
+
+    <h4>Star Schema vs Snowflake - Impacto em Performance</h4>
+    <p>O Qlik Sense é otimizado para star schema. Modelos snowflake (múltiplos níveis de tabelas de dimensão) aumentam o número de joins internos e degradam performance de associação e cálculo.</p>
+    <div class="compare-grid">
+      <div class="compare-bad">
+        <span class="compare-label">Snowflake - joins em cascata</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// Fatos → Produto → Categoria → Setor
+// Cada seleção atravessa 3 tabelas
+Fatos → Produtos → Categorias → Setores
+
+// Performance de associação:
+// O(n) por nível de join adicional</code></pre>
+      </div>
+      <div class="compare-good">
+        <span class="compare-label">Star schema - join direto</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// Desnormalizar no script de carga
+// em vez de manter snowflake
+DimProduto:
+LOAD p.ProductID, p.ProductName,
+     c.CategoryName, s.SectorName
+FROM produtos.qvd (qvd) AS p
+JOIN categorias.qvd (qvd) AS c
+  ON p.CategoryID = c.CategoryID
+JOIN setores.qvd (qvd) AS s
+  ON c.SectorID = s.SectorID;</code></pre>
+      </div>
+    </div>
+
+    <h3>NoConcatenate - Quando Usar</h3>
+    <p>O Qlik concatena automaticamente tabelas com os mesmos campos. Quando isso não é desejado - por exemplo, duas tabelas de fatos independentes - use <span class="inline-code">NoConcatenate</span> explicitamente.</p>
+    <pre><code>// Sem NoConcatenate: Qlik concatena
+// VendasNacionais e VendasExportacao
+// em uma só tabela - pode não ser o desejado
+VendasNacionais:
+LOAD ClienteID, Valor, DataVenda
+FROM nacionais.qvd (qvd);
+
+// Com NoConcatenate: tabelas separadas
+// com associação via ClienteID
+NoConcatenate
+VendasExportacao:
+LOAD ClienteID, Valor, DataVenda
+FROM exportacao.qvd (qvd);</code></pre>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- TRILHA 2: SCRIPT E QVD -->
+<section class="s-mid" data-sec="3">
+  <div class="container">
+    <div class="trail-header">
+      <div class="trail-num t2">2</div>
+      <div>
+        <div class="trail-title">Script e Camada QVD</div>
+        <div class="trail-sub">Incremental load, Buffer, Binary e ordem de execução</div>
+      </div>
+    </div>
+
+    <h3>Incremental Load - O Padrão que Todo App em Produção Deveria Ter</h3>
+    <p>Recarregar 10 milhões de linhas toda vez quando apenas 5.000 mudaram é o erro mais caro de performance em Qlik. O padrão de incremental load resolve isso com três blocos: detectar delta, carregar delta, mesclar com QVD existente.</p>
+
+    <span class="code-label">Padrão completo de Incremental Load com QVD</span>
+    <pre><code>// BLOCO 1: Detectar a última data de carga
+LET vUltimaCarga = Peek('DataModificacao', -1, 'MaxData');
+
+// BLOCO 2: Carregar delta ou full conforme necessário
+IF IsNull(vUltimaCarga) OR NOT QvdNoOfRecords('lib://QVDs/vendas.qvd') > 0 THEN
+    // Primeira carga - full load
+    Vendas_Delta:
+    LOAD VendaID, ClienteID, ProdutoID,
+         Valor, DataVenda, DataModificacao
+    FROM [lib://DataSource/vendas.csv]
+    (txt, utf8, embedded labels, delimiter is ',');
+ELSE
+    // Carga incremental - apenas registros novos/alterados
+    Vendas_Delta:
+    LOAD VendaID, ClienteID, ProdutoID,
+         Valor, DataVenda, DataModificacao
+    FROM [lib://DataSource/vendas.csv]
+    (txt, utf8, embedded labels, delimiter is ',')
+    WHERE DataModificacao >= '$(vUltimaCarga)';
+END IF
+
+// BLOCO 3: Mesclar delta com QVD existente
+// Carrega o QVD excluindo registros que existem no delta
+Vendas:
+LOAD * FROM [lib://QVDs/vendas.qvd] (qvd)
+WHERE NOT EXISTS(VendaID);
+
+// Adiciona o delta
+CONCATENATE(Vendas)
+LOAD * RESIDENT Vendas_Delta;
+
+DROP TABLE Vendas_Delta;
+
+// Salva QVD atualizado
+STORE Vendas INTO [lib://QVDs/vendas.qvd] (qvd);
+
+// Registra timestamp da carga
+MaxData:
+LOAD Max(DataModificacao) AS DataModificacao RESIDENT Vendas;</code></pre>
+
+    <div class="warn-box">
+      <p><strong>Atenção:</strong> o campo de controle (<span class="inline-code">DataModificacao</span>) precisa ser confiável na fonte. Se a fonte não atualiza esse campo corretamente em updates, o incremental load vai perder registros alterados. Valide com a equipe de dados antes de implementar.</p>
+    </div>
+
+    <h3>BUFFER LOAD - Cache Automático de Fontes Lentas</h3>
+    <p>Para tabelas de dimensão que raramente mudam (produtos, hierarquias, tabelas de configuração), o <span class="inline-code">Buffer</span> cria um QVD automático e só recarrega da fonte quando o buffer expira ou a fonte muda.</p>
+
+    <pre><code>// Buffer com expiração de 7 dias
+// Qlik verifica se o QVD de buffer é mais recente
+// que 7 dias. Se sim, usa o cache. Se não, recarrega.
+Buffer (stale [7 days])
+DimProduto:
+LOAD ProductID, ProductName,
+     Category, SubCategory,
+     UnitCost, Supplier
+FROM [lib://MasterData/produtos.csv]
+(txt, utf8, embedded labels, delimiter is ',');
+
+// Para dimensões que mudam raramente:
+// hierarquia geográfica, tabela de metas anuais,
+// plano de contas, tabela de câmbio histórica</code></pre>
+
+    <h3>BINARY LOAD - Reutilizar Modelo de Outro App</h3>
+    <p>Se você tem um app "base" com o modelo de dados completo e vários apps analíticos em cima dele, o <span class="inline-code">Binary</span> carrega o modelo completo sem reprocessar o script.</p>
+
+    <pre><code>// Carrega o modelo completo do app base
+// sem re-executar o script de ETL
+Binary [lib://AppBase/ModeloVendas.qvf];
+
+// A partir daqui, todas as tabelas do app base
+// estão disponíveis. Adicione apenas o que é
+// específico deste app analítico.
+Metas:
+LOAD Regiao, Produto, MetaValor, AnoMeta
+FROM [lib://Planning/metas_2025.xlsx]
+(ooxml, embedded labels, table is Sheet1);</code></pre>
+
+    <h3>Ordem de LOAD - Joins e Resident</h3>
+    <p>A ordem de execução do script impacta diretamente a performance. Tabelas maiores devem ser carregadas primeiro quando são usadas como base de join. Evite <span class="inline-code">RESIDENT</span> em loops desnecessários.</p>
+
+    <div class="compare-grid">
+      <div class="compare-bad">
+        <span class="compare-label">Ordem ineficiente</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// Carrega dimensão pequena primeiro
+// depois faz join com fatos grandes
+DimCliente:
+LOAD * FROM clientes.qvd (qvd);  // 5k rows
+
+// Join com fatos - Qlik precisa
+// expandir dimensão para cada fato
+Fatos:
+LOAD * FROM vendas.qvd (qvd)     // 10M rows
+WHERE EXISTS(ClienteID);</code></pre>
+      </div>
+      <div class="compare-good">
+        <span class="compare-label">Ordem eficiente</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// Carrega fatos primeiro
+Fatos:
+LOAD VendaID, ClienteID, Valor
+FROM vendas.qvd (qvd);  // 10M rows
+
+// Dimensão em seguida - Qlik associa
+// por chave sem re-scan da tabela grande
+DimCliente:
+LOAD ClienteID, NomeCliente, Segmento
+FROM clientes.qvd (qvd);  // 5k rows</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- TRILHA 3: EXPRESSÕES E OBJETOS -->
+<section class="s-card" data-sec="4">
+  <div class="container">
+    <div class="trail-header">
+      <div class="trail-num t3">3</div>
+      <div>
+        <div class="trail-title">Expressões e Visualizações</div>
+        <div class="trail-sub">Set Analysis vs IF, AGGR, variáveis e carga de sheet</div>
+      </div>
+    </div>
+
+    <h3>Set Analysis vs IF() - A Diferença que Mais Impacta</h3>
+    <p>Esta é a otimização de expressão com maior impacto. <span class="inline-code">IF()</span> no Qlik avalia condição <strong>linha por linha em toda a tabela</strong>. Set Analysis filtra o conjunto <strong>antes da agregação</strong> - o que é dramaticamente mais eficiente em datasets grandes.</p>
+
+    <div class="compare-grid">
+      <div class="compare-bad">
+        <span class="compare-label">IF() - avalia linha por linha</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// Para 10M de linhas, esta expressão
+// avalia a condição 10M vezes
+Sum(IF(Categoria = 'Eletrônicos',
+    Valor, 0))
+
+// Ainda pior: IF aninhado
+Sum(IF(Ano = 2024,
+    IF(Regiao = 'Sul', Valor, 0),
+0))</code></pre>
+      </div>
+      <div class="compare-good">
+        <span class="compare-label">Set Analysis - filtra antes de agregar</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// Filtra o conjunto antes de somar
+// Muito mais eficiente em qualquer volume
+Sum({&lt;Categoria={'Eletrônicos'}&gt;} Valor)
+
+// Múltiplos filtros no mesmo set
+Sum({&lt;Ano={2024},
+     Regiao={'Sul'}&gt;} Valor)
+
+// Regra: sempre prefira Set Analysis
+// a IF() em funções de agregação</code></pre>
+      </div>
+    </div>
+
+    <h3>AGGR() - Quando Usar e Quando Evitar</h3>
+    <p><span class="inline-code">AGGR()</span> cria uma tabela virtual em tempo de execução para cada combinação de dimensões especificadas. É poderoso mas caro. Use com critério - e considere pré-calcular no script quando a expressão for estática.</p>
+
+    <div class="compare-grid">
+      <div class="compare-bad">
+        <span class="compare-label">AGGR() em expressão de chart - pesado</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// Recalcula para cada renderização
+// do gráfico - muito custoso
+Avg(AGGR(
+    Sum(Valor),
+    ClienteID, MesAno
+))
+
+// Se o gráfico tem 50k clientes x 24 meses
+// = 1.2M células calculadas a cada render</code></pre>
+      </div>
+      <div class="compare-good">
+        <span class="compare-label">Pré-calculado no script - rápido</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// Calcula uma vez no reload,
+// armazena em QVD, usa no gráfico
+VendasMensaisCliente:
+LOAD ClienteID, MesAno,
+     Sum(Valor) AS ValorMensal
+FROM vendas.qvd (qvd)
+GROUP BY ClienteID, MesAno;
+
+// No gráfico: simplesmente
+Avg(ValorMensal)  // instantâneo</code></pre>
+      </div>
+    </div>
+
+    <h4>Variáveis para Expressões Reutilizadas</h4>
+    <p>Se a mesma expressão complexa aparece em múltiplos gráficos, calcular como variável evita recálculo redundante e facilita manutenção.</p>
+    <pre><code>// No script: define variáveis de expressão
+LET vVendasAno    = "Sum({&lt;Ano={$(=Max(Ano))}&gt;} Valor)";
+LET vVendasAnoAnt = "Sum({&lt;Ano={$(=Max(Ano)-1)}&gt;} Valor)";
+LET vCrescimento  = "($(vVendasAno) - $(vVendasAnoAnt)) / $(vVendasAnoAnt)";
+
+// Nos gráficos: usa a variável
+// - expressão calculada uma vez, reutilizada em N objetos
+$(vCrescimento)   // em vez de repetir a expressão completa</code></pre>
+
+    <h3>Carga de Sheet - Objetos por Página</h3>
+    <p>Cada objeto em um sheet executa suas expressões ao ser renderizado. Sheets com muitos objetos visíveis simultâneos impactam a experiência do usuário mesmo com modelo e script otimizados.</p>
+    <ul class="checklist" id="cl1">
+      <li><span class="icon ok">✓</span><span><strong>Máximo 8-10 objetos por sheet</strong> - acima disso, o tempo de renderização cresce linearmente. Use abas ou containers para organizar. <span class="tag tag-ok">recomendado</span></span></li>
+      <li><span class="icon ok">✓</span><span><strong>Show condition nos objetos</strong> - use <span class="inline-code">GetSelectedCount(Campo) > 0</span> para mostrar gráficos somente quando relevantes. Objetos ocultos não calculam. <span class="tag tag-ok">boas práticas</span></span></li>
+      <li><span class="icon warn">✗</span><span><strong>Evite tabelas com muitas colunas calculadas</strong> - cada coluna com expressão complexa multiplica o custo de renderização. Prefira colunas simples com dimensões e medidas pré-calculadas. <span class="tag tag-warn">atenção</span></span></li>
+      <li><span class="icon info">→</span><span><strong>On-Demand App Generation (ODAG)</strong> - para datasets com bilhões de linhas, gere apps sob demanda com subset dos dados conforme seleção do usuário, em vez de carregar tudo em um app. <span class="tag tag-info">arquitetura avançada</span></span></li>
+    </ul>
+
+    <h4>Always One Selected Value - Armadilha de Performance</h4>
+    <div class="compare-grid">
+      <div class="compare-bad">
+        <span class="compare-label">Sem contexto de seleção - calcula tudo</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// KPI sem filtro de ano
+// avalia todos os registros históricos
+Sum(Valor)  // 10 anos de dados = 50M linhas</code></pre>
+      </div>
+      <div class="compare-good">
+        <span class="compare-label">Com contexto - cálculo focado</span>
+        <pre style="margin:0;padding:8px 0;border:none;background:transparent;"><code>// Use variável de controle de estado
+// ou Always One Selected Value no campo Ano
+// para garantir contexto mínimo
+Sum({&lt;Ano={$(=Max(Ano))}&gt;} Valor)
+
+// Ou configure o campo Ano com
+// "Always one selected value" no app props</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- TRILHA 4: PROFILING -->
+<section class="s-mid" data-sec="5">
+  <div class="container">
+    <div class="trail-header">
+      <div class="trail-num t4">4</div>
+      <div>
+        <div class="trail-title">Profiling e Monitoramento</div>
+        <div class="trail-sub">Ferramentas para medir antes e depois de otimizar</div>
+      </div>
+    </div>
+
+    <h3>Qlik Cloud: App Overview e Performance Monitor</h3>
+    <p>No Qlik Cloud, acesse o <strong>App Overview</strong> de qualquer app para visualizar o footprint de memória por tabela, número de campos e distribuição de valores únicos - os dados que revelam onde está o problema.</p>
+
+    <span class="code-label">Engine API - consulta de metadata de memória via REST</span>
+    <pre><code># Consulta tabelas do app via Qlik Engine API (WebSocket)
+# Útil para automação de diagnóstico em múltiplos apps
+
+POST https://SEU_TENANT.us.qlikcloud.com/api/v1/apps/APP_ID/evaluations
+Authorization: Bearer ACCESS_TOKEN
+Content-Type: application/json
+
+{
+  "qExpression": {
+    "qv": "=FieldValueCount('ClienteID')"
+  }
+}
+
+# Para diagnóstico manual: no Sense hub, clique no app
+# → About → RAM usage por tabela
+# Foco em: tabelas com RAM desproporcional ao número de linhas
+# (indica campos com alta cardinalidade desnecessária)</code></pre>
+
+    <h3>Script Timing - Identifique o Gargalo de Reload</h3>
+    <p>Adicione marcadores de tempo no script para identificar qual seção está consumindo mais tempo durante o reload.</p>
+    <pre><code>// Marcadores de tempo no script
+LET vT0 = Now();
+TRACE === INÍCIO CARGA VENDAS ===;
+
+Vendas:
+LOAD * FROM [lib://QVDs/vendas.qvd] (qvd);
+
+LET vT1 = Now();
+TRACE === VENDAS: $(Interval(vT1 - vT0, 'mm:ss')) ===;
+
+// Se uma seção demora muito,
+// investigue: tamanho do arquivo,
+// ausência de QVD, join complexo
+
+LET vT2 = Now();
+TRACE === INÍCIO CARGA CLIENTES ===;
+
+DimCliente:
+LOAD * FROM [lib://QVDs/clientes.qvd] (qvd);
+
+TRACE === CLIENTES: $(Interval(Now() - vT2, 'mm:ss')) ===;</code></pre>
+
+    <h3>Checklist de Tuning - Auditoria Completa</h3>
+    <ul class="checklist" id="cl2">
+      <li><span class="icon warn">✗</span><span><strong>Verificar synthetic keys no log de reload</strong> - qualquer warning de synthetic key deve ser resolvido antes de qualquer outra otimização. <span class="tag tag-warn">prioridade 1</span></span></li>
+      <li><span class="icon warn">✗</span><span><strong>Auditar campos com LOAD *</strong> - listar todos os campos do app vs campos usados em gráficos. Droppar o que não é usado. <span class="tag tag-warn">prioridade 2</span></span></li>
+      <li><span class="icon warn">✗</span><span><strong>Implementar camada QVD</strong> - se o app carrega direto da fonte a cada reload, a camada QVD é obrigatória para qualquer volume acima de 100k linhas. <span class="tag tag-warn">prioridade 3</span></span></li>
+      <li><span class="icon ok">✓</span><span><strong>Substituir IF() por Set Analysis</strong> - revisar expressões de todos os KPIs e tabelas para identificar IFs substituíveis. <span class="tag tag-ok">alta eficiência</span></span></li>
+      <li><span class="icon ok">✓</span><span><strong>Verificar número de objetos por sheet</strong> - sheets com mais de 10 objetos devem ser reestruturados com abas ou containers. <span class="tag tag-ok">experiência do usuário</span></span></li>
+      <li><span class="icon info">→</span><span><strong>Avaliar ODAG</strong> - se o dataset tem mais de 50M linhas, On-Demand App Generation é a arquitetura correta para escala. <span class="tag tag-info">arquitetura</span></span></li>
+    </ul>
+
+    <div class="highlight-box">
+      <p>Performance não é uma feature que se adiciona depois. É uma decisão de arquitetura que começa no modelo de dados. Meça antes, otimize com dados, meça depois.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CTA -->
+<section class="s-dark">
+  <div class="cta-section">
+    <h2>Qual é o gargalo no seu app Qlik?</h2>
+    <p style="margin-top:12px;">Modelo com synthetic key? Script sem camada QVD? Expressões IF() em cascata? Conta nos comentários qual é o seu cenário - já passei por todos esses em produção e posso ajudar a priorizar o diagnóstico.<br><br>E se este conteúdo foi útil, salva para usar como referência durante o próximo tuning.</p>
+    <a href="https://www.linkedin.com/in/-rafael-veloso/" class="cta-btn">Conectar com Rafael</a>
+    <p style="margin-top:20px;font-size:.8rem;color:#475569 !important;">
+      #QlikSense #Qlik #PerformanceTuning #BusinessIntelligence #BI #DataEngineering #QlikCloud #DataArchitecture #Analytics
+    </p>
+  </div>
+</section>
+
+<footer>
+  <p>Escrito por <span>Rafael Veloso</span> &bull; BI &amp; Data Specialist &bull; <span>radsveloso@gmail.com</span></p>
+</footer>
+
+<script>
+const cur=document.getElementById('cur'),curR=document.getElementById('curR');
+document.addEventListener('mousemove',e=>{
+  cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';
+  setTimeout(()=>{curR.style.left=e.clientX+'px';curR.style.top=e.clientY+'px';},60);
+});
+function animateCounter(el){
+  const target=+el.dataset.target;let current=0;const step=Math.max(target/40,0.1);
+  const interval=setInterval(()=>{current=Math.min(current+step,target);el.textContent=Math.round(current);if(current>=target)clearInterval(interval);},30);
+}
+const statNums=document.querySelectorAll('.stat-num[data-target]');
+const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){animateCounter(e.target);io.unobserve(e.target);}});},{threshold:.5});
+statNums.forEach(n=>io.observe(n));
+function revealChecklist(id){const items=document.querySelectorAll('#'+id+' li');items.forEach((li,i)=>setTimeout(()=>li.classList.add('visible'),i*120));}
+const clIO=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){revealChecklist(e.target.id);clIO.unobserve(e.target);}});},{threshold:.2});
+['cl1','cl2'].forEach(id=>{const el=document.getElementById(id);if(el)clIO.observe(el);});
+const sections=document.querySelectorAll('[data-sec]');
+const dots=document.querySelectorAll('.nav-dot');
+const secIO=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){const idx=e.target.dataset.sec;dots.forEach(d=>d.classList.remove('active'));const dot=document.querySelector(`.nav-dot[data-sec="${idx}"]`);if(dot)dot.classList.add('active');}});},{threshold:.4});
+sections.forEach(s=>secIO.observe(s));
+dots.forEach(d=>{d.addEventListener('click',()=>{const target=document.querySelector(`[data-sec="${d.dataset.sec}"]`);if(target)target.scrollIntoView({behavior:'smooth'});});});
+</script>
+</body>
+</html>
