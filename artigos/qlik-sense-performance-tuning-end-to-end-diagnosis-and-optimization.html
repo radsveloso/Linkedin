@@ -1,157 +1,151 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Qlik Sense Performance Tuning: End-to-End Diagnosis and Optimization</title>
-    <meta property="og:title" content="Qlik Sense Performance Tuning: End-to-End Diagnosis and Optimization">
-    <meta property="og:description" content="# Qlik Sense Performance Tuning: End-to-End Diagnosis and Optimization
-
-End-to-end diagnosis and optimization: data model, QVD layer, expressions, and infrastructure - with real scripts and measurable...">
-    <meta property="og:type" content="article">
-    <meta name="author" content="Rafael Veloso">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: #f5f5f5;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            min-height: 100vh;
-        }
-        
-        header {
-            background: linear-gradient(135deg, #0077B5 0%, #00A0DC 100%);
-            color: white;
-            padding: 60px 40px 40px;
-        }
-        
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            line-height: 1.2;
-        }
-        
-        .meta {
-            font-size: 0.9em;
-            opacity: 0.9;
-        }
-        
-        article {
-            padding: 40px;
-        }
-        
-        article p {
-            margin-bottom: 1.5em;
-            font-size: 1.1em;
-        }
-        
-        article h2 {
-            margin-top: 2em;
-            margin-bottom: 1em;
-            color: #0077B5;
-        }
-        
-        article ul, article ol {
-            margin-left: 2em;
-            margin-bottom: 1.5em;
-        }
-        
-        article li {
-            margin-bottom: 0.5em;
-        }
-        
-        code {
-            background: #f4f4f4;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-        }
-        
-        pre {
-            background: #282c34;
-            color: #abb2bf;
-            padding: 20px;
-            border-radius: 5px;
-            overflow-x: auto;
-            margin-bottom: 1.5em;
-        }
-        
-        pre code {
-            background: none;
-            color: inherit;
-            padding: 0;
-        }
-        
-        footer {
-            background: #f8f8f8;
-            padding: 40px;
-            text-align: center;
-            color: #666;
-            border-top: 1px solid #e0e0e0;
-        }
-        
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 1.8em;
-            }
-            
-            header, article {
-                padding: 30px 20px;
-            }
-        }
-    </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="color-scheme" content="dark"/>
+<title>Qlik Sense Performance Tuning: End-to-End Diagnosis and Optimization</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{background:#08080f;}
+body{background:#08080f !important;color:#e2e8f0 !important;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.7;cursor:none;}
+.cursor{position:fixed;width:12px;height:12px;background:#3b82f6;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .15s ease;}
+.cursor-ring{position:fixed;width:36px;height:36px;border:1.5px solid rgba(59,130,246,.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .25s ease,width .2s,height .2s;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,8,15,.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(59,130,246,.15);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{font-size:.85rem;font-weight:700;color:#3b82f6;letter-spacing:.12em;text-transform:uppercase;}
+.nav-dots{display:flex;gap:8px;}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:rgba(59,130,246,.25);cursor:pointer;transition:background .2s;}
+.nav-dot.active{background:#3b82f6;}
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px 56px;text-align:center;position:relative;overflow:hidden;background:#08080f !important;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:999px;padding:6px 16px;font-size:.75rem;font-weight:600;color:#93c5fd;letter-spacing:.1em;text-transform:uppercase;margin-bottom:32px;}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:#3b82f6;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;line-height:1.15;max-width:860px;margin-bottom:24px;background:linear-gradient(135deg,#e2e8f0 0%,#93c5fd 50%,#3b82f6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-size:1.1rem;color:#94a3b8;max-width:640px;margin:0 auto 40px;}
+.typewriter{color:#3b82f6;font-weight:600;border-right:2px solid #3b82f6;padding-right:4px;white-space:nowrap;overflow:hidden;width:0;animation:typing 3.5s steps(60,end) 1s forwards,blink .75s step-end infinite;}
+@keyframes typing{from{width:0;}to{width:100%;}}
+@keyframes blink{50%{border-color:transparent;}}
+.hero-stats{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:40px;}
+.stat-card{background:#0d0d18 !important;border:1px solid rgba(59,130,246,.2);border-radius:12px;padding:20px 28px;text-align:center;min-width:150px;transition:transform .3s,border-color .3s;cursor:default;}
+.stat-card:hover{transform:translateY(-6px);border-color:rgba(59,130,246,.5);}
+.stat-num{font-size:2rem;font-weight:800;color:#3b82f6;display:block;}
+.stat-label{font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em;}
+.scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:#475569;font-size:.75rem;}
+.scroll-arrow{width:24px;height:24px;border-right:2px solid #3b82f6;border-bottom:2px solid #3b82f6;transform:rotate(45deg);animation:bounce 1.5s infinite;}
+@keyframes bounce{0%,100%{transform:rotate(45deg) translateY(0);}50%{transform:rotate(45deg) translateY(6px);}}
+.s-dark{background:#08080f !important;padding:56px 24px;}
+.s-mid{background:#0d0d18 !important;padding:56px 24px;}
+.s-card{background:#101020 !important;padding:56px 24px;}
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(59,130,246,.3),transparent);margin:0;}
+.container{max-width:820px;margin:0 auto;}
+h2{font-size:clamp(1.5rem,3vw,2.1rem);font-weight:700;color:#e2e8f0 !important;margin-bottom:20px;line-height:1.3;}
+h3{font-size:1.15rem;font-weight:600;color:#93c5fd !important;margin:28px 0 12px;}
+h4{font-size:.95rem;font-weight:700;color:#7dd3fc !important;margin:20px 0 8px;text-transform:uppercase;letter-spacing:.06em;}
+p{color:#cbd5e1 !important;margin-bottom:16px;font-size:1rem;}
+strong{color:#e2e8f0 !important;}
+.accent-block{border-left:3px solid #3b82f6;padding:20px 24px;background:rgba(59,130,246,.06) !important;border-radius:0 8px 8px 0;margin:24px 0;}
+.accent-block p{color:#cbd5e1 !important;margin:0;font-style:italic;}
+pre{background:#060610 !important;border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:20px;overflow-x:auto;margin:16px 0;}
+code{font-family:'Fira Code','Cascadia Code',monospace;font-size:.83rem;color:#93c5fd !important;line-height:1.6;}
+.code-label{font-size:.7rem;color:#475569;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;display:block;}
+.inline-code{font-family:'Fira Code','Cascadia Code',monospace;font-size:.85rem;color:#7dd3fc !important;background:rgba(59,130,246,.1);padding:2px 7px;border-radius:4px;}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0;}
+.compare-bad{background:#1a0a0a !important;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:16px;}
+.compare-good{background:#0a1a0a !important;border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:16px;}
+.compare-neutral{background:#0a0a1a !important;border:1px solid rgba(99,102,241,.3);border-radius:8px;padding:16px;}
+.compare-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;display:block;}
+.compare-bad .compare-label{color:#f87171 !important;}
+.compare-good .compare-label{color:#4ade80 !important;}
+.compare-neutral .compare-label{color:#a5b4fc !important;}
+.compare-bad code{color:#fca5a5 !important;}
+.compare-good code{color:#86efac !important;}
+.compare-neutral code{color:#c7d2fe !important;}
+.checklist{list-style:none;margin:16px 0;}
+.checklist li{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;background:#0d0d18 !important;border-radius:8px;border:1px solid rgba(59,130,246,.1);color:#cbd5e1 !important;font-size:.95rem;opacity:0;transform:translateX(-20px);transition:opacity .4s,transform .4s;}
+.checklist li.visible{opacity:1;transform:none;}
+.checklist li .icon{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
+.checklist li .icon.warn{color:#f87171 !important;}
+.checklist li .icon.ok{color:#4ade80 !important;}
+.checklist li .icon.info{color:#60a5fa !important;}
+.arch-flow{display:flex;flex-direction:column;gap:12px;margin:24px 0;}
+.arch-step{display:flex;align-items:flex-start;gap:16px;background:#0d0d18 !important;border:1px solid rgba(59,130,246,.15);border-radius:8px;padding:16px 20px;}
+.arch-num{width:36px;height:36px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:#08080f !important;flex-shrink:0;margin-top:2px;}
+.arch-text strong{color:#93c5fd !important;display:block;margin-bottom:4px;}
+.arch-text span{color:#94a3b8 !important;font-size:.88rem;}
+.trail-header{display:flex;align-items:center;gap:14px;margin:32px 0 20px;}
+.trail-num{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:#fff !important;flex-shrink:0;}
+.trail-num.t1{background:linear-gradient(135deg,#7c3aed,#4f46e5);}
+.trail-num.t2{background:linear-gradient(135deg,#0369a1,#0284c7);}
+.trail-num.t3{background:linear-gradient(135deg,#065f46,#059669);}
+.trail-num.t4{background:linear-gradient(135deg,#92400e,#d97706);}
+.trail-title{font-size:1.1rem;font-weight:700;color:#e2e8f0 !important;}
+.metric-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:20px 0;}
+.metric-box{background:#0d0d18 !important;border:1px solid rgba(59,130,246,.15);border-radius:10px;padding:16px;text-align:center;}
+.metric-val{font-size:1.6rem;font-weight:800;color:#3b82f6;display:block;}
+.metric-desc{font-size:.75rem;color:#64748b;margin-top:4px;}
+.tag-row{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 20px;}
+.tag{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:999px;padding:4px 12px;font-size:.75rem;color:#93c5fd !important;font-weight:600;}
+footer{background:#08080f !important;border-top:1px solid rgba(59,130,246,.1);padding:48px 24px;text-align:center;}
+footer p{color:#475569 !important;font-size:.85rem;}
+footer a{color:#3b82f6 !important;text-decoration:none;}
+.fade-in{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease;}
+.fade-in.visible{opacity:1;transform:none;}
+@media(max-width:640px){.compare-grid{grid-template-columns:1fr;}.hero-stats{flex-direction:column;align-items:center;}.metric-row{grid-template-columns:1fr 1fr;}}
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Qlik Sense Performance Tuning: End-to-End Diagnosis and Optimization</h1>
-            <div class="meta">
-                Por Rafael Veloso • 24 de maio de 2026
-            </div>
-        </header>
-        
-        <article>
-            # Qlik Sense Performance Tuning: End-to-End Diagnosis and Optimization
 
-End-to-end diagnosis and optimization: data model, QVD layer, expressions, and infrastructure - with real scripts and measurable results.
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="ring"></div>
 
-**80% of performance problems live in the data model.**
+<nav>
+  <span class="nav-logo">Rafael Veloso · Qlik Sense</span>
+  <div class="nav-dots" id="navDots">
+    <div class="nav-dot active" data-sec="0"></div>
+    <div class="nav-dot" data-sec="1"></div>
+    <div class="nav-dot" data-sec="2"></div>
+    <div class="nav-dot" data-sec="3"></div>
+    <div class="nav-dot" data-sec="4"></div>
+    <div class="nav-dot" data-sec="5"></div>
+  </div>
+</nav>
 
-| Metric | Value |
-|--------|-------|
-| Issues in model | 80% |
-| Gain with incremental | 10x |
-| RAM savings with DROP FIELDS | -60% |
-| Expression response target | 5s |
+<!-- HERO -->
+<section class="hero" data-sec="0">
+  <div class="hero-badge"><span class="hero-badge-dot"></span>Advanced Technical Guide</div>
+  <h1>Qlik Sense Performance Tuning</h1>
+  <p class="hero-sub">End-to-end diagnosis and optimization: data model, QVD layer, expressions, and infrastructure - with real scripts and measurable results.</p>
+  <div class="typewriter">80% of performance problems live in the data model.</div>
+  <div class="hero-stats">
+    <div class="stat-card"><span class="stat-num">80%</span><span class="stat-label">Issues in model</span></div>
+    <div class="stat-card"><span class="stat-num">10x</span><span class="stat-label">Gain with incremental</span></div>
+    <div class="stat-card"><span class="stat-num">60%</span><span class="stat-label">RAM with DROP FIELDS</span></div>
+    <div class="stat-card"><span class="stat-num">5s</span><span class="stat-label">Expression target</span></div>
+  </div>
+  <div class="scroll-hint"><span>scroll to explore</span><div class="scroll-arrow"></div></div>
+</section>
 
----
+<div class="divider"></div>
 
-## 1. Diagnosis Before Optimization
+<!-- SECTION 1: DIAGNOSIS -->
+<section class="s-mid" data-sec="1">
+<div class="container">
+  <div class="fade-in">
+    <h2>1. Diagnosis Before Optimization</h2>
+    <p>The most common mistake in performance work is jumping straight to fixes. Before changing anything, you need to understand <strong>where the bottleneck actually is</strong>. Qlik Sense performance issues fall into four distinct categories - and the fix for each is completely different.</p>
+  </div>
 
-The most common mistake in performance work is jumping straight to fixes. Before changing anything, you need to understand **where the bottleneck actually is**. Qlik Sense performance issues fall into four distinct categories - and the fix for each is completely different.
+  <div class="metric-row fade-in">
+    <div class="metric-box"><span class="metric-val">🔷</span><span class="metric-desc"><strong style="color:#93c5fd">Data Model</strong><br/>Synthetic keys, unnecessary fields, unoptimized schema</span></div>
+    <div class="metric-box"><span class="metric-val">⚙️</span><span class="metric-desc"><strong style="color:#93c5fd">Reload Script</strong><br/>Full loads where incremental applies, inefficient joins</span></div>
+    <div class="metric-box"><span class="metric-val">📊</span><span class="metric-desc"><strong style="color:#93c5fd">Expressions</strong><br/>IF() inside aggregations, AGGR() in every chart</span></div>
+    <div class="metric-box"><span class="metric-val">🖥️</span><span class="metric-desc"><strong style="color:#93c5fd">Infrastructure</strong><br/>RAM, CPU, node sizing, Qlik Cloud tier</span></div>
+  </div>
 
-- **Data Model**: Synthetic keys, unnecessary fields, unoptimized schema
-- **Reload Script**: Full loads where incremental applies, inefficient joins
-- **Expressions**: IF() inside aggregations, AGGR() in every chart
-- **Infrastructure**: RAM, CPU, node sizing, Qlik Cloud tier
+  <h3>Reading the Reload Log</h3>
+  <p>Every reload in Qlik Sense generates a detailed log. Knowing how to read it is the first diagnostic step. Go to <strong>Management Console &gt; Apps &gt; [App] &gt; Reload History</strong>, or in Qlik Cloud, check the App Activity log.</p>
 
-### Reading the Reload Log
-
-Every reload in Qlik Sense generates a detailed log. Knowing how to read it is the first diagnostic step. Go to **Management Console > Apps > [App] > Reload History**, or in Qlik Cloud, check the App Activity log.
-
-```
+  <pre><code class="code-label">// Patterns to look for in the reload log</code><code>
 -- SYNTHETIC KEY WARNING --
 A synthetic key was generated for table [Orders]:
 Fields: CustomerID, ProductID
@@ -165,32 +159,41 @@ Action: implement incremental load to avoid reprocessing 12M rows.
 
 -- LARGE FIELD --
 Field [LegacyXMLPayload]: 48 MB, 0 distinct values used in any chart
-Action: DROP this field - consuming RAM with zero analytical value.
-```
+Action: DROP this field - it's consuming RAM with zero analytical value.
+</code></pre>
 
-### Structured Diagnosis Workflow
+  <h3>Structured Diagnosis Workflow</h3>
+  <div class="arch-flow fade-in">
+    <div class="arch-step"><div class="arch-num">1</div><div class="arch-text"><strong>Review the reload log</strong><span>Look for synthetic keys, slow tables, unnecessary fields, and full loads that should be incremental.</span></div></div>
+    <div class="arch-step"><div class="arch-num">2</div><div class="arch-text"><strong>Check the data model</strong><span>In Qlik Sense Desktop or Management Console, review the table structure. Identify loop links and orphan tables.</span></div></div>
+    <div class="arch-step"><div class="arch-num">3</div><div class="arch-text"><strong>Profile expression response time</strong><span>Use the Engine Diagnostics API (or Browser DevTools) to identify which chart objects take the longest to render.</span></div></div>
+    <div class="arch-step"><div class="arch-num">4</div><div class="arch-text"><strong>Check RAM consumption</strong><span>In Qlik Sense Enterprise, monitor the QIX Engine RAM. Each resident table and each field occupies in-memory space.</span></div></div>
+    <div class="arch-step"><div class="arch-num">5</div><div class="arch-text"><strong>Prioritize by impact</strong><span>Model issues first, then script, then expressions, then infrastructure. Don't add hardware to paper over a bad model.</span></div></div>
+  </div>
 
-1. **Review the reload log** - Look for synthetic keys, slow tables, unnecessary fields, and full loads that should be incremental.
-2. **Check the data model** - Review the table structure. Identify loop links and orphan tables.
-3. **Profile expression response time** - Use the Engine Diagnostics API to identify which chart objects take the longest to render.
-4. **Check RAM consumption** - Monitor the QIX Engine RAM. Each resident table and each field occupies in-memory space.
-5. **Prioritize by impact** - Model issues first, then script, then expressions, then infrastructure. Don't add hardware to paper over a bad model.
+  <div class="accent-block fade-in">
+    <p>"Throwing more RAM at a poorly designed model is like widening a highway that leads nowhere. Fix the model first - infrastructure is the last resort, not the first response."</p>
+  </div>
+</div>
+</section>
 
-> "Throwing more RAM at a poorly designed model is like widening a highway that leads nowhere. Fix the model first - infrastructure is the last resort, not the first response."
+<div class="divider"></div>
 
----
+<!-- SECTION 2: DATA MODEL -->
+<section class="s-card" data-sec="2">
+<div class="container">
+  <div class="fade-in">
+    <h2>2. Data Model Optimization</h2>
+    <p>The data model is the foundation of everything. A well-structured model means less RAM, faster selections, and expressions that evaluate in milliseconds. A poor model corrupts all subsequent optimization efforts.</p>
+  </div>
 
-## 2. Data Model Optimization
+  <div class="trail-header fade-in"><div class="trail-num t1">SK</div><div class="trail-title">Synthetic Key Elimination</div></div>
+  <p>Qlik creates synthetic keys when two or more tables share more than one field with the same name. The result is a hidden composite-key table that multiplies in memory and makes debugging nightmarish.</p>
 
-The data model is the foundation of everything. A well-structured model means less RAM, faster selections, and expressions that evaluate in milliseconds. A poor model corrupts all subsequent optimization efforts.
-
-### Synthetic Key Elimination
-
-Qlik creates synthetic keys when two or more tables share more than one field with the same name. The result is a hidden composite-key table that multiplies in memory and makes debugging nightmarish.
-
-**Problem - synthetic key generated:**
-
-```qlik
+  <div class="compare-grid fade-in">
+    <div class="compare-bad">
+      <span class="compare-label">Problem - synthetic key generated</span>
+      <pre><code>
 Orders:
 LOAD
   OrderID,
@@ -206,27 +209,38 @@ LOAD
   ProductID,   // shared = synthetic key!
   UnitPrice
 FROM order_details.csv;
-// Qlik creates $Syn1 - hidden composite key table
-```
+// Qlik creates $Syn1 - hidden table
+// with CustomerID + ProductID composite
+</code></pre>
+    </div>
+    <div class="compare-good">
+      <span class="compare-label">Fix - alias to isolate the key</span>
+      <pre><code>
+Orders:
+LOAD
+  OrderID,
+  CustomerID,
+  ProductID,
+  Quantity
+FROM orders.csv;
 
-**Fix - alias to isolate the key:**
-
-```qlik
 OrderDetails:
 LOAD
   OrderID,
-  CustomerID AS Cust_Detail,  // alias eliminates conflict
-  ProductID  AS Prod_Detail,  // alias eliminates conflict
+  CustomerID AS Cust_Detail,  // alias
+  ProductID  AS Prod_Detail,  // alias
   UnitPrice
 FROM order_details.csv;
-// No synthetic key. Join via OrderID only - clean model.
-```
+// No synthetic key.
+// Join via OrderID only - clean model.
+</code></pre>
+    </div>
+  </div>
 
-### DROP FIELDS - Remove What You Don't Use
+  <div class="trail-header fade-in"><div class="trail-num t2">DF</div><div class="trail-title">DROP FIELDS - Remove What You Don't Use</div></div>
+  <p>Every field loaded into Qlik occupies RAM - even if no chart ever references it. ETL columns, internal control flags, legacy codes, and XML payloads are common culprits. Drop them explicitly in script.</p>
 
-Every field loaded into Qlik occupies RAM - even if no chart ever references it. ETL columns, internal control flags, legacy codes, and XML payloads are common culprits.
-
-```qlik
+  <pre class="fade-in"><code class="code-label">// Pattern: load → clean → drop</code><code>
 Orders:
 LOAD
   OrderID,
@@ -235,25 +249,49 @@ LOAD
   Quantity,
   UnitPrice,
   OrderDate,
-  ETLTimestamp,      // ETL control - no analytical value
-  BatchID,           // batch processing - not needed in the model
-  InternalRef,       // legacy internal code
-  LegacyXMLPayload   // payload from old system - 48 MB of RAM wasted
+  ETLTimestamp,     // ETL control - no analytical value
+  BatchID,          // batch processing - not needed in the model
+  InternalRef,      // legacy internal code
+  LegacyXMLPayload  // payload from old system - 48 MB of RAM wasted
 FROM orders.csv;
 
 // Drop immediately after loading
+// Fields no longer exist in QIX Engine - no RAM consumed
 DROP FIELDS ETLTimestamp, BatchID, InternalRef, LegacyXMLPayload;
+
+// Result: the table exists in memory without the waste fields
 // Measured gain in this example: ~38% RAM reduction for the Orders table
-```
+</code></pre>
 
-Audit practice: once a month, cross-reference all loaded fields against expressions and master items. Every field not referenced in any chart or master item is a candidate for dropping.
+  <div class="accent-block fade-in">
+    <p>Audit practice: once a month, run <span class="inline-code">FOR EACH field IN FieldNames()</span> in a temporary script and cross-reference against all expression sheets. Every field not referenced in any chart or master item is a candidate for dropping.</p>
+  </div>
 
-### Star Schema - Denormalize in Script, Not in the Model
+  <div class="trail-header fade-in"><div class="trail-num t3">SS</div><div class="trail-title">Star Schema - Denormalize in Script, Not in the Model</div></div>
+  <p>Qlik is optimized for star schema: one large fact table surrounded by smaller dimension tables. If your source is a relational database with multiple join levels (snowflake), denormalize during the script load - not by creating multiple associative links in the model.</p>
 
-Qlik is optimized for star schema: one large fact table surrounded by smaller dimension tables. If your source is a relational database with multiple join levels (snowflake), denormalize during the script load.
+  <div class="compare-grid fade-in">
+    <div class="compare-bad">
+      <span class="compare-label">Avoid - multi-level links in the model</span>
+      <pre><code>
+// Loading normalized tables directly
+// creates a snowflake inside Qlik:
+// Fact → SubCategory → Category → Department
+// Each link adds overhead on selection
 
-```qlik
-// Recommended - denormalize into one flat dimension:
+FactSales: LOAD ... FROM fact_sales.csv;
+SubCategory: LOAD ... FROM sub_category.csv;
+Category: LOAD ... FROM category.csv;
+Department: LOAD ... FROM department.csv;
+// 4 tables, 3 join levels - slow selections
+</code></pre>
+    </div>
+    <div class="compare-good">
+      <span class="compare-label">Recommended - denormalize into one dimension</span>
+      <pre><code>
+// Join at load time - deliver flat dimension
+// No extra links in the model
+
 DimProduct:
 LOAD
   p.ProductID,
@@ -267,59 +305,93 @@ JOIN category c ON s.CategoryID = c.CategoryID
 JOIN department d ON c.DepartmentID = d.DepartmentID;
 // 1 flat dimension - clean star schema
 // Selections propagate directly to FactSales
-```
+</code></pre>
+    </div>
+  </div>
 
-### NoConcatenate - When Qlik Concatenates Unexpectedly
+  <h3>NoConcatenate - When Qlik Concatenates Unexpectedly</h3>
+  <p>When two tables have the same field names, Qlik automatically concatenates them (adds rows). This is useful sometimes - but not when the tables are conceptually distinct. Use <span class="inline-code">NoConcatenate</span> to prevent it.</p>
 
-When two tables have the same field names, Qlik automatically concatenates them. Use `NoConcatenate` to prevent it.
+  <pre class="fade-in"><code>
+// Without NoConcatenate:
+// If PlanSales has the same fields as ActualSales,
+// Qlik combines them into a single table - wrong behavior.
 
-```qlik
 PlanSales:
 LOAD SaleDate, ProductID, Amount FROM plan.csv;
 
-// Without NoConcatenate, Qlik merges PlanSales and ActualSales
-// because fields match - wrong behavior.
+// Qlik would auto-concatenate here because fields match.
+// Use NoConcatenate to keep tables separate:
 
 ActualSales:
 NoConcatenate
 LOAD SaleDate, ProductID, Amount FROM actuals.csv;
-// Now they are two separate tables
-```
 
----
+// Now they are two separate tables - model links via ProductID
+</code></pre>
+</div>
+</section>
 
-## 3. Script and QVD Layer
+<div class="divider"></div>
 
-The QVD layer is the highest-impact performance technique available in Qlik. A well-structured QVD layer transforms a 4-hour full reload into a 12-minute incremental load - without changing a single chart or expression.
+<!-- SECTION 3: SCRIPT AND QVD -->
+<section class="s-mid" data-sec="3">
+<div class="container">
+  <div class="fade-in">
+    <h2>3. Script and QVD Layer</h2>
+    <p>The QVD layer is the highest-impact performance technique available in Qlik. A well-structured QVD layer transforms a 4-hour full reload into a 12-minute incremental load - without changing a single chart or expression.</p>
+  </div>
 
-### Incremental Load - The Most Impactful Pattern
+  <div class="trail-header fade-in"><div class="trail-num t1">IL</div><div class="trail-title">Incremental Load - The Most Impactful Pattern</div></div>
+  <p>The logic is simple: on first run, load everything and store to QVD. On subsequent runs, load only what's new or changed (delta), merge with what's already in the QVD, then store the updated QVD back.</p>
 
-The logic: on first run, load everything and store to QVD. On subsequent runs, load only what's new or changed (delta), merge with what's already in the QVD, then store the updated QVD back.
-
-```qlik
+  <pre class="fade-in"><code class="code-label">// Complete incremental load pattern - production-ready</code><code>
 // Step 1: get timestamp of last load stored in the QVD
 LET vLastLoad = Peek('UpdatedAt', -1, 'MaxDate');
 
 IF IsNull(vLastLoad) OR NOT QvdNoOfRecords('lib://QVDs/sales.qvd') > 0 THEN
-  // FULL LOAD (first run or corrupted QVD)
+  // ---- FULL LOAD (first run or corrupted QVD) ----
+  TRACE === FULL LOAD: loading all sales ===;
+
   Sales_Full:
-  LOAD SaleID, CustomerID, ProductID, Amount, SaleDate, UpdatedAt
+  LOAD
+    SaleID,
+    CustomerID,
+    ProductID,
+    Amount,
+    SaleDate,
+    UpdatedAt
   FROM [lib://Sources/sales.csv]
-  WHERE UpdatedAt >= '1900-01-01';
+  WHERE UpdatedAt >= '1900-01-01';  // load everything
 
   STORE Sales_Full INTO [lib://QVDs/sales.qvd] (qvd);
   DROP TABLE Sales_Full;
 
 ELSE
-  // INCREMENTAL LOAD (delta only)
+  // ---- INCREMENTAL LOAD (delta only) ----
+  TRACE === INCREMENTAL: loading delta since $(vLastLoad) ===;
+
+  // Load only new/changed records from source
   Sales_Delta:
-  LOAD SaleID, CustomerID, ProductID, Amount, SaleDate, UpdatedAt
+  LOAD
+    SaleID,
+    CustomerID,
+    ProductID,
+    Amount,
+    SaleDate,
+    UpdatedAt
   FROM [lib://Sources/sales.csv]
   WHERE UpdatedAt >= '$(vLastLoad)';
 
   // Load existing QVD excluding records already in delta
   Sales_Existing:
-  LOAD SaleID, CustomerID, ProductID, Amount, SaleDate, UpdatedAt
+  LOAD
+    SaleID,
+    CustomerID,
+    ProductID,
+    Amount,
+    SaleDate,
+    UpdatedAt
   FROM [lib://QVDs/sales.qvd] (qvd)
   WHERE NOT EXISTS(SaleID);
 
@@ -328,83 +400,186 @@ ELSE
   LOAD * RESIDENT Sales_Delta;
   DROP TABLE Sales_Delta;
 
+  // Store merged result back to QVD
   STORE Sales_Existing INTO [lib://QVDs/sales.qvd] (qvd);
   DROP TABLE Sales_Existing;
 
 END IF
 
-// Load from QVD into the model (always optimized read)
+// Step 2: load from QVD into the model (always optimized)
 Sales:
 LOAD * FROM [lib://QVDs/sales.qvd] (qvd);
 
-// Record the max timestamp for next run
+// Step 3: record the max timestamp for next run
 MaxDate:
 LOAD Max(UpdatedAt) AS UpdatedAt RESIDENT Sales;
-```
+</code></pre>
 
-Critical prerequisite: the source table must have a reliable **UpdatedAt** timestamp field updated on every INSERT and UPDATE. Without this, incremental load is unreliable.
+  <div class="accent-block fade-in">
+    <p>Critical prerequisite: the source table must have a reliable <strong>UpdatedAt</strong> or equivalent timestamp field that is updated on every INSERT and UPDATE. Without this, incremental load is unreliable.</p>
+  </div>
 
-### Buffer LOAD - Smart Caching for Slow Sources
+  <div class="trail-header fade-in"><div class="trail-num t2">BL</div><div class="trail-title">Buffer LOAD - Smart Caching for Slow Sources</div></div>
+  <p>Buffer LOAD is a built-in Qlik caching mechanism. On first run, data is loaded from the source and cached in a temporary QVD file. On subsequent runs within the defined stale window, Qlik reads from the cache - not from the source.</p>
 
-```qlik
-// Buffer LOAD - caches for 7 days, then auto-invalidates
+  <pre class="fade-in"><code>
+// Standard LOAD - hits source every time
+DimProduct:
+LOAD ProductID, ProductName, Category, UnitCost
+FROM [lib://Sources/products.csv];
+
+// Buffer LOAD - caches for 7 days
+// After 7 days, Qlik automatically invalidates and reloads from source
 Buffer (stale [7 days]) DimProduct:
 LOAD ProductID, ProductName, Category, UnitCost
 FROM [lib://Sources/products.csv];
 
 // Ideal for: slowly-changing dimensions (products, regions, cost centers)
 // Not ideal for: rapidly changing data (stock prices, real-time sales)
-```
 
-### Binary LOAD - Reuse Another App's Data Model
+// Buffer LOAD also works with database connections:
+Buffer (stale [1 day]) DimRegion:
+SQL SELECT RegionID, RegionName, Country, TimeZone FROM dim_region;
+</code></pre>
 
-```qlik
+  <div class="trail-header fade-in"><div class="trail-num t3">BN</div><div class="trail-title">Binary LOAD - Reuse Another App's Data Model</div></div>
+  <p>Binary LOAD imports the complete data model of another Qlik app - all tables, all fields - without re-running any script. Ideal when multiple apps share a common dimension layer.</p>
+
+  <pre class="fade-in"><code>
 // In the secondary app - load everything from the primary:
 Binary [lib://Apps/MasterDimensions.qvf];
 
+// After Binary LOAD, all tables from the primary app are available.
 // Only load the specific fact tables this app needs:
+
 FactSalesRegion:
 LOAD RegionID, ProductID, Amount, SaleDate
 FROM [lib://QVDs/fact_sales_region.qvd] (qvd);
 
 // This model instantly inherits DimProduct, DimCustomer,
 // DimRegion, DimDate from the primary app - no reprocessing.
-```
+</code></pre>
 
----
+  <h3>LOAD Ordering - Reduce Passes Through the Data</h3>
+  <p>In Qlik, when you LOAD a table preceded by a derived LOAD (using the result of the previous LOAD), the engine has to make two passes. When possible, combine calculations into a single LOAD to minimize passes.</p>
 
-## 4. Expressions and Visualizations
+  <div class="compare-grid fade-in">
+    <div class="compare-bad">
+      <span class="compare-label">Two passes - less efficient</span>
+      <pre><code>
+// First pass: load raw fields
+T1:
+LOAD SaleID, Amount, Discount FROM sales.csv;
 
-Even a perfect data model can be negated by inefficient expressions. The most expensive operations in Qlik chart rendering are IF() inside aggregations, excessive AGGR() calls, and too many objects on a single sheet.
+// Second pass: derive NetAmount from T1
+// Qlik reads the resident table again
+T2:
+LOAD
+  SaleID,
+  Amount,
+  Discount,
+  Amount * (1 - Discount) AS NetAmount
+RESIDENT T1;
+DROP TABLE T1;
+</code></pre>
+    </div>
+    <div class="compare-good">
+      <span class="compare-label">Single pass - more efficient</span>
+      <pre><code>
+// Single LOAD - derive NetAmount on the fly
+// No RESIDENT intermediate table needed
 
-### Set Analysis vs IF() - The Most Common Mistake
+Sales:
+LOAD
+  SaleID,
+  Amount,
+  Discount,
+  Amount * (1 - Discount) AS NetAmount
+FROM sales.csv;
 
-Using IF() inside Sum() or Count() forces Qlik to evaluate the condition for every single row before aggregating. Set Analysis filters the data set *before* evaluation using index structures - dramatically faster on large datasets.
+// One pass over the source.
+// Fewer resident tables = less RAM overhead.
+</code></pre>
+    </div>
+  </div>
+</div>
+</section>
 
-**Slow - IF() inside aggregation:**
+<div class="divider"></div>
 
-```qlik
+<!-- SECTION 4: EXPRESSIONS AND VISUALIZATIONS -->
+<section class="s-card" data-sec="4">
+<div class="container">
+  <div class="fade-in">
+    <h2>4. Expressions and Visualizations</h2>
+    <p>Even a perfect data model can be negated by inefficient expressions. The most expensive operations in Qlik chart rendering are IF() inside aggregations, excessive AGGR() calls, and too many objects on a single sheet.</p>
+  </div>
+
+  <div class="trail-header fade-in"><div class="trail-num t1">SA</div><div class="trail-title">Set Analysis vs IF() - The Most Common Mistake</div></div>
+  <p>Using IF() inside Sum() or Count() forces Qlik to evaluate the condition for every single row in the data model before aggregating. Set Analysis, by contrast, filters the data set <em>before</em> evaluation using index structures - dramatically faster on large datasets.</p>
+
+  <div class="compare-grid fade-in">
+    <div class="compare-bad">
+      <span class="compare-label">Slow - IF() inside aggregation</span>
+      <pre><code>
+// Evaluates every row, then sums:
 // 12M rows = 12M IF() evaluations per expression
+
 Sum(IF(Category = 'Electronics', Amount, 0))
-Count(IF(Status = 'Completed' AND Region = 'West', OrderID, NULL()))
-```
 
-**Fast - Set Analysis filters before aggregating:**
+Count(IF(Status = 'Completed'
+  AND Region = 'West', OrderID, NULL()))
 
-```qlik
-// Filters using QIX index - no row-by-row evaluation
-Sum({<Category={'Electronics'}>} Amount)
-Count({<Status={'Completed'},Region={'West'}>} OrderID)
+// Even worse in nested calculations:
+Sum(IF(Year = Year(Today()),
+  IF(Category = 'Electronics', Amount, 0), 0))
+</code></pre>
+    </div>
+    <div class="compare-good">
+      <span class="compare-label">Fast - Set Analysis filters before aggregating</span>
+      <pre><code>
+// Filters using QIX index, then sums only matching rows
+// No row-by-row evaluation
+
+Sum({&lt;Category={'Electronics'}&gt;} Amount)
+
+Count({&lt;Status={'Completed'},Region={'West'}&gt;} OrderID)
+
+// Nested filters - still fast:
+Sum({&lt;Year={$(=Year(Today()))},
+     Category={'Electronics'}&gt;} Amount)
 
 // Rule: if you're filtering inside an aggregation,
 // it should be Set Analysis, not IF().
-```
+</code></pre>
+    </div>
+  </div>
 
-### AGGR() - Pre-calculate in Script, Not in Every Chart
+  <div class="trail-header fade-in"><div class="trail-num t2">AG</div><div class="trail-title">AGGR() - Pre-calculate in Script, Not in Every Chart</div></div>
+  <p>AGGR() creates a virtual table with a derived aggregation level. When the same AGGR() expression appears in multiple charts on the same sheet, Qlik recalculates it for each one. The fix: calculate once in the script and expose as a regular field.</p>
 
-When the same AGGR() expression appears in multiple charts, Qlik recalculates it independently for each one. The fix: calculate once in the script and expose as a regular field.
+  <div class="compare-grid fade-in">
+    <div class="compare-bad">
+      <span class="compare-label">Expensive - AGGR() repeated in each chart</span>
+      <pre><code>
+// Chart 1: Sales by Product - Average per Customer
+Avg(AGGR(Sum(Amount), CustomerID, ProductID))
 
-```qlik
+// Chart 2: Top products by average customer value
+// Same AGGR() - recalculated independently
+Rank(Avg(AGGR(Sum(Amount), CustomerID, ProductID)))
+
+// Chart 3: Outlier identification
+// Same AGGR() again - third recalculation
+Sum(Amount) / Avg(AGGR(Sum(Amount), CustomerID, ProductID))
+
+// Each chart triggers its own AGGR() pass
+// 3 charts = 3 full virtual table computations
+</code></pre>
+    </div>
+    <div class="compare-good">
+      <span class="compare-label">Efficient - pre-calculate in script</span>
+      <pre><code>
 // In the load script - calculate once, store in QVD:
 SalesPerCustomerProduct:
 LOAD
@@ -414,82 +589,203 @@ LOAD
 RESIDENT FactSales
 GROUP BY CustomerID, ProductID;
 
-// All charts now use simple aggregation over an indexed field:
-Avg(TotalAmountPerCustomerProduct)
+// All charts now use:
+Avg(TotalAmountPerCustomerProduct)  // simple aggregation
 Rank(Avg(TotalAmountPerCustomerProduct))
 Sum(Amount) / Avg(TotalAmountPerCustomerProduct)
 
+// QIX engine treats this as a standard indexed field.
 // Performance difference on 10M rows: ~15x faster rendering.
-```
+</code></pre>
+    </div>
+  </div>
 
-### Variables for Reused Expressions
+  <div class="trail-header fade-in"><div class="trail-num t3">VR</div><div class="trail-title">Variables for Reused Expressions</div></div>
+  <p>When the same complex expression is used in multiple charts, store it in a variable. Changing the expression in one place propagates automatically. And if the expression involves a heavy calculation, centralizing it can allow the engine to cache the result.</p>
 
-```qlik
-// Define once:
-SET vCurrentYearFilter = '{<Year={$(=Year(Today()))}>}';
-SET vElectronicsFilter = '{<Category={''Electronics''}>}';
+  <pre class="fade-in"><code>
+// Define once in the script (or in the Load script Variables section):
+SET vCurrentYearFilter = '{&lt;Year={$(=Year(Today()))}&gt;}';
+SET vElectronicsFilter = '{&lt;Category={''Electronics''}&gt;}';
+SET vTargetMargin     = '0.35';
 
-// Use everywhere - update logic in one place:
+// In each chart expression - clean and consistent:
 Sum($(vCurrentYearFilter) Amount)
 Sum($(vElectronicsFilter) Amount)
-```
+Sum($(vCurrentYearFilter) Amount) * $(vTargetMargin)
 
-### Sheet Design: The Object Count Rule
+// Combined:
+Sum({&lt;Year={$(=Year(Today()))},Category={'Electronics'}&gt;} Amount)
+// becomes:
+Sum($(vCurrentYearFilter) $(vElectronicsFilter) Amount)
+// Reads more clearly; update logic in one place.
+</code></pre>
 
-Each object on a sheet triggers its own calculation cycle on every selection. The target for interactive dashboards is **8 to 10 objects per sheet maximum**.
+  <h3>Sheet Design: The Object Count Rule</h3>
+  <p>Each object on a sheet triggers its own calculation cycle on every selection. More objects = longer response time per click. The target for interactive dashboards is 8 to 10 objects per sheet maximum.</p>
 
-- Limit to 8-10 objects per sheet - split content across sheets when needed
-- Use Show Conditions on heavy objects: `GetSelectedCount(Year) > 0`
-- Enable "Always One Selected Value" on date dimensions to prevent full-range aggregation
-- Use ODAG (On-Demand App Generation) for detail drill-through - keep the summary app light
-- Avoid table objects with more than 20 columns - each column is a separate expression cycle
+  <ul class="checklist fade-in" id="checklistSheet">
+    <li><span class="icon warn">⚠️</span><div><strong>Limit to 8-10 objects per sheet.</strong> Beyond this, selection response time degrades noticeably even with a fast model. Split content across sheets.</div></li>
+    <li><span class="icon warn">⚠️</span><div><strong>Use Show Conditions on heavy objects.</strong> Set <span class="inline-code">GetSelectedCount(Year) > 0</span> so a chart only renders when its dimension is actually selected.</div></li>
+    <li><span class="icon ok">✅</span><div><strong>Enable "Always One Selected Value" on date dimensions.</strong> Prevents charts from aggregating all years at once when no year is selected - a common performance trap.</div></li>
+    <li><span class="icon ok">✅</span><div><strong>Use ODAG (On-Demand App Generation) for detail drill-through.</strong> Keep the summary app light; generate the detail app only when the user explicitly requests it.</div></li>
+    <li><span class="icon info">ℹ️</span><div><strong>Prefer containers over separate sheets for related views.</strong> One container with tabs = one calculation context. Multiple sheets = multiple independent contexts.</div></li>
+    <li><span class="icon info">ℹ️</span><div><strong>Avoid table objects with &gt;20 columns.</strong> Each column is a separate expression cycle. Use pivot tables or reduce column count - export detail data via NPrinting or Qlik Application Automation.</div></li>
+  </ul>
+</div>
+</section>
 
----
+<div class="divider"></div>
 
-## 5. Profiling and Continuous Audit
+<!-- SECTION 5: PROFILING AND AUDIT -->
+<section class="s-mid" data-sec="5">
+<div class="container">
+  <div class="fade-in">
+    <h2>5. Profiling and Continuous Audit</h2>
+    <p>Performance is not a one-time fix. As data volumes grow and new developers add expressions and objects, performance degrades silently. Building a regular audit practice into your workflow is what separates production-quality apps from ones that work until they don't.</p>
+  </div>
 
-Performance is not a one-time fix. As data volumes grow and new developers add expressions and objects, performance degrades silently. Building a regular audit practice is what separates production-quality apps from ones that work until they don't.
+  <h3>Engine Diagnostics API</h3>
+  <p>The Qlik Engine REST API exposes detailed profiling data for each app. This endpoint reveals which expressions consume the most time and RAM - the starting point for targeted optimization.</p>
 
-### TRACE Timing Markers in Script
+  <pre class="fade-in"><code class="code-label">// Engine API - app profiling (Qlik Sense Enterprise)</code><code>
+// Authenticate and get app session:
+GET https://&lt;qlik-server&gt;/api/v1/apps/{appId}/evaluations
 
-```qlik
+// Or use the Engine JSON API (WebSocket):
+{
+  "method": "Global.GetDocList",
+  "params": {}
+}
+
+// Request object properties including layout calculation time:
+{
+  "method": "Doc.GetObject",
+  "params": {
+    "qId": "chart-object-id"
+  }
+}
+
+// In Qlik Cloud, use the dedicated profiling endpoint:
+GET https://&lt;tenant&gt;.us.qlikcloud.com/api/v1/apps/{appId}/diagnostics
+// Returns: calculation time per object, cache hit rate,
+//          memory consumption per table and field
+</code></pre>
+
+  <h3>TRACE Timing Markers in Script</h3>
+  <p>Add TRACE markers with timestamps directly in your reload script. The output is visible in the reload log and allows you to pinpoint exactly which table or transformation is causing slow reloads.</p>
+
+  <pre class="fade-in"><code>
+// Pattern: timestamp before and after each major table load
+
+// ===== SECTION: SALES FACT TABLE =====
 LET vT0 = Now();
 TRACE === START: Loading FactSales ===;
 
 FactSales:
-LOAD SaleID, CustomerID, ProductID, Amount, SaleDate
+LOAD
+  SaleID, CustomerID, ProductID, Amount, SaleDate
 FROM [lib://QVDs/fact_sales.qvd] (qvd);
 
-TRACE === DONE: FactSales loaded, time: $(Interval(Now() - vT0, 'mm:ss')) ===;
+TRACE === DONE: FactSales - $(QvdNoOfRecords('lib://QVDs/fact_sales.qvd')) rows, time: $(Interval(Now() - vT0, 'mm:ss')) ===;
+
+// ===== SECTION: CUSTOMER DIMENSION =====
+LET vT1 = Now();
+TRACE === START: Loading DimCustomer ===;
+
+DimCustomer:
+LOAD CustomerID, CustomerName, Segment, Region
+FROM [lib://QVDs/dim_customer.qvd] (qvd);
+
+TRACE === DONE: DimCustomer - $(NoOfRows('DimCustomer')) rows, time: $(Interval(Now() - vT1, 'mm:ss')) ===;
 
 // Check the reload log to see which section is slowest.
-// If FactSales takes 4 minutes, incremental load gives the biggest gain.
-```
+// If FactSales takes 4 minutes and DimCustomer takes 2 seconds,
+// incremental load for FactSales will give you the biggest gain.
+</code></pre>
 
-### Performance Audit Checklist
+  <h3>Performance Audit Checklist</h3>
+  <ul class="checklist fade-in" id="checklistAudit">
+    <li><span class="icon warn">⚠️</span><div><strong>Check for synthetic keys monthly.</strong> Open the data model viewer. Any table named $Syn* is a synthetic key. Resolve with aliasing or a mapping table.</div></li>
+    <li><span class="icon warn">⚠️</span><div><strong>Audit unused fields quarterly.</strong> Cross-reference all loaded fields against expressions and master items. Every orphaned field is wasted RAM.</div></li>
+    <li><span class="icon warn">⚠️</span><div><strong>Scan for IF() inside aggregations.</strong> Use text search in the app editor for <span class="inline-code">Sum(IF</span>, <span class="inline-code">Count(IF</span>, <span class="inline-code">Avg(IF</span>. Replace with Set Analysis.</div></li>
+    <li><span class="icon ok">✅</span><div><strong>Verify incremental load is working.</strong> Compare row counts in reload log: if full reload rows equals incremental rows every run, delta detection is broken.</div></li>
+    <li><span class="icon ok">✅</span><div><strong>Review sheet object count per sheet.</strong> Anything over 12 objects warrants splitting into sub-sheets or using a container.</div></li>
+    <li><span class="icon ok">✅</span><div><strong>Confirm QVD layer stale times are appropriate.</strong> Dimension QVDs cached for 7 days? Fact QVDs refreshed daily or hourly? Validate business requirements match the refresh schedule.</div></li>
+    <li><span class="icon info">ℹ️</span><div><strong>Document TRACE markers in every production script.</strong> Makes diagnosis faster when a reload slows down after a schema change.</div></li>
+    <li><span class="icon info">ℹ️</span><div><strong>Test expression response time after major data volume increases.</strong> An expression that runs in 2 seconds at 5M rows may take 18 seconds at 50M rows - especially AGGR() in charts.</div></li>
+  </ul>
 
-- **Monthly**: Check for synthetic keys - any table named $Syn* needs resolution with aliasing
-- **Monthly**: Scan for `Sum(IF`, `Count(IF`, `Avg(IF` - replace with Set Analysis
-- **Quarterly**: Audit unused fields - cross-reference all loaded fields against expressions
-- **Each deploy**: Verify incremental load is working by comparing row counts in reload log
-- **Each deploy**: Review sheet object count - anything over 12 warrants splitting
-- **Each deploy**: Confirm QVD layer stale times match business requirements
-- **After volume increases**: Test expression response time - an expression at 2s for 5M rows may take 18s at 50M rows, especially AGGR() in charts
+  <div class="accent-block fade-in">
+    <p>Senior-level insight: the most resilient Qlik apps are not those with the most features - they are those where the developer can explain, in 30 seconds, exactly where each row of data comes from, why each field exists, and what the worst-case selection scenario looks like. If you can't explain it, you can't optimize it.</p>
+  </div>
 
-> Senior-level insight: the most resilient Qlik apps are not those with the most features - they are those where the developer can explain, in 30 seconds, exactly where each row of data comes from, why each field exists, and what the worst-case selection scenario looks like. If you can't explain it, you can't optimize it.
+  <div class="tag-row fade-in">
+    <span class="tag">QlikSense</span>
+    <span class="tag">PerformanceTuning</span>
+    <span class="tag">QVD</span>
+    <span class="tag">DataEngineering</span>
+    <span class="tag">SetAnalysis</span>
+    <span class="tag">IncrementalLoad</span>
+    <span class="tag">BI</span>
+    <span class="tag">DataModeling</span>
+    <span class="tag">QlikDeveloper</span>
+    <span class="tag">BusinessIntelligence</span>
+  </div>
+</div>
+</section>
 
----
+<footer>
+  <p>Written by <a href="https://www.linkedin.com/in/rafaelveloso/">Rafael Veloso</a> · Qlik Sense Performance Guide · 2025</p>
+  <p style="margin-top:8px;">Full series: <a href="https://radsveloso.github.io/Linkedin/artigos/">radsveloso.github.io/Linkedin/artigos</a></p>
+</footer>
 
-*Written by Rafael Veloso - Qlik Sense Performance Guide*
+<script>
+// Custom cursor
+const cur=document.getElementById('cur'),ring=document.getElementById('ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+(function animRing(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing);})();
 
-*Full series: [radsveloso.github.io/Linkedin/artigos](https://radsveloso.github.io/Linkedin/artigos/)*
+// Intersection Observer for fade-in and checklist items
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      if(e.target.classList.contains('fade-in')){
+        const items=e.target.querySelectorAll('.checklist li');
+        items.forEach((li,i)=>setTimeout(()=>li.classList.add('visible'),i*80));
+      }
+    }
+  });
+},{threshold:.12});
 
-#QlikSense #PerformanceTuning #QVD #DataEngineering #SetAnalysis #IncrementalLoad #BI #DataModeling #QlikDeveloper #BusinessIntelligence
-        </article>
-        
-        <footer>
-            <p>© 2026 Rafael Veloso. Todos os direitos reservados.</p>
-        </footer>
-    </div>
+document.querySelectorAll('.fade-in').forEach(el=>io.observe(el));
+document.querySelectorAll('.checklist li').forEach(li=>io.observe(li));
+
+// Nav dot active state
+const sections=document.querySelectorAll('[data-sec]');
+const dots=document.querySelectorAll('.nav-dot');
+const sio=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const sec=e.target.dataset.sec;
+      dots.forEach(d=>d.classList.remove('active'));
+      const dot=document.querySelector(`.nav-dot[data-sec="${sec}"]`);
+      if(dot)dot.classList.add('active');
+    }
+  });
+},{threshold:.4});
+sections.forEach(s=>sio.observe(s));
+
+// Dot click navigation
+dots.forEach(d=>{
+  d.addEventListener('click',()=>{
+    const sec=d.dataset.sec;
+    const target=document.querySelector(`[data-sec="${sec}"]`);
+    if(target)target.scrollIntoView({behavior:'smooth'});
+  });
+});
+</script>
 </body>
 </html>
