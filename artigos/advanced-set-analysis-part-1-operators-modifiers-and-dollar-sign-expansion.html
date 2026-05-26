@@ -1,133 +1,4 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Set Analysis Part 1: Operators, Modifiers and Dollar-Sign Expansion</title>
-    <meta property="og:title" content="Advanced Set Analysis Part 1: Operators, Modifiers and Dollar-Sign Expansion">
-    <meta property="og:description" content="<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<meta name="color-scheme" content="dark"/>
-<title>Advanced Set Anal...">
-    <meta property="og:type" content="article">
-    <meta name="author" content="Rafael Veloso">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: #f5f5f5;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            min-height: 100vh;
-        }
-        
-        header {
-            background: linear-gradient(135deg, #0077B5 0%, #00A0DC 100%);
-            color: white;
-            padding: 60px 40px 40px;
-        }
-        
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            line-height: 1.2;
-        }
-        
-        .meta {
-            font-size: 0.9em;
-            opacity: 0.9;
-        }
-        
-        article {
-            padding: 40px;
-        }
-        
-        article p {
-            margin-bottom: 1.5em;
-            font-size: 1.1em;
-        }
-        
-        article h2 {
-            margin-top: 2em;
-            margin-bottom: 1em;
-            color: #0077B5;
-        }
-        
-        article ul, article ol {
-            margin-left: 2em;
-            margin-bottom: 1.5em;
-        }
-        
-        article li {
-            margin-bottom: 0.5em;
-        }
-        
-        code {
-            background: #f4f4f4;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-        }
-        
-        pre {
-            background: #282c34;
-            color: #abb2bf;
-            padding: 20px;
-            border-radius: 5px;
-            overflow-x: auto;
-            margin-bottom: 1.5em;
-        }
-        
-        pre code {
-            background: none;
-            color: inherit;
-            padding: 0;
-        }
-        
-        footer {
-            background: #f8f8f8;
-            padding: 40px;
-            text-align: center;
-            color: #666;
-            border-top: 1px solid #e0e0e0;
-        }
-        
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 1.8em;
-            }
-            
-            header, article {
-                padding: 30px 20px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>Advanced Set Analysis Part 1: Operators, Modifiers and Dollar-Sign Expansion</h1>
-            <div class="meta">
-                Por Rafael Veloso • 26 de maio de 2026
-            </div>
-        </header>
-        
-        <article>
-            <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -245,6 +116,7 @@ footer a{color:#3b82f6 !important;text-decoration:none;}
   </div>
 </nav>
 
+<!-- HERO -->
 <section class="hero" data-sec="0">
   <div class="hero-badge"><span class="hero-badge-dot"></span>Advanced Technical Guide · Part 1 of 2</div>
   <h1>Advanced Set Analysis</h1>
@@ -261,6 +133,7 @@ footer a{color:#3b82f6 !important;text-decoration:none;}
 
 <div class="divider"></div>
 
+<!-- SECTION 1: ANATOMY -->
 <section class="s-mid" data-sec="1">
 <div class="container">
   <div class="fade-in">
@@ -309,6 +182,7 @@ Sum({BM01} Amount)
 
 <div class="divider"></div>
 
+<!-- SECTION 2: OPERATORS -->
 <section class="s-card" data-sec="2">
 <div class="container">
   <div class="fade-in">
@@ -355,7 +229,8 @@ Sum({$ - &lt;Product={'Product X'}&gt;} Amount)
 // Real-world case: net revenue = gross minus cancellations and returns
 Sum({1 - &lt;TransactionType={'Cancellation', 'Return'}&gt;} GrossAmount)
 
-// All customers who did NOT buy last month (churn analysis)
+// All customers who did NOT buy last month
+// (used for churn analysis)
 Count({
   &lt;CustomerID=P({1}&lt;Month={$(=Month(Today()))}&gt; CustomerID)&gt;
   -
@@ -381,6 +256,9 @@ Avg({
   *
   &lt;CustomerID=P({1}&lt;Quarter={'Q4'}&gt; CustomerID)&gt;
 } OrderValue)
+
+// The * operator is the right tool for cohort analysis:
+// "what is the LTV of customers who met both conditions"
 </code></pre>
 
   <div class="trail-header fade-in"><div class="trail-num t4">/</div><div class="trail-title">Symmetric Difference - The Forgotten Operator</div></div>
@@ -394,12 +272,18 @@ Count({
   /
   &lt;ProductID=P({1}&lt;Year={2024}&gt; ProductID)&gt;
 } DISTINCT ProductID)
+
+// Interpretation:
+// Set A: products with sales in 2023
+// Set B: products with sales in 2024
+// A / B = new products (only in 2024) + discontinued products (only in 2023)
 </code></pre>
 </div>
 </section>
 
 <div class="divider"></div>
 
+<!-- SECTION 3: MODIFIERS -->
 <section class="s-mid" data-sec="3">
 <div class="container">
   <div class="fade-in">
@@ -420,7 +304,7 @@ Sum({&lt;Year={2024}&gt;} Amount)
 
 Sum({&lt;Region={'South', 'West'}&gt;} Amount)
 
-Sum({&lt;Status={'Active'},
+Sum({&lt;Status={'Active'}&gt;,
      Year={2024}&gt;} Amount)
 
 // Overrides the current field selection
@@ -446,6 +330,8 @@ Sum({&lt;Month=, Quarter=&gt;} Amount)
   </div>
 
   <h3>Modifier with Expression-Derived Value</h3>
+  <p>The most powerful modifier type: the set of values is determined by an expression evaluated at render time. Combines Set Analysis with dynamic logic.</p>
+
   <pre class="fade-in"><code>
 // Current year derived from expression - dynamic, never needs updating
 Sum({&lt;Year={$(=Year(Today()))}&gt;} Amount)
@@ -453,6 +339,10 @@ Sum({&lt;Year={$(=Year(Today()))}&gt;} Amount)
 // Previous month calculated dynamically
 Sum({&lt;Month={$(=Month(AddMonths(Today(), -1)))},
      Year={$(=Year(AddMonths(Today(), -1)))}&gt;} Amount)
+
+// Top N values of the Product field (defined by variable vN)
+// $(vN) expands to the variable value at calculation time
+Sum({&lt;ProductID=Top(Rank(Sum(Amount)), 1, $(vN))&gt;} Amount)
 
 // Dynamic period: from year start to today
 Sum({&lt;Date={">=$(=YearStart(Today()))<=$(=Today())"}&gt;} Amount)
@@ -472,12 +362,18 @@ Count({&lt;Email={"*@company.com"}&gt;} DISTINCT CustomerID)
 
 // Records with code containing "US" in any position
 Sum({&lt;CountryCode={"*US*"}&gt;} Amount)
+
+// Combining wildcard with expression:
+// Products that start with the user-selected letter
+// (vLetter is a variable set by an input box)
+Sum({&lt;Product={"$(vLetter)*"}&gt;} Amount)
 </code></pre>
 </div>
 </section>
 
 <div class="divider"></div>
 
+<!-- SECTION 4: DOLLAR-SIGN EXPANSION -->
 <section class="s-card" data-sec="4">
 <div class="container">
   <div class="fade-in">
@@ -491,25 +387,38 @@ Sum({&lt;CountryCode={"*US*"}&gt;} Amount)
     <div class="arch-step"><div class="arch-num">3</div><div class="arch-text"><strong>$(#variable) - numeric expansion</strong><span>Returns the numeric value without regional formatting. Critical when thousand/decimal separators vary across locales.</span></div></div>
   </div>
 
+  <h3>Dollar-Sign Expansion Patterns</h3>
+
   <pre class="fade-in"><code class="code-label">// Pattern 1: variable as dynamic filter</code><code>
 // Script: SET vCurrentYear = Year(Today());
+// In expression:
 Sum({&lt;Year={$(vCurrentYear)}&gt;} Amount)
 // Expands to: Sum({&lt;Year={2025}&gt;} Amount)
+// Auto-updates on every reload - no expression changes needed
 
 // Pattern 2: dynamic expression as parameter
+// Period: from first day of month to today
 Sum({&lt;Date={">=$(=MonthStart(Today()))<=$(=Today())"}&gt;} Amount)
 
 // Pattern 3: variable containing a full Set Analysis expression
 // Script: SET vVIPFilter = '{&lt;CustomerSegment={''VIP''}&gt;}';
+// In expression:
 Sum($(vVIPFilter) Amount)
+// Expands to: Sum({&lt;CustomerSegment={'VIP'}&gt;} Amount)
+// Reuse the filter across multiple charts without repetition
 </code></pre>
 
   <pre class="fade-in"><code class="code-label">// Pattern 4: numeric expansion to avoid locale issues</code><code>
+// Variable: LET vTarget = 150000.50;
+// Problem: in locales with comma as decimal separator,
+// $(vTarget) may expand to "150.000,50" - invalid in Set Analysis
+
 // Wrong (may break in different locales):
 Sum({&lt;Amount={&gt;$(vTarget)}&gt;} Orders)
 
-// Correct - always returns the number without formatting:
+// Correct - $(#vTarget) always returns the number without formatting:
 Sum({&lt;Amount={&gt;$(#vTarget)}&gt;} Orders)
+// Always expands to: Sum({&lt;Amount={&gt;150000.5}&gt;} Orders)
 </code></pre>
 
   <div class="accent-block fade-in">
@@ -520,6 +429,7 @@ Sum({&lt;Amount={&gt;$(#vTarget)}&gt;} Orders)
 
 <div class="divider"></div>
 
+<!-- SECTION 5: P() AND E() -->
 <section class="s-mid" data-sec="5">
 <div class="container">
   <div class="fade-in">
@@ -533,6 +443,7 @@ Sum({&lt;Amount={&gt;$(#vTarget)}&gt;} Orders)
       <pre><code>
 // P(field) returns the set of POSSIBLE
 // (non-excluded) values of a field
+// in the current or a defined set
 
 // Customers possible in the current selection
 P(CustomerID)
@@ -542,6 +453,7 @@ P({1}&lt;Category={'Electronics'}&gt; ProductID)
 
 // Use: filter ANOTHER field by the possible values
 Sum({&lt;CustomerID=P({1}&lt;Region={'West'}&gt; CustomerID)&gt;} Amount)
+// "Sales of customers who are from the West region"
 </code></pre>
     </div>
     <div class="compare-neutral">
@@ -549,30 +461,57 @@ Sum({&lt;CustomerID=P({1}&lt;Region={'West'}&gt; CustomerID)&gt;} Amount)
       <pre><code>
 // E(field) returns the set of EXCLUDED
 // (grayed out in Qlik) values of a field
+// in the current selection
+
+// Customers excluded by the current selection
+E(CustomerID)
 
 // Use: calculate over what was excluded
+// (impact analysis - "what was left out")
 Sum({&lt;CustomerID=E(CustomerID)&gt;} Amount)
 // "Sales of customers who were excluded
-//  by the current selection"
+//  by the current selection" - impact analysis
 </code></pre>
     </div>
   </div>
 
   <h3>P() in Practice - Cohort Filtering</h3>
+  <p>The most powerful use of P() is cross-field filtering. Instead of listing explicit values, you instruct Qlik to "use the values of field X that satisfy condition Y as the filter for field Z".</p>
+
   <pre class="fade-in"><code>
 // Case 1: sales generated by customers who purchased a specific product
+// Without P(): impossible without a JOIN in script
+// With P(): elegant and direct
+
 Sum({
   &lt;CustomerID = P({1}&lt;ProductID={'PROD-LAPTOP-001'}&gt; CustomerID)&gt;
 } Amount)
+// Step by step:
+// 1. P({1}&lt;ProductID={'PROD-LAPTOP-001'}&gt; CustomerID)
+//    returns all CustomerIDs who bought PROD-LAPTOP-001
+// 2. &lt;CustomerID = [that set of IDs]&gt;
+//    filters the data to those customers
+// 3. Sum(Amount) over that filtered data
 
 // Case 2: cross-sell analysis
-// How much do Electronics buyers also spend in Appliances?
+// How much do Electronics buyers also spend in other categories?
 Sum({
   &lt;CustomerID = P({1}&lt;Category={'Electronics'}&gt; CustomerID),
    Category = {'Appliances'}&gt;
 } Amount)
+// "Sales in the Appliances category
+//  made by customers who also bought Electronics"
 
-// Case 3: cohort intersection - customers who bought in BOTH Q1 AND Q3
+// Case 3: hierarchy - sales of managers whose reports hit their target
+Sum({
+  &lt;ManagerID = P({1}&lt;QuotaPercent={&gt;100}&gt; ManagerID)&gt;
+} BonusAmount)
+</code></pre>
+
+  <h3>Combining P() with Set Operators</h3>
+  <pre class="fade-in"><code>
+// Cohort intersection: customers who purchased in BOTH periods
+// (high-retention customers - bought in Q1 AND Q3)
 Count({
   &lt;CustomerID =
     P({1}&lt;Quarter={'Q1'}&gt; CustomerID)
@@ -581,7 +520,8 @@ Count({
   &gt;
 } DISTINCT CustomerID)
 
-// Case 4: new customers this year (bought now, NOT in previous year)
+// Cohort difference: new customers in the current period
+// (bought now, but did NOT buy in the previous period)
 Sum({
   &lt;CustomerID =
     P({1}&lt;Year={$(=Year(Today()))}&gt; CustomerID)
@@ -589,6 +529,7 @@ Sum({
     P({1}&lt;Year={$(=Year(Today())-1)}&gt; CustomerID)
   &gt;
 } Amount)
+// "Revenue generated by first-time buyers this year"
 </code></pre>
 
   <div class="accent-block fade-in">
@@ -667,13 +608,5 @@ dots.forEach(d=>{
   });
 });
 </script>
-</body>
-</html>
-        </article>
-        
-        <footer>
-            <p>© 2026 Rafael Veloso. Todos os direitos reservados.</p>
-        </footer>
-    </div>
 </body>
 </html>
