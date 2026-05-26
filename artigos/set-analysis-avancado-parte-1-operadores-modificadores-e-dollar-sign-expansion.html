@@ -1,135 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Set Analysis Avançado Parte 1: Operadores, Modificadores e Dollar-Sign Expansion</title>
-    <meta property="og:title" content="Set Analysis Avançado Parte 1: Operadores, Modificadores e Dollar-Sign Expansion">
-    <meta property="og:description" content="<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<meta name="color-scheme" content="dark"/>
-<title>Set Analysis A...">
-    <meta property="og:type" content="article">
-    <meta name="author" content="Rafael Veloso">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: #f5f5f5;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            min-height: 100vh;
-        }
-        
-        header {
-            background: linear-gradient(135deg, #0077B5 0%, #00A0DC 100%);
-            color: white;
-            padding: 60px 40px 40px;
-        }
-        
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            line-height: 1.2;
-        }
-        
-        .meta {
-            font-size: 0.9em;
-            opacity: 0.9;
-        }
-        
-        article {
-            padding: 40px;
-        }
-        
-        article p {
-            margin-bottom: 1.5em;
-            font-size: 1.1em;
-        }
-        
-        article h2 {
-            margin-top: 2em;
-            margin-bottom: 1em;
-            color: #0077B5;
-        }
-        
-        article ul, article ol {
-            margin-left: 2em;
-            margin-bottom: 1.5em;
-        }
-        
-        article li {
-            margin-bottom: 0.5em;
-        }
-        
-        code {
-            background: #f4f4f4;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-        }
-        
-        pre {
-            background: #282c34;
-            color: #abb2bf;
-            padding: 20px;
-            border-radius: 5px;
-            overflow-x: auto;
-            margin-bottom: 1.5em;
-        }
-        
-        pre code {
-            background: none;
-            color: inherit;
-            padding: 0;
-        }
-        
-        footer {
-            background: #f8f8f8;
-            padding: 40px;
-            text-align: center;
-            color: #666;
-            border-top: 1px solid #e0e0e0;
-        }
-        
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 1.8em;
-            }
-            
-            header, article {
-                padding: 30px 20px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>Set Analysis Avançado Parte 1: Operadores, Modificadores e Dollar-Sign Expansion</h1>
-            <div class="meta">
-                Por Rafael Veloso • 26 de maio de 2026
-            </div>
-        </header>
-        
-        <article>
-            <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="color-scheme" content="dark"/>
@@ -246,6 +117,7 @@ footer a{color:#3b82f6 !important;text-decoration:none;}
   </div>
 </nav>
 
+<!-- HERO -->
 <section class="hero" data-sec="0">
   <div class="hero-badge"><span class="hero-badge-dot"></span>Guia Avançado · Parte 1 de 2</div>
   <h1>Set Analysis Avançado</h1>
@@ -262,12 +134,14 @@ footer a{color:#3b82f6 !important;text-decoration:none;}
 
 <div class="divider"></div>
 
+<!-- SECTION 1: ANATOMIA -->
 <section class="s-mid" data-sec="1">
 <div class="container">
   <div class="fade-in">
     <h2>1. Anatomia Completa de uma Expressão Set Analysis</h2>
     <p>Antes de avançar para os padrões complexos, é essencial dominar a anatomia exata. Cada parte de uma expressão Set Analysis tem um papel específico - e confundi-las é a origem de 90% dos bugs.</p>
   </div>
+
   <div class="syntax-box fade-in">
     <div class="syntax-title">Estrutura completa</div>
     <pre><code>
@@ -278,6 +152,7 @@ Sum( { set_identifier  &lt; set_modifier &gt; }  expression )
   do conjunto      do conjunto     de aggregation
     </code></pre>
   </div>
+
   <h3>Identificadores de Conjunto</h3>
   <div class="arch-flow fade-in">
     <div class="arch-step"><div class="arch-num">1</div><div class="arch-text"><strong>{ 1 } - Conjunto completo (todos os registros)</strong><span>Ignora completamente as seleções do usuário. Calcula sobre 100% dos dados, independente do que foi filtrado.</span></div></div>
@@ -285,6 +160,7 @@ Sum( { set_identifier  &lt; set_modifier &gt; }  expression )
     <div class="arch-step"><div class="arch-num">_</div><div class="arch-text"><strong>{ $_1 } - Seleção anterior</strong><span>Conjunto representando a seleção imediatamente anterior à atual. Útil para comparações interativas de "antes e depois".</span></div></div>
     <div class="arch-step"><div class="arch-num">BM</div><div class="arch-text"><strong>{ BM01 } - Bookmark como conjunto</strong><span>Um bookmark salvo pode ser usado como identificador de conjunto. Permite expressar "vendas no estado salvo como BM01".</span></div></div>
   </div>
+
   <pre class="fade-in"><code class="code-label">// Exemplos práticos de identificadores</code><code>
 // Vendas totais - ignora qualquer seleção de Região, Produto, Ano
 Sum({1} Valor)
@@ -298,6 +174,7 @@ Sum({$_1} Valor)
 // Vendas no estado do bookmark "BM01" (ex.: Top 10 clientes)
 Sum({BM01} Valor)
 </code></pre>
+
   <div class="accent-block fade-in">
     <p>Atenção crítica: <span class="inline-code">{1}</span> ignora TODAS as seleções, incluindo seleções no próprio campo da expressão. <span class="inline-code">{$}</span> respeita a seleção atual. Escolher o identificador errado é o erro mais silencioso e perigoso em Set Analysis.</p>
   </div>
@@ -306,12 +183,14 @@ Sum({BM01} Valor)
 
 <div class="divider"></div>
 
+<!-- SECTION 2: OPERADORES -->
 <section class="s-card" data-sec="2">
 <div class="container">
   <div class="fade-in">
     <h2>2. Operadores de Conjunto</h2>
     <p>Os operadores de conjunto permitem combinar, subtrair, intersectar e modificar conjuntos de dados de forma precisa. São a base da álgebra de conjuntos no Qlik - e o que torna o Set Analysis genuinamente poderoso.</p>
   </div>
+
   <div class="syntax-box fade-in">
     <div class="syntax-title">Operadores disponíveis</div>
     <div class="syntax-row"><span class="syntax-token op">+</span><span class="syntax-desc">União - inclui todos os elementos de ambos os conjuntos</span></div>
@@ -319,8 +198,10 @@ Sum({BM01} Valor)
     <div class="syntax-row"><span class="syntax-token op">*</span><span class="syntax-desc">Intersecção - apenas elementos presentes em ambos os conjuntos</span></div>
     <div class="syntax-row"><span class="syntax-token op">/</span><span class="syntax-desc">Diferença simétrica - elementos em um OU no outro, mas não em ambos</span></div>
   </div>
+
   <div class="trail-header fade-in"><div class="trail-num t1">+</div><div class="trail-title">Operador de União</div></div>
   <p>Combina dois conjuntos: o resultado contém todos os elementos de ambos. Equivalente ao OR lógico quando aplicado a diferentes subconjuntos do mesmo campo.</p>
+
   <pre class="fade-in"><code>
 // Vendas de Eletrônicos OU Móveis (independente da seleção atual)
 Sum({&lt;Categoria={'Eletrônicos'}&gt; + &lt;Categoria={'Móveis'}&gt;} Valor)
@@ -335,8 +216,10 @@ Sum({$ + &lt;Mes={'Novembro'}&gt;} Valor)
 // Caso real: clientes na seleção atual OU clientes VIP (independente da seleção)
 Count({$ + &lt;SegmentoCliente={'VIP'}&gt;} DISTINCT ClienteID)
 </code></pre>
+
   <div class="trail-header fade-in"><div class="trail-num t2">-</div><div class="trail-title">Operador de Diferença</div></div>
   <p>Retorna o primeiro conjunto menos os elementos que também estão no segundo. Fundamental para análises de exclusão: "tudo menos X".</p>
+
   <pre class="fade-in"><code>
 // Todos os registros EXCETO devoluções
 Sum({1 - &lt;Status={'Devolução'}&gt;} Valor)
@@ -348,14 +231,17 @@ Sum({$ - &lt;Produto={'Produto X'}&gt;} Valor)
 Sum({1 - &lt;TipoTransacao={'Cancelamento', 'Devolução'}&gt;} ValorBruto)
 
 // Todos os clientes que NÃO compraram no último mês
+// (usado para análise de churn)
 Count({
   &lt;ClienteID=P({1}&lt;Mes={$(=Month(Today()))}&gt; ClienteID)&gt;
   -
   &lt;ClienteID=P({1}&lt;Mes={$(=Month(AddMonths(Today(),-1)))}&gt; ClienteID)&gt;
 } DISTINCT ClienteID)
 </code></pre>
+
   <div class="trail-header fade-in"><div class="trail-num t3">*</div><div class="trail-title">Operador de Intersecção</div></div>
   <p>Retorna apenas os elementos presentes em ambos os conjuntos simultaneamente. Equivalente ao AND lógico entre conjuntos distintos.</p>
+
   <pre class="fade-in"><code>
 // Clientes que compraram Eletrônicos E que estão na seleção atual
 Count({
@@ -364,59 +250,89 @@ Count({
   $
 } DISTINCT ClienteID)
 
-// Caso real: ticket médio dos clientes que compraram TANTO em Q1 QUANTO em Q4
+// Caso real: ticket médio dos clientes que compraram
+// TANTO em Q1 QUANTO em Q4 (clientes recorrentes sazonais)
 Avg({
   &lt;ClienteID=P({1}&lt;Trimestre={'Q1'}&gt; ClienteID)&gt;
   *
   &lt;ClienteID=P({1}&lt;Trimestre={'Q4'}&gt; ClienteID)&gt;
 } ValorPedido)
+
+// Operador * é a ferramenta correta para cohort analysis:
+// "qual o LTV dos clientes que passaram por ambas as condições"
 </code></pre>
+
   <div class="trail-header fade-in"><div class="trail-num t4">/</div><div class="trail-title">Diferença Simétrica - O Operador Esquecido</div></div>
   <p>Retorna elementos que estão em um conjunto OU no outro, mas não em ambos. Útil para análises de comparação onde você quer destacar o que é exclusivo de cada conjunto.</p>
+
   <pre class="fade-in"><code>
 // Produtos vendidos em 2023 OU em 2024, mas não em ambos
+// (produtos que entraram ou saíram do portfólio)
 Count({
   &lt;ProdutoID=P({1}&lt;Ano={2023}&gt; ProdutoID)&gt;
   /
   &lt;ProdutoID=P({1}&lt;Ano={2024}&gt; ProdutoID)&gt;
 } DISTINCT ProdutoID)
+
+// Interpretação:
+// Conjunto A: produtos com vendas em 2023
+// Conjunto B: produtos com vendas em 2024
+// A / B = produtos novos (só em 2024) + produtos descontinuados (só em 2023)
 </code></pre>
 </div>
 </section>
 
 <div class="divider"></div>
 
+<!-- SECTION 3: MODIFICADORES -->
 <section class="s-mid" data-sec="3">
 <div class="container">
   <div class="fade-in">
     <h2>3. Modificadores Avançados</h2>
     <p>Modificadores alteram a seleção ativa de um campo específico dentro do conjunto. São expressos entre <span class="inline-code">&lt; &gt;</span> e determinam exatamente quais valores de cada dimensão participam do cálculo.</p>
   </div>
+
   <h3>Tipos de Modificadores</h3>
+
   <div class="compare-grid fade-in">
     <div class="compare-neutral">
       <span class="compare-label">Atribuição direta - valores literais</span>
       <pre><code>
+// Define exatamente quais valores
+// o campo deve ter no conjunto
+
 Sum({&lt;Ano={2024}&gt;} Valor)
 
 Sum({&lt;Região={'Sul', 'Sudeste'}&gt;} Valor)
 
 Sum({&lt;Status={'Ativo'}&gt;,
      Ano={2024}&gt;} Valor)
+
+// Ignora a seleção atual do campo
+// e usa os valores especificados
 </code></pre>
     </div>
     <div class="compare-neutral">
       <span class="compare-label">Modificador de exclusão - remove campo</span>
       <pre><code>
+// Remove a seleção de um campo específico
+// mantendo as seleções de outros campos
+
 // Ignora seleção de Ano, mantém o resto
 Sum({&lt;Ano=&gt;} Valor)
 
 // Ignora Mês E Trimestre, mantém demais
 Sum({&lt;Mes=, Trimestre=&gt;} Valor)
+
+// Prático para "total do ano" dentro
+// de um contexto filtrado por semana
 </code></pre>
     </div>
   </div>
+
   <h3>Modificador com Valor Derivado de Expressão</h3>
+  <p>O modificador mais poderoso: o conjunto de valores é determinado por uma expressão avaliada em tempo de renderização. Combina Set Analysis com lógica dinâmica.</p>
+
   <pre class="fade-in"><code>
 // Ano atual derivado de expressão - dinâmico, nunca precisa ser atualizado
 Sum({&lt;Ano={$(=Year(Today()))}&gt;} Valor)
@@ -425,12 +341,18 @@ Sum({&lt;Ano={$(=Year(Today()))}&gt;} Valor)
 Sum({&lt;Mes={$(=Month(AddMonths(Today(), -1)))},
      Ano={$(=Year(AddMonths(Today(), -1)))}&gt;} Valor)
 
+// Top N valores do campo Produto (definido por variável vN)
+// $(vN) expande para o valor da variável em tempo de cálculo
+Sum({&lt;ProdutoID=Top(Rank(Sum(Valor)), 1, $(vN))&gt;} Valor)
+
 // Período dinâmico: do início do ano até hoje
 Sum({&lt;Data={">=$(=YearStart(Today()))<=$(=Today())"}&gt;} Valor)
 </code></pre>
+
   <div class="accent-block fade-in">
     <p>A diferença entre <span class="inline-code">Ano={2024}</span> e <span class="inline-code">Ano={$(=Year(Today()))}</span> parece pequena, mas é crítica em produção. O segundo sempre calcula o ano correto - sem precisar atualizar a expressão a cada virada de ano.</p>
   </div>
+
   <h3>Modificadores com Correspondência Parcial - Wildcards</h3>
   <pre class="fade-in"><code>
 // Produtos cujo nome começa com "Pro"
@@ -439,7 +361,12 @@ Sum({&lt;Produto={"Pro*"}&gt;} Valor)
 // Clientes cujo e-mail é do domínio @empresa.com
 Count({&lt;Email={"*@empresa.com"}&gt;} DISTINCT ClienteID)
 
-// Combinando wildcard com expressão dinâmica
+// Registros com código que contém "BR" em qualquer posição
+Sum({&lt;CodigoPais={"*BR*"}&gt;} Valor)
+
+// Combinando wildcard com expressão:
+// Produtos que começam com a letra selecionada pelo usuário
+// (vLetra é uma variável definida por um input box)
 Sum({&lt;Produto={"$(vLetra)*"}&gt;} Valor)
 </code></pre>
 </div>
@@ -447,36 +374,54 @@ Sum({&lt;Produto={"$(vLetra)*"}&gt;} Valor)
 
 <div class="divider"></div>
 
+<!-- SECTION 4: DOLLAR-SIGN EXPANSION -->
 <section class="s-card" data-sec="4">
 <div class="container">
   <div class="fade-in">
     <h2>4. Dollar-Sign Expansion em Set Analysis</h2>
     <p>A dollar-sign expansion <span class="inline-code">$( )</span> é o mecanismo que torna o Set Analysis verdadeiramente dinâmico. Ela resolve o conteúdo da expansão <strong>antes</strong> que o Set Analysis seja avaliado - permitindo que variáveis, expressões e até mesmo outras expressões Set Analysis definam os parâmetros do conjunto.</p>
   </div>
+
   <div class="arch-flow fade-in">
     <div class="arch-step"><div class="arch-num">1</div><div class="arch-text"><strong>$(variavel) - expansão de variável</strong><span>Substitui o token pelo valor atual da variável. Acontece antes da avaliação do Set Analysis.</span></div></div>
     <div class="arch-step"><div class="arch-num">2</div><div class="arch-text"><strong>$(=expressão) - expansão de expressão</strong><span>Avalia a expressão e usa o resultado como parte do Set Analysis. Permite cálculos dinâmicos nos parâmetros do conjunto.</span></div></div>
     <div class="arch-step"><div class="arch-num">3</div><div class="arch-text"><strong>$(#variavel) - expansão numérica</strong><span>Retorna o valor numérico sem formatação regional. Crítico quando separadores de milhar/decimal variam entre locales.</span></div></div>
   </div>
+
+  <h3>Padrões de Dollar-Sign Expansion</h3>
+
   <pre class="fade-in"><code class="code-label">// Padrão 1: variável como filtro dinâmico</code><code>
 // Script: SET vAnoAtual = Year(Today());
+// Na expressão:
 Sum({&lt;Ano={$(vAnoAtual)}&gt;} Valor)
 // Expande para: Sum({&lt;Ano={2025}&gt;} Valor)
+// Atualiza automaticamente a cada reload sem alterar expressões
 
 // Padrão 2: expressão dinâmica como parâmetro
+// Período: do primeiro dia do mês até hoje
 Sum({&lt;Data={">=$(=MonthStart(Today()))<=$(=Today())"}&gt;} Valor)
 
-// Padrão 3: variável contendo expressão Set Analysis completa
+// Padrão 3: variável contendo uma expressão Set Analysis completa
 // Script: SET vFiltroVIP = '{&lt;SegmentoCliente={''VIP''}&gt;}';
+// Na expressão:
 Sum($(vFiltroVIP) Valor)
+// Expande para: Sum({&lt;SegmentoCliente={'VIP'}&gt;} Valor)
+// Reuso do filtro em múltiplos gráficos sem repetição
 </code></pre>
+
   <pre class="fade-in"><code class="code-label">// Padrão 4: expansão numérica para evitar problemas de locale</code><code>
+// Variável: LET vMeta = 150000.50;
+// Problema: em locales com vírgula como decimal,
+// $(vMeta) pode expandir para "150.000,50" - inválido no Set Analysis
+
 // Errado (pode quebrar em locales diferentes):
 Sum({&lt;Valor={&gt;$(vMeta)}&gt;} Pedidos)
 
 // Correto - $(#vMeta) retorna sempre o número sem formatação:
 Sum({&lt;Valor={&gt;$(#vMeta)}&gt;} Pedidos)
+// Sempre expande para: Sum({&lt;Valor={&gt;150000.5}&gt;} Pedidos)
 </code></pre>
+
   <div class="accent-block fade-in">
     <p>Regra prática: sempre que o valor do modificador vier de uma variável numérica, use <span class="inline-code">$(#variavel)</span> ao invés de <span class="inline-code">$(variavel)</span>. Evita bugs silenciosos em ambientes com configuração regional diferente do ambiente de desenvolvimento.</p>
   </div>
@@ -485,18 +430,27 @@ Sum({&lt;Valor={&gt;$(#vMeta)}&gt;} Pedidos)
 
 <div class="divider"></div>
 
+<!-- SECTION 5: P() E E() -->
 <section class="s-mid" data-sec="5">
 <div class="container">
   <div class="fade-in">
     <h2>5. Funções P() e E() - Element Functions</h2>
     <p>As funções P() (Possible Values) e E() (Excluded Values) são as ferramentas mais sofisticadas do Set Analysis. Permitem usar conjuntos de valores possíveis ou excluídos de um campo como parâmetro de outro campo - criando filtros cruzados de alta precisão.</p>
   </div>
+
   <div class="compare-grid fade-in">
     <div class="compare-neutral">
       <span class="compare-label">P() - Possible Values (valores possíveis)</span>
       <pre><code>
 // P(campo) retorna o conjunto de valores
-// POSSÍVEIS de um campo na seleção atual
+// POSSÍVEIS (não excluídos) de um campo
+// na seleção atual ou em um conjunto definido
+
+// Clientes que compraram na seleção atual
+P(ClienteID)
+
+// Produtos possíveis no conjunto {1} filtrado por Categoria
+P({1}&lt;Categoria={'Eletrônicos'}&gt; ProdutoID)
 
 // Uso: filtrar OUTRO campo pelos valores possíveis deste
 Sum({&lt;ClienteID=P({1}&lt;Regiao={'Sul'}&gt; ClienteID)&gt;} Valor)
@@ -508,35 +462,57 @@ Sum({&lt;ClienteID=P({1}&lt;Regiao={'Sul'}&gt; ClienteID)&gt;} Valor)
       <pre><code>
 // E(campo) retorna o conjunto de valores
 // EXCLUÍDOS (cinza no Qlik) de um campo
+// na seleção atual
 
+// Clientes excluídos pela seleção atual
+E(ClienteID)
+
+// Uso: calcular sobre o que foi excluído
+// (análise de "o que ficou de fora")
 Sum({&lt;ClienteID=E(ClienteID)&gt;} Valor)
 // "Vendas dos clientes que foram excluídos
 //  pela seleção atual" - análise de impacto
 </code></pre>
     </div>
   </div>
+
   <h3>P() na Prática - Cohort Filtering</h3>
+  <p>O uso mais poderoso de P() é o filtro cruzado entre campos relacionados. Em vez de listar valores explícitos, você instrui o Qlik a "usar os valores do campo X que satisfazem a condição Y como filtro para o campo Z".</p>
+
   <pre class="fade-in"><code>
 // Caso 1: vendas geradas por clientes que compraram um produto específico
+// Sem P(): impossível sem JOIN no script
+// Com P(): elegante e direto
+
 Sum({
   &lt;ClienteID = P({1}&lt;ProdutoID={'PROD-LAPTOP-001'}&gt; ClienteID)&gt;
 } Valor)
+// Passo a passo:
+// 1. P({1}&lt;ProdutoID={'PROD-LAPTOP-001'}&gt; ClienteID)
+//    → retorna todos os ClienteIDs que compraram PROD-LAPTOP-001
+// 2. &lt;ClienteID = [esse conjunto de IDs]&gt;
+//    → filtra os dados para esses clientes
+// 3. Sum(Valor) sobre esses dados filtrados
 
 // Caso 2: análise de cross-sell
+// Quanto os compradores de A também gastam em outras categorias?
 Sum({
   &lt;ClienteID = P({1}&lt;Categoria={'Eletrônicos'}&gt; ClienteID),
    Categoria = {'Eletrodomésticos'}&gt;
 } Valor)
-// "Vendas na categoria Eletrodomésticos feitas por compradores de Eletrônicos"
+// "Vendas na categoria Eletrodomésticos
+//  feitas por clientes que também compraram Eletrônicos"
 
 // Caso 3: hierarquia - vendas de gerentes cujos liderados atingiram a meta
 Sum({
   &lt;GerenteID = P({1}&lt;PercentualMeta={&gt;100}&gt; GerenteID)&gt;
 } ValorBonificacao)
 </code></pre>
+
   <h3>Combinando P() com Operadores de Conjunto</h3>
   <pre class="fade-in"><code>
 // Cohort intersection: clientes que compraram em AMBOS os períodos
+// (clientes de alta retenção - compraram Q1 E Q3)
 Count({
   &lt;ClienteID =
     P({1}&lt;Trimestre={'Q1'}&gt; ClienteID)
@@ -546,6 +522,7 @@ Count({
 } DISTINCT ClienteID)
 
 // Cohort difference: novos clientes no período atual
+// (compraram agora, mas NÃO compraram no período anterior)
 Sum({
   &lt;ClienteID =
     P({1}&lt;Ano={$(=Year(Today()))}&gt; ClienteID)
@@ -555,9 +532,11 @@ Sum({
 } Valor)
 // "Receita gerada por clientes que compraram pela primeira vez este ano"
 </code></pre>
+
   <div class="accent-block fade-in">
     <p>P() e E() são avaliadas no contexto do conjunto que as envolve. <span class="inline-code">P({1} Campo)</span> e <span class="inline-code">P({$} Campo)</span> são resultados completamente diferentes: o primeiro ignora a seleção, o segundo a respeita. Sempre seja explícito sobre qual contexto você quer.</p>
   </div>
+
   <h3>Checklist de Revisão - Set Analysis Parte 1</h3>
   <ul class="checklist fade-in" id="checklistSA">
     <li><span class="icon ok">✅</span><div><strong>Identificador correto:</strong> use <span class="inline-code">{1}</span> para ignorar seleções, <span class="inline-code">{$}</span> para respeitar.</div></li>
@@ -567,6 +546,7 @@ Sum({
     <li><span class="icon warn">⚠️</span><div><strong>Aspas duplas em wildcards, simples em strings:</strong> <span class="inline-code">{"Pro*"}</span> para wildcard, <span class="inline-code">{'Produto A'}</span> para valor literal.</div></li>
     <li><span class="icon info">ℹ️</span><div><strong>Teste com pequeno conjunto:</strong> antes de usar operadores complexos em produção, valide com um conjunto de dados reduzido onde você conhece o resultado esperado.</div></li>
   </ul>
+
   <div class="tag-row fade-in">
     <span class="tag">SetAnalysis</span>
     <span class="tag">QlikSense</span>
@@ -629,13 +609,5 @@ dots.forEach(d=>{
   });
 });
 </script>
-</body>
-</html>
-        </article>
-        
-        <footer>
-            <p>© 2026 Rafael Veloso. Todos os direitos reservados.</p>
-        </footer>
-    </div>
 </body>
 </html>
