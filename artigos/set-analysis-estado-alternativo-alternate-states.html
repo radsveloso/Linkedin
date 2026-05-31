@@ -113,6 +113,9 @@
   .series-nav{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:32px}
   .series-link{display:flex;align-items:center;gap:8px;padding:10px 20px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#94a3b8;text-decoration:none;font-size:.88rem;transition:all .3s}
   .series-link:hover{border-color:var(--teal);color:var(--teal)}
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(20,184,166,.1);border:1px solid rgba(20,184,166,.3);border-radius:999px;padding:6px 16px;font-size:.75rem;font-weight:600;color:#5eead4;letter-spacing:.1em;text-transform:uppercase;margin-bottom:32px;}
+  .hero-badge-dot{width:6px;height:6px;border-radius:50%;background:#14b8a6;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
 </style>
 </head>
 <body>
@@ -123,12 +126,9 @@
 
 <!-- HEADER -->
 <header id="s0">
-  <div class="badge">
-    <svg viewBox="0 0 24 24"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg>
-    Set Analysis Avancado - Estado Alternativo
-  </div>
+  <div class="hero-badge"><span class="hero-badge-dot"></span>Guia Avançado · Parte 3 de 3</div>
   <h1>Estado Alternativo<br><span>no Qlik Sense</span></h1>
-  <p class="subtitle">O recurso mais subutilizado do Qlik Sense: compare dois contextos de selecao simultaneamente no mesmo grafico, sem filtros, sem duplicar objetos.</p>
+  <p class="subtitle">O recurso mais subutilizado do Qlik Sense: compare dois contextos de seleção simultaneamente no mesmo grafico, sem filtros, sem duplicar objetos.</p>
   <div class="meta-row">
     <span class="meta-chip">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
@@ -152,11 +152,11 @@
 <!-- SECTION 1 - O QUE E -->
 <section id="s1">
   <div class="section-label">Secao 01 - Conceito Fundamental</div>
-  <h2>O que e Estado Alternativo?</h2>
-  <p class="section-intro">Normalmente, um aplicativo Qlik tem um unico estado de selecao: o usuario clica em "Sudeste" e todos os objetos refletem essa selecao. Estado Alternativo quebra essa limitacao, permitindo que diferentes objetos operem em contextos de selecao independentes e simultaneos.</p>
+  <h2>O que é Estado Alternativo?</h2>
+  <p class="section-intro">Normalmente, um aplicativo Qlik tem um único estado de seleção: o usuario clica em "Sudeste" e todos os objetos refletem essa seleção. Estado Alternativo quebra essa limitacao, permitindo que diferentes objetos operem em contextos de seleção independentes e simultâneos.</p>
 
   <h3>O Problema que ele resolve</h3>
-  <p>Imagine o seguinte cenario: o analista quer comparar o desempenho de dois produtos diferentes aplicando filtros distintos para cada um, sem criar um segundo app, sem abrir duas abas, sem usar sets hardcoded. Estado Alternativo e a resposta nativa do Qlik para esse problema.</p>
+  <p>Imagine o seguinte cenário: o analista quer comparar o desempenho de dois produtos diferentes aplicando filtros distintos para cada um, sem criar um segundo app, sem abrir duas abas, sem usar sets hardcoded. Estado Alternativo é a resposta nativa do Qlik para esse problema.</p>
 
   <div class="state-diagram">
     <div class="state-box default">
@@ -172,10 +172,10 @@
     </div>
   </div>
 
-  <p>Ambos os estados coexistem no mesmo app, no mesmo momento. Um grafico pode exibir os dois valores lado a lado. O usuario pode fazer selecoes em cada estado de forma completamente independente.</p>
+  <p>Ambos os estados coexistem no mesmo app, no mesmo momento. Um grafico pode exibir os dois valores lado a lado. O usuario pode fazer seleções em cada estado de forma completamente independente.</p>
 
   <h3>Como o Set Analysis entra na jogada</h3>
-  <p>O Set Analysis permite referenciar qualquer estado pelo nome diretamente na expressao de medicao:</p>
+  <p>O Set Analysis permite referenciar qualquer estado pelo nome diretamente na expressão de medicao:</p>
 
   <pre data-lang="qlik"><code><span class="cm">// Estado padrao - equivalente a {$}</span>
 <span class="fn">Sum</span>({$} Receita)
@@ -192,7 +192,7 @@
   <div class="callout info">
     <span class="callout-icon">💡</span>
     <div class="callout-body">
-      <strong>Sintaxe completa:</strong> <code>{NomeDoEstado&lt;Campo={'Valor'}&gt;}</code>. O nome do estado substitui o identificador padrao (<code>$</code> ou <code>1</code>). O modificador <code>&lt;&gt;</code> e opcional - sem ele, a expressao usa exatamente as selecoes que estao ativas naquele estado no momento da execucao.
+      <strong>Sintaxe completa:</strong> <code>{NomeDoEstado&lt;Campo={'Valor'}&gt;}</code>. O nome do estado substitui o identificador padrao (<code>$</code> ou <code>1</code>). O modificador <code>&lt;&gt;</code> e opcional - sem ele, a expressão usa exatamente as seleções que estao ativas naquele estado no momento da execucao.
     </div>
   </div>
 
@@ -200,17 +200,17 @@
   <div class="compare-grid">
     <div class="compare-card before">
       <div class="compare-label">Set com {1} - estatico</div>
-      <pre data-lang="qlik"><code><span class="cm">// Sempre ignora TODAS as selecoes</span>
-<span class="cm">// Nao e interativo - nao muda</span>
+      <pre data-lang="qlik"><code><span class="cm">// Sempre ignora TODAS as seleções</span>
+<span class="cm">// Não e interativo - não muda</span>
 <span class="fn">Sum</span>({1<span class="set">&lt;Regiao={'Sul'}&gt;</span>} Receita)
 
 <span class="cm">// O valor e fixo independente</span>
 <span class="cm">// do que o usuario selecionar</span></code></pre>
     </div>
     <div class="compare-card after">
-      <div class="compare-label">Estado Alternativo - dinamico</div>
-      <pre data-lang="qlik"><code><span class="cm">// Usa as selecoes do estado Cenario_B</span>
-<span class="cm">// O usuario pode mudar essas selecoes!</span>
+      <div class="compare-label">Estado Alternativo - dinâmico</div>
+      <pre data-lang="qlik"><code><span class="cm">// Usa as seleções do estado Cenario_B</span>
+<span class="cm">// O usuario pode mudar essas seleções!</span>
 <span class="fn">Sum</span>({<span class="st">Cenario_B</span>} Receita)
 
 <span class="cm">// O valor muda conforme o usuario</span>
@@ -225,23 +225,23 @@
 <section id="s2">
   <div class="section-label">Secao 02 - Casos de Uso</div>
   <h2>Por que usar Estado Alternativo?</h2>
-  <p class="section-intro">Estado Alternativo nao e um recurso para casos simples. Ele existe para resolver problemas de analise comparativa que, sem ele, exigiriam solucoes paliativas complexas e frageis.</p>
+  <p class="section-intro">Estado Alternativo não é um recurso para casos simples. Ele existe para resolver problemas de análise comparativa que, sem ele, exigiriam soluções paliativas complexas e frágeis.</p>
 
   <div class="grid-3">
     <div class="card">
       <div class="card-icon bg-teal">📊</div>
       <h4>Comparacao de Periodos</h4>
-      <p>O usuario seleciona Janeiro no Estado A e Fevereiro no Estado B. Um unico grafico de barras exibe os dois meses lado a lado com as mesmas dimensoes, sem filtros hardcoded.</p>
+      <p>O usuario seleciona Janeiro no Estado A e Fevereiro no Estado B. Um único grafico de barras exibe os dois meses lado a lado com as mesmas dimensoes, sem filtros hardcoded.</p>
     </div>
     <div class="card">
       <div class="card-icon bg-blue">🗺️</div>
       <h4>Comparacao de Regioes</h4>
-      <p>Benchmark entre duas regioes escolhidas pelo proprio usuario em tempo real. Sul vs Norte, Filial A vs Filial B - a escolha e do analista, nao do desenvolvedor.</p>
+      <p>Benchmark entre duas regioes escolhidas pelo próprio usuario em tempo real. Sul vs Norte, Filial A vs Filial B - a escolha e do analista, não do desenvolvedor.</p>
     </div>
     <div class="card">
       <div class="card-icon bg-purple">🔬</div>
       <h4>Analise What-If</h4>
-      <p>Cenario atual vs cenario simulado. O estado padrao reflete a realidade; o estado alternativo reflete uma hipotese com filtros diferentes, budget diferente, mix de produto diferente.</p>
+      <p>Cenario atual vs cenário simulado. O estado padrao reflete a realidade; o estado alternativo reflete uma hipotese com filtros diferentes, budget diferente, mix de produto diferente.</p>
     </div>
     <div class="card">
       <div class="card-icon bg-orange">🛒</div>
@@ -256,16 +256,16 @@
     <div class="card">
       <div class="card-icon bg-yellow">🎯</div>
       <h4>Benchmark vs Meta</h4>
-      <p>Realizado (estado padrao) vs meta ajustada (estado alternativo com modificadores). O desvio e calculado diretamente pela expressao.</p>
+      <p>Realizado (estado padrao) vs meta ajustada (estado alternativo com modificadores). O desvio e calculado diretamente pela expressão.</p>
     </div>
   </div>
 
-  <h3>Quando NAO usar Estado Alternativo</h3>
+  <h3>Quando NÃO usar Estado Alternativo</h3>
   <ul class="checklist warn">
-    <li>Quando o dado de comparacao e fixo e vem do modelo (ex: coluna "Orcamento" separada) - use Set Analysis simples com modificador de campo.</li>
-    <li>Quando a comparacao e de periodo fixo (YTD vs LY) - use as expressoes dinamicas de periodo da Parte 2.</li>
+    <li>Quando o dado de comparação e fixo e vem do modelo (ex: coluna "Orcamento" separada) - use Set Analysis simples com modificador de campo.</li>
+    <li>Quando a comparação e de período fixo (YTD vs LY) - use as expressões dinâmicas de período da Parte 2.</li>
     <li>Quando voce precisa de mais de 3-4 estados - a complexidade de manutencao supera o beneficio.</li>
-    <li>Quando o usuario final nao entende o conceito de "dois filtros independentes" - a UX fica confusa.</li>
+    <li>Quando o usuario final não entende o conceito de "dois filtros independentes" - a UX fica confusa.</li>
   </ul>
 </section>
 
@@ -275,14 +275,14 @@
 <section id="s3">
   <div class="section-label">Secao 03 - Configuracao</div>
   <h2>Como criar e configurar Estados</h2>
-  <p class="section-intro">Estados sao criados na interface do Qlik Sense e depois referenciados em qualquer expressao de Set Analysis pelo nome exato que voce definiu.</p>
+  <p class="section-intro">Estados sao criados na interface do Qlik Sense e depois referenciados em qualquer expressão de Set Analysis pelo nome exato que voce definiu.</p>
 
   <h3>Passo 1 - Criar o Estado na Interface</h3>
   <div class="grid-3">
     <div class="card">
       <div class="card-icon bg-teal">1</div>
       <h4>Editar Planilha</h4>
-      <p>Clique em "Editar planilha" no canto superior direito. No painel de propriedades da planilha (nao do objeto), localize a secao <strong>Estados Alternos</strong>.</p>
+      <p>Clique em "Editar planilha" no canto superior direito. No painel de propriedades da planilha (não do objeto), localize a secao <strong>Estados Alternos</strong>.</p>
     </div>
     <div class="card">
       <div class="card-icon bg-blue">2</div>
@@ -299,35 +299,35 @@
   <div class="callout warn">
     <span class="callout-icon">⚠️</span>
     <div class="callout-body">
-      <strong>Convencao de nomenclatura:</strong> Use nomes descritivos e consistentes. <code>Cenario_A</code> e <code>Cenario_B</code> sao genericos mas funcionais. <code>Periodo_Selecionado</code> e <code>Benchmark_Regiao</code> sao melhores para dashboards de producao. Nunca use espacos ou caracteres especiais - o nome deve ser valido como identificador de expressao.
+      <strong>Convencao de nomenclatura:</strong> Use nomes descritivos e consistentes. <code>Cenario_A</code> e <code>Cenario_B</code> sao genericos mas funcionais. <code>Periodo_Selecionado</code> e <code>Benchmark_Regiao</code> sao melhores para dashboards de producao. Nunca use espacos ou caracteres especiais - o nome deve ser valido como identificador de expressão.
     </div>
   </div>
 
   <h3>Passo 2 - Criar Filtros para cada Estado</h3>
-  <p>O padrao mais comum e ter uma caixa de filtro (filter pane) para cada estado. O usuario faz selecoes em cada caixa de forma independente:</p>
+  <p>O padrao mais comum e ter uma caixa de filtro (filter pane) para cada estado. O usuario faz seleções em cada caixa de forma independente:</p>
 
   <div class="grid-2">
     <div class="card">
       <div class="card-icon bg-teal">Filtro A</div>
       <h4>Caixa de Filtro - Estado Padrao ($)</h4>
-      <p>Exibe dimensoes (Regiao, Produto, Ano). O objeto esta atribuido ao estado padrao. As selecoes aqui afetam todos os objetos que usam {$}.</p>
+      <p>Exibe dimensoes (Regiao, Produto, Ano). O objeto esta atribuido ao estado padrao. As seleções aqui afetam todos os objetos que usam {$}.</p>
     </div>
     <div class="card">
       <div class="card-icon bg-blue">Filtro B</div>
       <h4>Caixa de Filtro - Cenario_B</h4>
-      <p>Exibe as mesmas dimensoes. O objeto esta atribuido ao estado <code>Cenario_B</code>. As selecoes aqui so afetam objetos que referenciaram esse estado nas expressoes.</p>
+      <p>Exibe as mesmas dimensoes. O objeto esta atribuido ao estado <code>Cenario_B</code>. As seleções aqui so afetam objetos que referenciaram esse estado nas expressões.</p>
     </div>
   </div>
 
   <h3>Passo 3 - Referenciar no Set Analysis</h3>
-  <pre data-lang="qlik"><code><span class="cm">// O objeto grafico usa estado padrao (nenhuma configuracao especial)</span>
+  <pre data-lang="qlik"><code><span class="cm">// O objeto grafico usa estado padrao (nenhuma configuração especial)</span>
 <span class="cm">// Basta ter as duas medicoes:</span>
 
-<span class="cm">// Medicao 1 - usa as selecoes do estado padrao</span>
+<span class="cm">// Medicao 1 - usa as seleções do estado padrao</span>
 <span class="fn">Sum</span>({$} Receita)
 <span class="cm">// Label: "Receita - Selecao A"</span>
 
-<span class="cm">// Medicao 2 - usa as selecoes do estado Cenario_B</span>
+<span class="cm">// Medicao 2 - usa as seleções do estado Cenario_B</span>
 <span class="fn">Sum</span>({<span class="st">Cenario_B</span>} Receita)
 <span class="cm">// Label: "Receita - Selecao B"</span>
 
@@ -342,13 +342,13 @@
 )</code></pre>
 
   <h3>Estado no Script de Carga</h3>
-  <p>Voce tambem pode trabalhar com estados diretamente no script usando o modificador <code>DISTINCT</code> e inspecionar qual estado esta ativo. Mas a configuracao de estados e sempre feita via interface - o script nao cria estados:</p>
+  <p>Voce também pode trabalhar com estados diretamente no script usando o modificador <code>DISTINCT</code> e inspecionar qual estado esta ativo. Mas a configuração de estados e sempre feita via interface - o script não cria estados:</p>
 
-  <pre data-lang="qlik"><code><span class="cm">// Voce pode LER o estado ativo de um campo via funcao GetCurrentField()</span>
+  <pre data-lang="qlik"><code><span class="cm">// Voce pode LER o estado ativo de um campo via função GetCurrentField()</span>
 <span class="cm">// mas a criacao de estados e exclusiva da interface do Sense</span>
 
 <span class="cm">// O que voce PODE fazer no script e preparar campos</span>
-<span class="cm">// que serao usados como selecoes por estado:</span>
+<span class="cm">// que serao usados como seleções por estado:</span>
 
 Dim_Regiao:
 <span class="kw">LOAD</span> DISTINCT
@@ -361,26 +361,26 @@ Dim_Regiao:
 
 <div class="divider"></div>
 
-<!-- SECTION 4 - PADROES AVANCADOS -->
+<!-- SECTION 4 - PADRÕES AVANÇADOS -->
 <section id="s4">
-  <div class="section-label">Secao 04 - Padroes Avancados</div>
-  <h2>Padroes de Producao com Estado Alternativo</h2>
-  <p class="section-intro">Os padroes abaixo combinam Estado Alternativo com as tecnicas de Set Analysis das partes anteriores - modificadores, P(), dollar-sign expansion e periodos dinamicos.</p>
+  <div class="section-label">Secao 04 - Padrões Avançados</div>
+  <h2>Padrões de Produção com Estado Alternativo</h2>
+  <p class="section-intro">Os padroes abaixo combinam Estado Alternativo com as técnicas de Set Analysis das partes anteriores - modificadores, P(), dollar-sign expansion e períodos dinâmicos.</p>
 
   <h3>Padrao 1 - Comparativo Regional Dinamico</h3>
   <pre data-lang="qlik"><code><span class="cm">// Configuracao: Dois filtros de Regiao (Estado $ e Estado Regiao_B)</span>
 <span class="cm">// O usuario escolhe qualquer regiao em cada filtro</span>
 
-<span class="cm">// KPI: Receita da Regiao A (selecao do usuario no estado padrao)</span>
+<span class="cm">// KPI: Receita da Regiao A (seleção do usuario no estado padrao)</span>
 <span class="fn">Sum</span>({$} Receita)
 
-<span class="cm">// KPI: Receita da Regiao B (selecao do usuario no estado Regiao_B)</span>
+<span class="cm">// KPI: Receita da Regiao B (seleção do usuario no estado Regiao_B)</span>
 <span class="fn">Sum</span>({<span class="st">Regiao_B</span>} Receita)
 
-<span class="cm">// Label dinamico mostrando qual regiao esta em cada estado</span>
+<span class="cm">// Label dinâmico mostrando qual regiao esta em cada estado</span>
 <span class="str">'Regiao Selecionada: '</span> &amp; <span class="fn">GetCurrentField</span>(Regiao)
 
-<span class="cm">// Para o estado alternativo, use a funcao dentro de um objeto</span>
+<span class="cm">// Para o estado alternativo, use a função dentro de um objeto</span>
 <span class="cm">// atribuido ao estado Regiao_B:</span>
 <span class="str">'Comparativo: '</span> &amp; <span class="fn">Concat</span>({<span class="st">Regiao_B</span>} DISTINCT Regiao, ', ')
 
@@ -395,7 +395,7 @@ Dim_Regiao:
 <span class="cm">// Estado Cohort_B: clientes que compraram Produto B</span>
 <span class="cm">// Pergunta: qual a receita cruzada entre os dois grupos?</span>
 
-<span class="cm">// Clientes exclusivos do Estado padrao (compraram A mas nao B)</span>
+<span class="cm">// Clientes exclusivos do Estado padrao (compraram A mas não B)</span>
 <span class="fn">Count</span>(
     {$<span class="set">&lt;ClienteID =
         P({$} ClienteID)
@@ -424,7 +424,7 @@ Dim_Regiao:
 )</code></pre>
 
   <h3>Padrao 3 - What-If com Estado e Modificador</h3>
-  <pre data-lang="qlik"><code><span class="cm">// Estado padrao: performance real (todas as selecoes do usuario)</span>
+  <pre data-lang="qlik"><code><span class="cm">// Estado padrao: performance real (todas as seleções do usuario)</span>
 <span class="cm">// Estado WhatIf: simulacao com canais ou categorias diferentes</span>
 
 <span class="cm">// Realizado atual</span>
@@ -436,7 +436,7 @@ Dim_Regiao:
 <span class="cm">// Cenario simulado: estado WhatIf + apenas clientes Premium</span>
 <span class="fn">Sum</span>({<span class="st">WhatIf</span><span class="set">&lt;Segmento={'Premium'}&gt;</span>} Receita)
 
-<span class="cm">// Impacto do cenario (diferenca absoluta)</span>
+<span class="cm">// Impacto do cenário (diferenca absoluta)</span>
 <span class="fn">Sum</span>({$} Receita) - <span class="fn">Sum</span>({<span class="st">WhatIf</span>} Receita)
 
 <span class="cm">// Porcentagem de impacto com formatacao de sinal</span>
@@ -447,20 +447,20 @@ Dim_Regiao:
 )</code></pre>
 
   <h3>Padrao 4 - Estado + Periodo Dinamico</h3>
-  <p>Combinando Estado Alternativo com as expressoes de periodo da Parte 2:</p>
-  <pre data-lang="qlik"><code><span class="cm">// Estado padrao: Regiao Sul, periodo padrao do usuario</span>
-<span class="cm">// Estado Periodo_2: Regiao Norte, periodo diferente</span>
+  <p>Combinando Estado Alternativo com as expressões de período da Parte 2:</p>
+  <pre data-lang="qlik"><code><span class="cm">// Estado padrao: Regiao Sul, período padrao do usuario</span>
+<span class="cm">// Estado Periodo_2: Regiao Norte, período diferente</span>
 
-<span class="cm">// YTD da selecao padrao</span>
+<span class="cm">// YTD da seleção padrao</span>
 <span class="fn">Sum</span>({$<span class="set">&lt;Ano={<span class="op">$(</span>=<span class="fn">Max</span>({1}Ano)<span class="op">)</span>},
      Mes={"&lt;=<span class="op">$(</span>=<span class="fn">Month</span>(<span class="fn">Today</span>())<span class="op">)</span>"}&gt;</span>} Receita)
 
-<span class="cm">// YTD do estado alternativo - mesmo periodo, selecoes diferentes</span>
+<span class="cm">// YTD do estado alternativo - mesmo período, seleções diferentes</span>
 <span class="fn">Sum</span>({<span class="st">Periodo_2</span><span class="set">&lt;Ano={<span class="op">$(</span>=<span class="fn">Max</span>({1}Ano)<span class="op">)</span>},
                 Mes={"&lt;=<span class="op">$(</span>=<span class="fn">Month</span>(<span class="fn">Today</span>())<span class="op">)</span>"}&gt;</span>} Receita)
 
-<span class="cm">// Nota: os modificadores de periodo sao iguais nos dois -</span>
-<span class="cm">// o que muda sao as selecoes de Regiao/Produto feitas pelo usuario</span>
+<span class="cm">// Nota: os modificadores de período sao iguais nos dois -</span>
+<span class="cm">// o que muda sao as seleções de Regiao/Produto feitas pelo usuario</span>
 <span class="cm">// em cada caixa de filtro independente</span></code></pre>
 
   <h3>Padrao 5 - TOTAL + Estado</h3>
@@ -496,8 +496,8 @@ Dim_Regiao:
         <tr><th>Expressao</th><th>Significado</th><th>Quando usar</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>Sum({$} Receita)</code></td><td>Estado padrao (selecoes atuais)</td><td>Medicao base de referencia</td></tr>
-        <tr><td><code>Sum({1} Receita)</code></td><td>Todos os registros, ignora selecoes</td><td>Total absoluto fixo</td></tr>
+        <tr><td><code>Sum({$} Receita)</code></td><td>Estado padrao (seleções atuais)</td><td>Medicao base de referencia</td></tr>
+        <tr><td><code>Sum({1} Receita)</code></td><td>Todos os registros, ignora seleções</td><td>Total absoluto fixo</td></tr>
         <tr><td><code>Sum({Cenario_B} Receita)</code></td><td>Selecoes do estado Cenario_B</td><td>Comparativo A vs B</td></tr>
         <tr><td><code>Sum({Cenario_B&lt;Status={'Ativo'}&gt;} Receita)</code></td><td>Estado B + modificador adicional</td><td>Estado B filtrado por condicao extra</td></tr>
         <tr><td><code>Count({$} DISTINCT ClienteID) - Count({Cenario_B} DISTINCT ClienteID)</code></td><td>Diferenca de contagem entre estados</td><td>Crescimento ou queda de base</td></tr>
@@ -518,18 +518,18 @@ Dim_Regiao:
     </div>
     <div class="card">
       <div class="card-icon bg-red">✗</div>
-      <h4>Objeto nao atribuido ao estado</h4>
-      <p>Criar o estado nao basta. Cada objeto (filtro, botao) precisa ser explicitamente atribuido ao estado correto via painel de propriedades. Um filtro no estado padrao nao alimenta o estado alternativo.</p>
+      <h4>Objeto não atribuido ao estado</h4>
+      <p>Criar o estado não basta. Cada objeto (filtro, botao) precisa ser explicitamente atribuido ao estado correto via painel de propriedades. Um filtro no estado padrao não alimenta o estado alternativo.</p>
     </div>
     <div class="card">
       <div class="card-icon bg-red">✗</div>
       <h4>Grafico respondendo ao estado errado</h4>
-      <p>O grafico de comparacao deve estar no estado padrao (<code>$</code>) para mostrar ambas as medicoes. Se o grafico estiver atribuido a um estado especifico, ele so reflete as selecoes daquele estado.</p>
+      <p>O grafico de comparação deve estar no estado padrao (<code>$</code>) para mostrar ambas as medicoes. Se o grafico estiver atribuido a um estado especifico, ele so reflete as seleções daquele estado.</p>
     </div>
     <div class="card">
       <div class="card-icon bg-red">✗</div>
       <h4>Confundir estado com modificador</h4>
-      <p><code>{Cenario_B&lt;Campo={'Valor'}&gt;}</code> usa as selecoes do estado B E adiciona o modificador. <code>{$&lt;Campo={'Valor'}&gt;}</code> usa o estado padrao com modificador. Sao contextos diferentes.</p>
+      <p><code>{Cenario_B&lt;Campo={'Valor'}&gt;}</code> usa as seleções do estado B E adiciona o modificador. <code>{$&lt;Campo={'Valor'}&gt;}</code> usa o estado padrao com modificador. Sao contextos diferentes.</p>
     </div>
   </div>
 
@@ -537,19 +537,19 @@ Dim_Regiao:
   <ul class="checklist">
     <li>Nomenclatura clara: <code>Periodo_Comparativo</code> e melhor que <code>Estado2</code></li>
     <li>Documente quais objetos estao em qual estado - use cores de fundo diferentes nas caixas de filtro para indicar visualmente o estado</li>
-    <li>Limite a 2-3 estados por aplicativo. Mais que isso e geralmente sinal de que a solucao precisa ser repensada</li>
+    <li>Limite a 2-3 estados por aplicativo. Mais que isso e geralmente sinal de que a solução precisa ser repensada</li>
     <li>Sempre tenha um botao "Limpar Estado" para cada estado alternativo (<code>ClearAll()</code> associado ao estado)</li>
     <li>Use <code>Concat({EstadoNome} DISTINCT Campo, ', ')</code> em caixas de texto para mostrar ao usuario o que esta selecionado em cada estado</li>
-    <li>Teste com selecoes vazias: o que acontece quando o usuario nao selecionou nada no estado B? A expressao retorna o total ou zero?</li>
-    <li>Combine com variaveis para labels dinamicos que mostram qual comparacao esta ativa</li>
-    <li>Em QlikView, os Estados Alternos existem mas o path de configuracao e diferente (Tools > Document Properties > Alternate States)</li>
+    <li>Teste com seleções vazias: o que acontece quando o usuario não selecionou nada no estado B? A expressão retorna o total ou zero?</li>
+    <li>Combine com variaveis para labels dinâmicos que mostram qual comparação esta ativa</li>
+    <li>Em QlikView, os Estados Alternos existem mas o path de configuração e diferente (Tools > Document Properties > Alternate States)</li>
   </ul>
 </section>
 
 <footer>
   <div class="series-nav">
     <a href="set-analysis-avancado-parte1-operadores-modificadores.html" class="series-link">← Parte 1: Operadores e Modificadores</a>
-    <a href="set-analysis-avancado-parte2-periodos-indireto-aninhamento.html" class="series-link">← Parte 2: Periodos e Aninhamento</a>
+    <a href="set-analysis-avancado-parte2-períodos-indireto-aninhamento.html" class="series-link">← Parte 2: Períodos e Aninhamento</a>
   </div>
   <p>Rafael Veloso - Senior BI &amp; Data Engineer</p>
   <p style="margin-top:8px"><a href="https://radsveloso.github.io/Linkedin/artigos/" target="_blank">radsveloso.github.io/Linkedin/artigos/</a></p>
