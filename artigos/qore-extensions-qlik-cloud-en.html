@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qlik Cloud Extensions: What Native Can't Deliver - Qore Extensions</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#08080f;--bg2:#0d0d1a;--bg3:#12121f;
+    --blue:#3b82f6;--blue2:#60a5fa;
+    --teal:#14b8a6;--teal2:#5eead4;
+    --green:#22c55e;--yellow:#eab308;--purple:#a855f7;--orange:#f97316;
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+    --border:#1e293b;--border2:#334155;
+    --font:'Segoe UI',system-ui,sans-serif;--mono:'Cascadia Code','Fira Code',monospace
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.7;overflow-x:hidden}
+  nav{position:fixed;right:24px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:10px}
+  .nav-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);cursor:pointer;transition:all .3s;border:none;outline:none}
+  .nav-dot:hover,.nav-dot.active{background:var(--teal);transform:scale(1.5)}
+  header{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 24px;position:relative;overflow:hidden}
+  header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 40%,rgba(59,130,246,.12),transparent);pointer-events:none}
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:999px;padding:6px 16px;font-size:.75rem;font-weight:600;color:#93c5fd;letter-spacing:.1em;text-transform:uppercase;margin-bottom:32px}
+  .hero-badge-dot{width:6px;height:6px;border-radius:50%;background:#3b82f6;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  h1{font-size:clamp(2rem,5vw,3.6rem);font-weight:800;line-height:1.1;max-width:860px;margin-bottom:24px;letter-spacing:-.02em}
+  h1 span{background:linear-gradient(135deg,var(--blue2),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .subtitle{font-size:1.1rem;color:var(--text2);max-width:680px;margin-bottom:48px}
+  .meta-row{display:flex;align-items:center;gap:24px;flex-wrap:wrap;justify-content:center}
+  .meta-chip{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--text3)}
+  .meta-chip svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+  .scroll-hint{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--text3);font-size:.78rem;animation:bounce 2s infinite}
+  @keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+  .scroll-hint svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2}
+  section{max-width:900px;margin:0 auto;padding:100px 24px;opacity:0;transform:translateY(30px);transition:all .7s cubic-bezier(.22,1,.36,1)}
+  section.visible{opacity:1;transform:none}
+  .section-label{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--blue2);margin-bottom:16px;font-weight:600}
+  h2{font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:700;margin-bottom:12px;letter-spacing:-.02em;line-height:1.2}
+  .section-intro{color:var(--text2);font-size:1.05rem;margin-bottom:48px;max-width:700px}
+  h3{font-size:1.15rem;font-weight:700;margin:40px 0 16px;color:var(--blue2)}
+  h4{font-size:.95rem;font-weight:700;margin:24px 0 10px;color:var(--text)}
+  p{color:var(--text2);margin-bottom:16px;font-size:.97rem}
+  .ext-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:40px;margin:40px 0;transition:border-color .3s}
+  .ext-card:hover{border-color:var(--border2)}
+  .ext-header{display:flex;align-items:flex-start;gap:20px;margin-bottom:24px}
+  .ext-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0}
+  .ext-icon.blue{background:rgba(59,130,246,.15)}
+  .ext-icon.teal{background:rgba(20,184,166,.15)}
+  .ext-icon.purple{background:rgba(168,85,247,.15)}
+  .ext-icon.orange{background:rgba(249,115,22,.15)}
+  .ext-title{font-size:1.4rem;font-weight:800;margin-bottom:4px;letter-spacing:-.02em}
+  .ext-version{font-size:.72rem;color:var(--text3);font-family:var(--mono);letter-spacing:.06em}
+  .ext-body p{font-size:.95rem}
+  .pill-row{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 24px}
+  .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  .pill.blue{background:rgba(59,130,246,.12);color:var(--blue2);border:1px solid rgba(59,130,246,.2)}
+  .pill.teal{background:rgba(20,184,166,.12);color:var(--teal2);border:1px solid rgba(20,184,166,.2)}
+  .pill.green{background:rgba(34,197,94,.12);color:#86efac;border:1px solid rgba(34,197,94,.2)}
+  .pill.purple{background:rgba(168,85,247,.12);color:#d8b4fe;border:1px solid rgba(168,85,247,.2)}
+  .pill.orange{background:rgba(249,115,22,.12);color:#fed7aa;border:1px solid rgba(249,115,22,.2)}
+  .pill.gray{background:rgba(100,116,139,.12);color:var(--text3);border:1px solid rgba(100,116,139,.2)}
+  .feat-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin:20px 0}
+  .feat-list li{display:flex;align-items:flex-start;gap:12px;font-size:.92rem;color:var(--text2)}
+  .feat-list li::before{content:'→';color:var(--blue2);font-weight:700;flex-shrink:0;margin-top:2px}
+  pre{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:20px 24px;overflow-x:auto;margin:20px 0;position:relative}
+  pre::before{content:attr(data-lang);position:absolute;top:10px;right:14px;font-size:.68rem;color:var(--text3);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase}
+  code{font-family:var(--mono);font-size:.85rem;line-height:1.75;color:#e2e8f0}
+  .kw{color:#93c5fd}.fn{color:#86efac}.str{color:#fca5a5}.cm{color:#475569}.num{color:#fdba74}.var{color:#fde68a}
+  .callout{border-radius:12px;padding:20px 24px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+  .callout.info{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2)}
+  .callout.tip{background:rgba(20,184,166,.08);border:1px solid rgba(20,184,166,.2)}
+  .callout.warn{background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.2)}
+  .callout-icon{font-size:1.2rem;flex-shrink:0;margin-top:2px}
+  .callout-body{font-size:.9rem;color:var(--text2)}
+  .callout-body strong{color:var(--text)}
+  .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:20px;margin:24px 0}
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;transition:border-color .3s}
+  .card:hover{border-color:var(--border2)}
+  .card-label{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+  .card-label.blue{color:var(--blue2)}
+  .card-label.teal{color:var(--teal2)}
+  .card h4{color:var(--text);font-size:1rem;margin:0 0 10px}
+  .card p{font-size:.88rem;margin:0}
+  .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+  .compare-card{border-radius:12px;padding:20px}
+  .compare-card.before{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2)}
+  .compare-card.after{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2)}
+  .compare-label{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+  .compare-card.before .compare-label{color:#f87171}
+  .compare-card.after .compare-label{color:var(--blue2)}
+  .divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:60px 0}
+  footer{text-align:center;padding:80px 24px;color:var(--text3);font-size:.85rem}
+  footer a{color:var(--blue2);text-decoration:none}
+  footer a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<nav id="nav-dots"></nav>
+
+<header id="s0">
+  <div class="hero-badge"><span class="hero-badge-dot"></span>Qlik Cloud · Advanced Extensions</div>
+  <h1>What Qlik Native<br><span>Can't Deliver</span></h1>
+  <p class="subtitle">How custom extensions in Qlik Cloud solve real business gaps - from the table every analyst requests to ServiceNow tickets filed without leaving the dashboard.</p>
+  <div class="meta-row">
+    <span class="meta-chip">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      ~15 min read
+    </span>
+    <span class="meta-chip">
+      <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      Qlik Cloud · Extensions
+    </span>
+    <span class="meta-chip">
+      <svg viewBox="0 0 24 24"><path d="M2 20h20M6 20V10M12 20V4M18 20v-6"/></svg>
+      Expert Level
+    </span>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+  </div>
+</header>
+
+<section id="s1">
+  <div class="section-label">Section 01 - The Starting Point</div>
+  <h2>Qlik is powerful. But it has real gaps.</h2>
+  <p class="section-intro">Every team that moves beyond basic Qlik Cloud usage hits the same walls. Not because the platform is lacking - but because no BI tool can anticipate every enterprise need out of the box.</p>
+
+  <div class="compare-grid">
+    <div class="compare-card before">
+      <div class="compare-label">What native Qlik delivers</div>
+      <ul class="feat-list">
+        <li>Basic straight table with sort and simple export</li>
+        <li>Objects disconnected from external systems</li>
+        <li>Documentation outside the app (Confluence, Wiki)</li>
+        <li>Support reported outside the analytical context</li>
+        <li>Fixed toolbar, no customization</li>
+      </ul>
+    </div>
+    <div class="compare-card after">
+      <div class="compare-label">What Qore extensions solve</div>
+      <ul class="feat-list">
+        <li>Enterprise table with real pagination, presets, and freeze</li>
+        <li>ServiceNow ticket created inside Qlik with full app context</li>
+        <li>Live documentation embedded in the dashboard itself</li>
+        <li>Insight suite with auto-discovery of KPIs and data model</li>
+        <li>Native-style buttons injected into the Qlik Cloud toolbar</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <div class="callout-icon">💡</div>
+    <div class="callout-body">
+      <strong>What are Qlik Cloud extensions?</strong> Custom visualizations built in JavaScript (RequireJS AMD) that run inside Qlik as native objects - with full access to the QIX Engine, Engine API, app properties, and user context. Unlike mashups, they live inside the app, not outside it.
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="s2">
+  <div class="section-label">Section 02 - Extension 1</div>
+
+  <div class="ext-card">
+    <div class="ext-header">
+      <div class="ext-icon blue">📊</div>
+      <div>
+        <div class="ext-title">Qore Straight Table</div>
+        <div class="ext-version">v1.0.34 · ~2,200 lines of code · 9 files</div>
+      </div>
+    </div>
+    <div class="pill-row">
+      <span class="pill blue">Real pagination via QIX Engine</span>
+      <span class="pill teal">Visual presets</span>
+      <span class="pill green">CSV + PDF export</span>
+      <span class="pill purple">Alternate States</span>
+      <span class="pill gray">Column freeze</span>
+    </div>
+    <div class="ext-body">
+      <p>The most requested object by analysts at every Qlik enterprise. Native works - but for real data at enterprise scale, it falls short.</p>
+    </div>
+  </div>
+
+  <h3>The problem it solves</h3>
+  <p>Qlik's native Straight Table loads data with infinite scroll and client-side pagination - which in practice means exporting only what's visible, not the full dataset. View presets don't exist. Column freeze, same story.</p>
+
+  <h3>How Qore Straight Table works</h3>
+  <p>The fundamental difference is <strong>pagination via the QIX Engine</strong>: instead of loading everything and filtering client-side, the extension sends <code>qTop/qHeight</code> calls directly to the Engine - respecting the 10,000-cell limit per request and making multiple trips when needed.</p>
+
+  <pre data-lang="js"><code><span class="cm">// Real pagination - never client-side row hiding</span>
+<span class="kw">return</span> ext.backendApi.getData([{
+  qTop: top,
+  qLeft: <span class="num">0</span>,
+  qWidth: totalCols,
+  qHeight: <span class="var">safeHeight</span>  <span class="cm">// floor(10000 / totalCols)</span>
+}]);</code></pre>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-label blue">For the Analyst</div>
+      <h4>Visual presets</h4>
+      <p>Admin defines pre-configured views (columns, filters, sort, freeze). Users save their own views per browser. No Engine round-trip to switch between them.</p>
+    </div>
+    <div class="card">
+      <div class="card-label teal">For the Developer</div>
+      <h4>applyPatches, not setProperties</h4>
+      <p>Every mutation uses <code>applyPatches</code> with <code>qSoftPatch=false</code> to avoid desyncing <code>qInterColumnSortOrder</code> - a bug that breaks other objects on the same sheet.</p>
+    </div>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">⚙️</div>
+    <div class="callout-body">
+      <strong>Engineering note:</strong> Qlik Cloud blocks <code>navigator.clipboard</code> inside iframes. Copy/paste between Qore tables uses <code>localStorage</code> as an internal channel - transparent to the user, no loss of functionality.
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="s3">
+  <div class="section-label">Section 03 - Extension 2</div>
+
+  <div class="ext-card">
+    <div class="ext-header">
+      <div class="ext-icon teal">📖</div>
+      <div>
+        <div class="ext-title">Qore Info Page</div>
+        <div class="ext-version">v2.28 · Singleton · Auto Discovery</div>
+      </div>
+    </div>
+    <div class="pill-row">
+      <span class="pill teal">Embedded documentation</span>
+      <span class="pill blue">KPI auto-discovery</span>
+      <span class="pill green">Live data model</span>
+      <span class="pill gray">Replaces Confluence/Wiki</span>
+    </div>
+    <div class="ext-body">
+      <p>App documentation that lives inside Qlik - not in an outdated wiki nobody reads.</p>
+    </div>
+  </div>
+
+  <h3>The problem it solves</h3>
+  <p>In any enterprise with multiple Qlik apps, dashboard documentation exists somewhere in Confluence or SharePoint - outdated, hard to find, completely disconnected from the analyst actually looking at the data right now.</p>
+
+  <h3>How it works in practice</h3>
+  <p>Adding the extension to any sheet injects an "About" button into Qlik Cloud's native toolbar - next to the Bookmarks button, using the same MUI design. One click opens a modal with configurable tabs:</p>
+
+  <ul class="feat-list">
+    <li><strong>About</strong> - Markdown app description with responsible contacts</li>
+    <li><strong>KPIs</strong> - featured master measures with descriptions and formulas</li>
+    <li><strong>Sheets</strong> - list of all published sheets in the app</li>
+    <li><strong>Data Model</strong> - tables and keys read directly via <code>enigma.getTablesAndKeys</code></li>
+    <li><strong>Auto</strong> - everything above generated automatically, no admin typing required</li>
+  </ul>
+
+  <div class="callout tip">
+    <div class="callout-icon">🔍</div>
+    <div class="callout-body">
+      <strong>Auto Discovery in 4 parallel calls:</strong> The Auto tab runs <code>app.getList('sheet')</code>, <code>getList('MeasureList')</code>, <code>getList('DimensionList')</code>, and <code>enigmaModel.getTablesAndKeys()</code> simultaneously - delivering a complete app snapshot with zero manual configuration.
+    </div>
+  </div>
+
+  <h3>Singleton pattern</h3>
+  <p>The extension uses <code>window.__qoreInfoPageInstance</code> to guarantee a single instance per app - regardless of how many sheets contain the object. A 2-second <code>setInterval</code> monitors whether the About button was removed by Qlik's navigation and re-injects it automatically.</p>
+</section>
+
+<div class="divider"></div>
+
+<section id="s4">
+  <div class="section-label">Section 04 - Extension 3</div>
+
+  <div class="ext-card">
+    <div class="ext-header">
+      <div class="ext-icon purple">🎫</div>
+      <div>
+        <div class="ext-title">Qore Support Ticket</div>
+        <div class="ext-version">v3.54 · ServiceNow · Qlik Automation Webhook</div>
+      </div>
+    </div>
+    <div class="pill-row">
+      <span class="pill purple">ServiceNow integrated</span>
+      <span class="pill blue">Automatic app context</span>
+      <span class="pill teal">Hypercube-driven lookups</span>
+      <span class="pill green">Smart prefill</span>
+    </div>
+    <div class="ext-body">
+      <p>The analyst found a wrong number. Instead of opening another tab, taking screenshots, and describing context from scratch - they file a ticket directly from Qlik, with context filled in automatically.</p>
+    </div>
+  </div>
+
+  <h3>The problem it solves</h3>
+  <p>Every company using Qlik for critical data faces the same issue: an analyst spots an anomaly, doesn't know if it's bad data or a business rule, and the reporting process is slow and context-free. Result: bugs that take weeks to fix because nobody can reproduce them.</p>
+
+  <h3>Integration architecture</h3>
+  <p>The extension injects a "Report Issue" button in the toolbar (same MUI pattern as Info Page). The form uses the app's own data model to populate dropdowns - no external endpoints, no separate maintenance:</p>
+
+  <pre data-lang="js"><code><span class="cm">// Assignee lookup directly from the app's data model</span>
+cubeLookup.searchAsync(props.lookups.assignTo, query)
+<span class="cm">// → createSessionObject({qDimensions: [keyField, labelField]})</span>
+<span class="cm">// → filters by search term, returns matching rows</span></code></pre>
+
+  <p>The payload sent to ServiceNow via Qlik Automation includes automatic context - the analyst doesn't have to describe where they were:</p>
+
+  <pre data-lang="json"><code>{
+  <span class="str">"u_qlik_app"</span>: <span class="str">"app.id"</span>,
+  <span class="str">"u_qlik_sheet"</span>: <span class="str">"current sheet at time of click"</span>,
+  <span class="str">"u_caller_email"</span>: <span class="str">"via getAuthenticatedUser()"</span>,
+  <span class="str">"u_browser"</span>: <span class="str">"navigator.userAgent"</span>
+}</code></pre>
+
+  <div class="callout info">
+    <div class="callout-icon">📈</div>
+    <div class="callout-body">
+      <strong>4-version evolution:</strong> Data lookups went from hard-coded lists (v3.22) to separate REST endpoints (v3.39) to a combined endpoint (v3.40) to the current session hypercubes (v3.43) - eliminating any external service and using Qlik's data model directly.
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="s5">
+  <div class="section-label">Section 05 - Extension 4</div>
+
+  <div class="ext-card">
+    <div class="ext-header">
+      <div class="ext-icon orange">🧠</div>
+      <div>
+        <div class="ext-title">Qore Insight Suite</div>
+        <div class="ext-version">In active development</div>
+      </div>
+    </div>
+    <div class="pill-row">
+      <span class="pill orange">Coming soon</span>
+      <span class="pill gray">Intelligent KPI analysis</span>
+    </div>
+    <div class="ext-body">
+      <p>The next extension in the Qore ecosystem - an insight analysis suite that goes beyond what an analyst can see alone. Details coming soon.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="s6">
+  <div class="section-label">Section 06 - For Developers</div>
+  <h2>Patterns that make extensions enterprise-grade</h2>
+  <p class="section-intro">What separates an extension that works in a demo from one that survives production with hundreds of concurrent users.</p>
+
+  <h3>1. Singleton Pattern</h3>
+  <p>Global extensions (Info Page, Support Ticket) use a window-keyed instance to guarantee a single instance, regardless of how many sheets contain the object:</p>
+
+  <pre data-lang="js"><code><span class="kw">if</span> (window[<span class="str">'__qoreInfoPageInstance'</span>]) {
+  window[<span class="str">'__qoreInfoPageInstance'</span>].layout = layout;
+  <span class="kw">return</span>; <span class="cm">// already initialized - update state only</span>
+}
+<span class="cm">// First call: full bootstrap</span>
+window[<span class="str">'__qoreInfoPageInstance'</span>] = { layout, ctx, destroy };</code></pre>
+
+  <h3>2. Toolbar Injection (MUI Clone)</h3>
+  <p>Instead of rebuilding Qlik Cloud's design from scratch, extensions clone the MUI wrapper of the Bookmarks button and replace only the inner button - guaranteeing automatic visual compatibility with platform updates:</p>
+
+  <pre data-lang="js"><code><span class="kw">var</span> bm = document.querySelector(<span class="str">'[data-tid="assets-button-bookmarks"]'</span>);
+<span class="kw">var</span> wrap = bm.parentNode.cloneNode(<span class="kw">true</span>);    <span class="cm">// clone MUI wrapper</span>
+<span class="kw">var</span> freshBtn = wrap.querySelector(<span class="str">'button'</span>).cloneNode(<span class="kw">false</span>);
+freshBtn.innerHTML = QORE_ICON_16;
+freshBtn.addEventListener(<span class="str">'click'</span>, onOpen);
+bm.parentNode.insertBefore(wrap, bm.nextSibling);</code></pre>
+
+  <h3>3. applyPatches, never setProperties for hypercubes</h3>
+  <p>Using <code>setProperties</code> to modify dimensions and measures can desync <code>qInterColumnSortOrder</code> with the new array - the Engine throws "Invalid sort order" and other objects on the sheet break. The solution: <code>applyPatches</code> with explicit sort order normalization after each mutation.</p>
+
+  <div class="callout warn">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-body">
+      <strong>10,000-cell limit:</strong> Qlik Cloud caps getData at 10,000 cells per request. For a 20-column table, that means at most 500 rows per call. Qore Straight Table computes <code>safePageSize = floor(10000 / totalCols)</code> and makes multiple trips when needed - transparent to the user.
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="s7">
+  <div class="section-label">Section 07 - The Core Point</div>
+  <h2>Extensions aren't workarounds. They're the platform.</h2>
+  <p>There's a common belief that customizing a BI tool with extensions signals a platform limitation. The correct perspective is the opposite: Qlik Cloud was designed to be extensible. The Engine API, the property system, RequireJS AMD support - all of this is first-class infrastructure for building exactly what the enterprise needs.</p>
+
+  <p>What the Qore Extension Framework demonstrates is that it's possible to build extensions that:</p>
+
+  <ul class="feat-list">
+    <li>Survive platform updates (MUI clone, robust selectors)</li>
+    <li>Scale to hundreds of concurrent users (singleton, correct Engine API usage)</li>
+    <li>Integrate with external systems without fragile dependencies (cube-driven lookups)</li>
+    <li>Maintain the same UX level as native Qlik (toolbar injection, edit-mode gating)</li>
+    <li>Evolve safely (applyPatches, sort order normalization)</li>
+  </ul>
+
+  <p>The gap between what Qlik delivers out of the box and what the enterprise actually needs isn't a problem. It's an opportunity to build differentiated value - directly in the platform where decisions happen.</p>
+
+  <div class="callout info">
+    <div class="callout-icon">💬</div>
+    <div class="callout-body">
+      <strong>Do you develop extensions in Qlik Cloud?</strong> Share in the comments which native gap you've had to bridge with custom code - or which one you're still looking for a solution to.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p style="margin-bottom:16px;font-size:.78rem;color:var(--text3)">Qlik Cloud · Advanced Extensions</p>
+  <p>by <a href="https://www.linkedin.com/in/rafael-veloso-data/">Rafael Veloso</a></p>
+</footer>
+
+<script>
+var sids=['s0','s1','s2','s3','s4','s5','s6','s7'];
+var nav=document.getElementById('nav-dots');
+sids.forEach(function(id,i){
+  var btn=document.createElement('button');
+  btn.className='nav-dot';
+  btn.title='Section '+(i+1);
+  btn.onclick=function(){document.getElementById(id).scrollIntoView({behavior:'smooth'});};
+  nav.appendChild(btn);
+});
+var sections=document.querySelectorAll('section');
+var dots=document.querySelectorAll('.nav-dot');
+var io=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      var idx=Array.from(sections).indexOf(e.target);
+      dots.forEach(function(d,i){d.classList.toggle('active',i===idx);});
+    }
+  });
+},{threshold:0.15});
+sections.forEach(function(s){io.observe(s);});
+</script>
+</body>
+</html>
