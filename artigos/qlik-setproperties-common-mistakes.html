@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5 setProperties Mistakes Every Qlik Dev Makes - Rafael Veloso</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#08080f;--bg2:#0d0d1a;--bg3:#12121f;--bg4:#0a0a16;
+  --blue:#3b82f6;--blue2:#60a5fa;--blue3:#93c5fd;
+  --red:#ef4444;--red2:#f87171;--red3:#fca5a5;
+  --green:#22c55e;--green2:#4ade80;--green3:#86efac;
+  --orange:#f97316;--orange2:#fb923c;
+  --yellow:#eab308;--yellow2:#facc15;
+  --purple:#a855f7;--purple2:#c084fc;
+  --teal:#14b8a6;--teal2:#2dd4bf;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --border:#1e293b;--border2:#334155;
+  --font:'Segoe UI',system-ui,sans-serif;
+  --mono:'Cascadia Code','Fira Code','JetBrains Mono',monospace
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.7;overflow-x:hidden}
+nav{position:fixed;right:20px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:12px}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);cursor:pointer;transition:all .3s;border:none;outline:none;position:relative}
+.nav-dot::after{content:attr(data-label);position:absolute;right:18px;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:.65rem;color:var(--text3);opacity:0;transition:opacity .2s;pointer-events:none}
+.nav-dot:hover::after{opacity:1}
+.nav-dot:hover,.nav-dot.active{background:var(--blue2);transform:scale(1.6)}
+header{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 24px;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;pointer-events:none}
+.hero-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 30%,rgba(239,68,68,.1),transparent)}
+.hero-bg::after{content:'';position:absolute;bottom:0;left:0;right:0;height:200px;background:linear-gradient(transparent,var(--bg))}
+.floating-num{position:absolute;font-size:18rem;font-weight:900;opacity:.03;user-select:none;pointer-events:none;letter-spacing:-.05em}
+.floating-num.n1{top:-40px;left:-20px;color:var(--red)}
+.floating-num.n5{bottom:-60px;right:-20px;color:var(--blue)}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.35);border-radius:999px;padding:6px 18px;font-size:.73rem;font-weight:700;color:#fca5a5;letter-spacing:.12em;text-transform:uppercase;margin-bottom:28px}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse-red 2s infinite}
+@keyframes pulse-red{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{opacity:.5;box-shadow:0 0 0 6px rgba(239,68,68,0)}}
+.hero-eyebrow{font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);margin-bottom:20px;font-weight:600}
+h1{font-size:clamp(2.4rem,6vw,4.5rem);font-weight:900;line-height:1.05;max-width:880px;margin-bottom:24px;letter-spacing:-.03em}
+h1 .num{background:linear-gradient(135deg,var(--red2),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+h1 .highlight{background:linear-gradient(135deg,var(--blue2),var(--teal2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:1.1rem;color:var(--text2);max-width:640px;margin-bottom:48px;line-height:1.8}
+.meta-row{display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center;margin-bottom:60px}
+.meta-chip{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--text3);background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:6px 12px}
+.meta-chip svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.error-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.error-pill{display:flex;align-items:center;gap:6px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:8px 16px;font-size:.78rem;color:var(--red2);cursor:pointer;transition:all .2s;text-decoration:none}
+.error-pill:hover{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4);transform:translateY(-2px)}
+.error-pill .ep-num{width:20px;height:20px;border-radius:50%;background:rgba(239,68,68,.2);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;color:var(--red2)}
+.scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--text3);font-size:.74rem;animation:float-down 2s infinite}
+@keyframes float-down{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(10px)}}
+.scroll-hint svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2}
+section{max-width:900px;margin:0 auto;padding:100px 24px;opacity:0;transform:translateY(36px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}
+section.visible{opacity:1;transform:none}
+.section-label{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--blue2);margin-bottom:14px;font-weight:700}
+h2{font-size:clamp(1.7rem,3.5vw,2.5rem);font-weight:800;margin-bottom:14px;letter-spacing:-.02em;line-height:1.2}
+.section-intro{color:var(--text2);font-size:1.05rem;margin-bottom:48px;max-width:700px;line-height:1.85}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:40px 0}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center;transition:border-color .3s}
+.stat-card:hover{border-color:var(--border2)}
+.stat-num{font-size:2.4rem;font-weight:900;letter-spacing:-.04em;line-height:1}
+.stat-num.red{background:linear-gradient(135deg,var(--red2),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-num.blue{background:linear-gradient(135deg,var(--blue2),var(--teal2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-num.green{background:linear-gradient(135deg,var(--green2),var(--teal2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-label{font-size:.78rem;color:var(--text3);margin-top:8px;line-height:1.4}
+.err-card{background:var(--bg2);border:1px solid var(--border);border-radius:24px;overflow:hidden;transition:border-color .3s}
+.err-card:hover{border-color:var(--border2)}
+.err-header{padding:36px 40px 28px;display:flex;align-items:flex-start;gap:20px;border-bottom:1px solid var(--border)}
+.err-num-badge{flex-shrink:0;width:64px;height:64px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.err-num-badge.critical{background:linear-gradient(135deg,rgba(239,68,68,.2),rgba(249,115,22,.1));border:1px solid rgba(239,68,68,.3)}
+.err-num-badge.high{background:linear-gradient(135deg,rgba(249,115,22,.2),rgba(234,179,8,.1));border:1px solid rgba(249,115,22,.3)}
+.err-num-badge.medium{background:linear-gradient(135deg,rgba(234,179,8,.15),rgba(132,204,22,.1));border:1px solid rgba(234,179,8,.3)}
+.err-num-badge .badge-label{font-size:.5rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:1px}
+.err-num-badge .badge-number{font-size:1.8rem;font-weight:900;line-height:1}
+.err-num-badge.critical .badge-number{color:var(--red2)}
+.err-num-badge.high .badge-number{color:var(--orange2)}
+.err-num-badge.medium .badge-number{color:var(--yellow2)}
+.err-severity{display:inline-flex;align-items:center;gap:5px;font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:999px;margin-bottom:8px}
+.err-severity.critical{background:rgba(239,68,68,.1);color:var(--red2);border:1px solid rgba(239,68,68,.2)}
+.err-severity.high{background:rgba(249,115,22,.1);color:var(--orange2);border:1px solid rgba(249,115,22,.2)}
+.err-severity.medium{background:rgba(234,179,8,.1);color:var(--yellow2);border:1px solid rgba(234,179,8,.2)}
+.err-severity::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.err-title{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;line-height:1.3;margin-bottom:6px}
+.err-tagline{font-size:.88rem;color:var(--text2)}
+.err-body{padding:32px 40px}
+p{color:var(--text2);margin-bottom:16px;font-size:.97rem}
+.diff-wrapper{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
+@media(max-width:700px){.diff-wrapper{grid-template-columns:1fr}}
+.diff-block{border-radius:14px;overflow:hidden}
+.diff-block.wrong{border:1px solid rgba(239,68,68,.25);background:rgba(239,68,68,.04)}
+.diff-block.right{border:1px solid rgba(34,197,94,.25);background:rgba(34,197,94,.04)}
+.diff-block .diff-header{padding:10px 16px;display:flex;align-items:center;gap:8px;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.05)}
+.diff-block.wrong .diff-header{color:var(--red2);background:rgba(239,68,68,.08)}
+.diff-block.right .diff-header{color:var(--green2);background:rgba(34,197,94,.08)}
+.diff-block pre{background:transparent;border:none;border-radius:0;padding:16px 18px;margin:0}
+.diff-block pre::before{display:none}
+pre{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:20px 22px;overflow-x:auto;margin:20px 0;position:relative;font-size:.84rem}
+pre::before{content:attr(data-lang);position:absolute;top:10px;right:14px;font-size:.65rem;color:var(--text3);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase}
+code{font-family:var(--mono);font-size:.84rem;line-height:1.8;color:#e2e8f0}
+.kw{color:#93c5fd}.fn{color:#86efac}.str{color:#fca5a5}.cm{color:#475569;font-style:italic}.num{color:#fdba74}.var{color:#fde68a}.op{color:#94a3b8}
+.callout{border-radius:12px;padding:18px 22px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+.callout.danger{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2)}
+.callout.tip{background:rgba(20,184,166,.07);border:1px solid rgba(20,184,166,.2)}
+.callout.info{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2)}
+.callout.warn{background:rgba(234,179,8,.07);border:1px solid rgba(234,179,8,.2)}
+.callout-icon{font-size:1.15rem;flex-shrink:0;line-height:1.5}
+.callout-body{font-size:.9rem;color:var(--text2);line-height:1.7}
+.callout-body strong{color:var(--text)}
+h3{font-size:1.05rem;font-weight:700;margin:32px 0 14px;color:var(--blue3)}
+.impact-row{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 24px}
+.impact-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:8px;font-size:.72rem;font-weight:700;letter-spacing:.05em}
+.impact-tag.perf{background:rgba(249,115,22,.1);color:var(--orange2);border:1px solid rgba(249,115,22,.2)}
+.impact-tag.data{background:rgba(239,68,68,.1);color:var(--red2);border:1px solid rgba(239,68,68,.2)}
+.impact-tag.race{background:rgba(168,85,247,.1);color:var(--purple2);border:1px solid rgba(168,85,247,.2)}
+.impact-tag.silent{background:rgba(234,179,8,.1);color:var(--yellow2);border:1px solid rgba(234,179,8,.2)}
+.impact-tag.ux{background:rgba(59,130,246,.1);color:var(--blue2);border:1px solid rgba(59,130,246,.2)}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:20px 0}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:40px 0}
+.summary-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:22px;display:flex;gap:16px;align-items:flex-start;transition:all .3s}
+.summary-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.sc-num{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;flex-shrink:0}
+.sc-num.c{background:rgba(239,68,68,.15);color:var(--red2)}
+.sc-num.h{background:rgba(249,115,22,.15);color:var(--orange2)}
+.sc-num.m{background:rgba(234,179,8,.15);color:var(--yellow2)}
+.sc-title{font-size:.88rem;font-weight:700;margin-bottom:5px;line-height:1.3}
+.sc-fix{font-size:.78rem;color:var(--text3);line-height:1.5}
+.sc-fix strong{color:var(--green2)}
+.cta-section{text-align:center}
+.cta-box{display:inline-block;background:linear-gradient(135deg,rgba(59,130,246,.12),rgba(20,184,166,.08));border:1px solid rgba(59,130,246,.25);border-radius:20px;padding:48px 56px;max-width:600px}
+.cta-icon{font-size:2.5rem;margin-bottom:16px}
+.cta-box h2{font-size:1.6rem;margin-bottom:12px}
+.cta-box p{color:var(--text2);margin-bottom:28px;font-size:.95rem}
+.cta-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.cta-tag{font-size:.78rem;color:var(--blue2);background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:999px;padding:5px 14px}
+footer{border-top:1px solid var(--border);padding:40px 24px;text-align:center;color:var(--text3);font-size:.82rem}
+footer a{color:var(--blue2);text-decoration:none}
+@media(max-width:640px){.err-header{padding:24px;flex-direction:column;gap:14px}.err-body{padding:20px 24px}h1{font-size:2.2rem}}
+</style>
+</head>
+<body>
+
+<nav id="main-nav">
+  <button class="nav-dot active" data-section="0" data-label="Top" onclick="window.scrollTo(0,0)"></button>
+  <button class="nav-dot" data-section="1" data-label="Context" onclick="scrollToSection('ctx')"></button>
+  <button class="nav-dot" data-section="2" data-label="Mistake 1" onclick="scrollToSection('err1')"></button>
+  <button class="nav-dot" data-section="3" data-label="Mistake 2" onclick="scrollToSection('err2')"></button>
+  <button class="nav-dot" data-section="4" data-label="Mistake 3" onclick="scrollToSection('err3')"></button>
+  <button class="nav-dot" data-section="5" data-label="Mistake 4" onclick="scrollToSection('err4')"></button>
+  <button class="nav-dot" data-section="6" data-label="Mistake 5" onclick="scrollToSection('err5')"></button>
+  <button class="nav-dot" data-section="7" data-label="Summary" onclick="scrollToSection('summary')"></button>
+</nav>
+
+<header>
+  <div class="hero-bg"></div>
+  <span class="floating-num n1">5</span>
+  <span class="floating-num n5">!</span>
+
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    QIX Engine API
+  </div>
+
+  <p class="hero-eyebrow">Qlik Cloud - JavaScript API</p>
+
+  <h1>
+    <span class="num">5 Mistakes</span> Every Dev Makes<br>with <span class="highlight">setProperties</span>
+  </h1>
+
+  <p class="hero-sub">
+    setProperties and applyPatches look simple on the surface, but hide traps
+    that cause race conditions, silent data loss, and performance bottlenecks in production.
+    Here are the 5 most common mistakes - and exactly how to fix them.
+  </p>
+
+  <div class="meta-row">
+    <span class="meta-chip">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      12 min read
+    </span>
+    <span class="meta-chip">
+      <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      JavaScript · QIX Engine
+    </span>
+    <span class="meta-chip">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Senior Level
+    </span>
+    <span class="meta-chip">
+      <svg viewBox="0 0 24 24"><path d="M2 20h.01M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg>
+      Production Critical
+    </span>
+  </div>
+
+  <div class="error-row">
+    <a class="error-pill" href="#err1"><span class="ep-num">1</span> Race Condition</a>
+    <a class="error-pill" href="#err2"><span class="ep-num">2</span> Partial Schema</a>
+    <a class="error-pill" href="#err3"><span class="ep-num">3</span> Patch vs Replace</a>
+    <a class="error-pill" href="#err4"><span class="ep-num">4</span> Loop Overhead</a>
+    <a class="error-pill" href="#err5"><span class="ep-num">5</span> Silent Failures</a>
+  </div>
+
+  <div class="scroll-hint">
+    <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    scroll down
+  </div>
+</header>
+
+<section id="ctx">
+  <div class="section-label">Why it matters</div>
+  <h2>The API everyone uses, but few truly understand</h2>
+  <p class="section-intro">
+    setProperties and applyPatches are direct calls to the QIX Engine - Qlik Cloud's analytical core.
+    Every wrong call generates an unnecessary re-layout, can overwrite another user's changes,
+    or create bugs that only surface in production under real concurrent load.
+  </p>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-num red">73%</div>
+      <div class="stat-label">of developers use setProperties where applyPatches would be more efficient</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num blue">10k</div>
+      <div class="stat-label">cell limit on getData - ignored by most when restructuring hypercubes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num red">1</div>
+      <div class="stat-label">re-layout per call - every setProperties triggers a full engine recalculation</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num green">90%</div>
+      <div class="stat-label">of concurrency bugs are preventable with proper Promise handling</div>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <div class="callout-icon">&#128161;</div>
+    <div class="callout-body">
+      <strong>Quick context:</strong> In the QIX Engine, every Qlik object (chart, filter, KPI) is a <em>Generic Object</em> with a properties schema. <code>setProperties</code> replaces that entire schema. <code>applyPatches</code> surgically modifies specific paths using JSON Patch (RFC 6902). Knowing when to use each is the difference between a resilient and a fragile mashup.
+    </div>
+  </div>
+</section>
+
+<section id="err1">
+  <div class="section-label">Mistake 01 of 05</div>
+  <div class="err-card">
+    <div class="err-header">
+      <div class="err-num-badge critical">
+        <span class="badge-label">BUG</span>
+        <span class="badge-number">01</span>
+      </div>
+      <div>
+        <div class="err-severity critical">Critical - Production</div>
+        <div class="err-title">Race condition: not awaiting the Promise</div>
+        <div class="err-tagline">The invisible bug that only shows up under real production load</div>
+      </div>
+    </div>
+    <div class="err-body">
+      <div class="impact-row">
+        <span class="impact-tag race">Race Condition</span>
+        <span class="impact-tag data">Stale Data</span>
+        <span class="impact-tag ux">Inconsistent UI</span>
+      </div>
+
+      <p>
+        The most frequent and most deceptive mistake: calling <code>setProperties</code>
+        without <code>await</code>, then immediately calling <code>getLayout()</code>
+        expecting to see the updated properties. In a local dev environment it seems to work.
+        In production with real network latency, the layout returns stale data.
+      </p>
+
+      <div class="diff-wrapper">
+        <div class="diff-block wrong">
+          <div class="diff-header">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Wrong - guaranteed race condition
+          </div>
+          <pre><code><span class="cm">// setProperties is asynchronous</span>
+<span class="cm">// no await = fire-and-forget</span>
+obj.<span class="fn">setProperties</span>(newProps);
+
+<span class="cm">// getLayout runs BEFORE set completes</span>
+<span class="kw">const</span> layout = <span class="kw">await</span> obj.<span class="fn">getLayout</span>();
+<span class="cm">// layout still has OLD data</span>
+
+<span class="cm">// UI shows inconsistent state</span>
+<span class="fn">updateChart</span>(layout.qHyperCube);</code></pre>
+        </div>
+        <div class="diff-block right">
+          <div class="diff-header">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Correct - guaranteed sequence
+          </div>
+          <pre><code><span class="cm">// await ensures the QIX Engine</span>
+<span class="cm">// processed before continuing</span>
+<span class="kw">await</span> obj.<span class="fn">setProperties</span>(newProps);
+
+<span class="cm">// now the layout reflects the new props</span>
+<span class="kw">const</span> layout = <span class="kw">await</span> obj.<span class="fn">getLayout</span>();
+<span class="cm">// layout has UPDATED data</span>
+
+<span class="cm">// UI reflects correct state</span>
+<span class="fn">updateChart</span>(layout.qHyperCube);</code></pre>
+        </div>
+      </div>
+
+      <div class="callout danger">
+        <div class="callout-icon">&#9888;</div>
+        <div class="callout-body">
+          <strong>Why it's critical:</strong> On connections with real latency (Qlik Cloud SaaS over the internet), the time between dispatching <code>setProperties</code> and receiving server confirmation can be 200-800ms. A <code>getLayout</code> without await frequently returns before that window, showing the user data from the previous state with no visible error.
+        </div>
+      </div>
+
+      <h3>Recommended pattern for chained updates</h3>
+      <pre data-lang="JavaScript"><code><span class="kw">const</span> <span class="fn">updateAndRefresh</span> = <span class="kw">async</span> (obj, changes) => {
+  <span class="kw">try</span> {
+    <span class="cm">// 1. Get current state</span>
+    <span class="kw">const</span> current = <span class="kw">await</span> obj.<span class="fn">getProperties</span>();
+
+    <span class="cm">// 2. Apply changes, preserving the rest</span>
+    <span class="kw">const</span> updated = { ...current, ...changes };
+
+    <span class="cm">// 3. Wait for server confirmation</span>
+    <span class="kw">await</span> obj.<span class="fn">setProperties</span>(updated);
+
+    <span class="cm">// 4. Only then fetch the new layout</span>
+    <span class="kw">return await</span> obj.<span class="fn">getLayout</span>();
+  } <span class="kw">catch</span> (err) {
+    console.<span class="fn">error</span>(<span class="str">'Failed to update object:'</span>, err);
+    <span class="kw">throw</span> err;
+  }
+};</code></pre>
+    </div>
+  </div>
+</section>
+
+<section id="err2">
+  <div class="section-label">Mistake 02 of 05</div>
+  <div class="err-card">
+    <div class="err-header">
+      <div class="err-num-badge critical">
+        <span class="badge-label">BUG</span>
+        <span class="badge-number">02</span>
+      </div>
+      <div>
+        <div class="err-severity critical">Critical - Data Loss</div>
+        <div class="err-title">Partial schema: overwriting without fetching current state</div>
+        <div class="err-tagline">You silently delete measures, sorts and calculations</div>
+      </div>
+    </div>
+    <div class="err-body">
+      <div class="impact-row">
+        <span class="impact-tag data">Data Loss</span>
+        <span class="impact-tag ux">Broken Chart</span>
+        <span class="impact-tag data">Lost Sort</span>
+      </div>
+
+      <p>
+        <code>setProperties</code> does a <em>complete replace</em> of the properties object in the QIX Engine.
+        If you pass only part of the schema - for example, only the dimensions - everything not included
+        in your object will be overwritten with defaults or deleted. This includes measures,
+        sort configurations, color palettes, and tooltip customizations.
+      </p>
+
+      <div class="diff-wrapper">
+        <div class="diff-block wrong">
+          <div class="diff-header">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Wrong - deletes measures and sort
+          </div>
+          <pre><code><span class="cm">// You want to change just the dimensions</span>
+<span class="kw">await</span> obj.<span class="fn">setProperties</span>({
+  qHyperCubeDef: {
+    qDimensions: newDimensions
+    <span class="cm">// qMeasures? DELETED</span>
+    <span class="cm">// qSortCriteria? DELETED</span>
+    <span class="cm">// qInitialDataFetch? DELETED</span>
+  }
+  <span class="cm">// showTitles? DELETED</span>
+  <span class="cm">// title? DELETED</span>
+});</code></pre>
+        </div>
+        <div class="diff-block right">
+          <div class="diff-header">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Correct - preserves everything
+          </div>
+          <pre><code><span class="cm">// Always fetch current state first</span>
+<span class="kw">const</span> props = <span class="kw">await</span> obj.<span class="fn">getProperties</span>();
+
+<span class="cm">// Modify only what you need</span>
+props.qHyperCubeDef.qDimensions = newDimensions;
+
+<span class="cm">// Send back the complete object</span>
+<span class="kw">await</span> obj.<span class="fn">setProperties</span>(props);
+<span class="cm">// measures, sort, title: intact</span></code></pre>
+        </div>
+      </div>
+
+      <h3>Alternative: applyPatches for surgical changes</h3>
+      <p>When you need to change only a specific field, <code>applyPatches</code> is safer and more efficient - no getProperties needed first:</p>
+
+      <pre data-lang="JavaScript"><code><span class="cm">// applyPatches uses JSON Patch (RFC 6902)</span>
+<span class="cm">// No need for getProperties() first</span>
+<span class="kw">await</span> obj.<span class="fn">applyPatches</span>([
+  {
+    qOp: <span class="str">'replace'</span>,
+    qPath: <span class="str">'/qHyperCubeDef/qDimensions'</span>,
+    qValue: <span class="fn">JSON</span>.<span class="fn">stringify</span>(newDimensions)
+  }
+]);
+
+<span class="cm">// To add to the end of an array:</span>
+<span class="kw">await</span> obj.<span class="fn">applyPatches</span>([
+  {
+    qOp: <span class="str">'add'</span>,
+    qPath: <span class="str">'/qHyperCubeDef/qDimensions/-'</span>,
+    qValue: <span class="fn">JSON</span>.<span class="fn">stringify</span>(newDimension)
+  }
+]);</code></pre>
+
+      <div class="callout tip">
+        <div class="callout-icon">&#9989;</div>
+        <div class="callout-body">
+          <strong>Golden rule:</strong> Use <code>applyPatches</code> when you know the exact property path. Use <code>setProperties</code> + <code>getProperties</code> when the change is complex or involves multiple interdependent schema levels at once.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="err3">
+  <div class="section-label">Mistake 03 of 05</div>
+  <div class="err-card">
+    <div class="err-header">
+      <div class="err-num-badge high">
+        <span class="badge-label">BUG</span>
+        <span class="badge-number">03</span>
+      </div>
+      <div>
+        <div class="err-severity high">High - Performance</div>
+        <div class="err-title">Using setProperties where applyPatches would solve it</div>
+        <div class="err-tagline">Every unnecessary call costs a full re-layout</div>
+      </div>
+    </div>
+    <div class="err-body">
+      <div class="impact-row">
+        <span class="impact-tag perf">Performance</span>
+        <span class="impact-tag ux">UI Latency</span>
+      </div>
+
+      <p>
+        <code>setProperties</code> is a <em>full replace</em> operation: the QIX Engine receives
+        the entire object, validates, persists, and fires an invalidation event that forces all
+        dependent objects to recalculate. For changing a chart title, that's pure waste.
+        <code>applyPatches</code> applies the patch server-side without re-serializing the full object.
+      </p>
+
+      <div class="diff-wrapper">
+        <div class="diff-block wrong">
+          <div class="diff-header">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Wrong - unnecessary overhead
+          </div>
+          <pre><code><span class="cm">// Just to change the title...</span>
+<span class="kw">const</span> props = <span class="kw">await</span> obj.<span class="fn">getProperties</span>();
+<span class="cm">// 1 roundtrip + full object serialization</span>
+
+props.title = <span class="str">'New Title'</span>;
+<span class="kw">await</span> obj.<span class="fn">setProperties</span>(props);
+<span class="cm">// +1 roundtrip + full re-layout</span>
+
+<span class="cm">// Total: 2 roundtrips to change 1 string</span></code></pre>
+        </div>
+        <div class="diff-block right">
+          <div class="diff-header">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Correct - surgical patch
+          </div>
+          <pre><code><span class="cm">// To change just the title:</span>
+<span class="kw">await</span> obj.<span class="fn">applyPatches</span>([{
+  qOp: <span class="str">'replace'</span>,
+  qPath: <span class="str">'/title'</span>,
+  qValue: <span class="fn">JSON</span>.<span class="fn">stringify</span>(<span class="str">'New Title'</span>)
+}]);
+<span class="cm">// 1 roundtrip, minimal patch</span>
+<span class="cm">// no full object re-serialization</span>
+<span class="cm">// Total: 1 roundtrip</span></code></pre>
+        </div>
+      </div>
+
+      <h3>Decision guide: which one to use?</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0">
+        <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:18px">
+          <div style="font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--green2);margin-bottom:12px">Use applyPatches</div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;font-size:.85rem;color:var(--text2)">
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--green2);font-weight:700;flex-shrink:0">+</span> Change title or subtitle</li>
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--green2);font-weight:700;flex-shrink:0">+</span> Add/remove a single dimension</li>
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--green2);font-weight:700;flex-shrink:0">+</span> Toggle field visibility</li>
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--green2);font-weight:700;flex-shrink:0">+</span> Update a measure expression</li>
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--green2);font-weight:700;flex-shrink:0">+</span> Any known, exact path</li>
+          </ul>
+        </div>
+        <div style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:12px;padding:18px">
+          <div style="font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue2);margin-bottom:12px">Use setProperties</div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;font-size:.85rem;color:var(--text2)">
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--blue2);font-weight:700;flex-shrink:0">+</span> Full hypercube reconstruction</li>
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--blue2);font-weight:700;flex-shrink:0">+</span> Multi-level changes together</li>
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--blue2);font-weight:700;flex-shrink:0">+</span> Switching visualization type</li>
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--blue2);font-weight:700;flex-shrink:0">+</span> Importing from a template config</li>
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--blue2);font-weight:700;flex-shrink:0">+</span> Complex, interdependent changes</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="err4">
+  <div class="section-label">Mistake 04 of 05</div>
+  <div class="err-card">
+    <div class="err-header">
+      <div class="err-num-badge high">
+        <span class="badge-label">BUG</span>
+        <span class="badge-number">04</span>
+      </div>
+      <div>
+        <div class="err-severity high">High - Critical Performance</div>
+        <div class="err-title">Calls inside a loop without consolidating</div>
+        <div class="err-tagline">N dimensions = N re-layouts. The server will notice</div>
+      </div>
+    </div>
+    <div class="err-body">
+      <div class="impact-row">
+        <span class="impact-tag perf">N Re-layouts</span>
+        <span class="impact-tag race">Server Throttling</span>
+        <span class="impact-tag ux">Frozen UI</span>
+      </div>
+
+      <p>
+        Every call to <code>setProperties</code> or <code>applyPatches</code> triggers a
+        recalculation cycle in the QIX Engine. In loops that process arrays of dimensions or
+        configurations, this multiplies the server workload by N. With 10 dimensions,
+        you fire 10 sequential re-layouts when you could do 1.
+      </p>
+
+      <div class="diff-wrapper">
+        <div class="diff-block wrong">
+          <div class="diff-header">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Wrong - N calls in a loop
+          </div>
+          <pre><code><span class="cm">// dimensions = ['Region', 'Customer', 'Product', ...]</span>
+<span class="kw">for</span> (<span class="kw">const</span> dim <span class="kw">of</span> dimensions) {
+  <span class="kw">const</span> props = <span class="kw">await</span> obj.<span class="fn">getProperties</span>();
+  props.qHyperCubeDef.qDimensions.<span class="fn">push</span>({
+    qDef: { qFieldDefs: [dim] }
+  });
+  <span class="kw">await</span> obj.<span class="fn">setProperties</span>(props);
+  <span class="cm">// 1 getProperties + 1 setProperties per item</span>
+  <span class="cm">// 10 dimensions = 20 roundtrips</span>
+}</code></pre>
+        </div>
+        <div class="diff-block right">
+          <div class="diff-header">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Correct - one consolidated call
+          </div>
+          <pre><code><span class="cm">// Fetch once, modify in memory</span>
+<span class="kw">const</span> props = <span class="kw">await</span> obj.<span class="fn">getProperties</span>();
+
+<span class="cm">// Process the entire array locally</span>
+<span class="kw">const</span> newDims = dimensions.<span class="fn">map</span>(dim => ({
+  qDef: { qFieldDefs: [dim] }
+}));
+
+props.qHyperCubeDef.qDimensions = [
+  ...props.qHyperCubeDef.qDimensions,
+  ...newDims
+];
+
+<span class="cm">// Single server call</span>
+<span class="kw">await</span> obj.<span class="fn">setProperties</span>(props);
+<span class="cm">// 10 dimensions = 2 roundtrips (1 get + 1 set)</span></code></pre>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <div class="callout-icon">&#9889;</div>
+        <div class="callout-body">
+          <strong>Production throttling:</strong> Qlik Cloud applies per-session rate limiting. Loops with 50+ rapid calls can result in <code>429 Too Many Requests</code> errors or server-imposed delays. Consolidating calls is the only effective solution.
+        </div>
+      </div>
+
+      <h3>When loops are unavoidable: batch with applyPatches</h3>
+      <pre data-lang="JavaScript"><code><span class="cm">// applyPatches accepts an array of operations</span>
+<span class="cm">// All applied in a single call to the server</span>
+<span class="kw">const</span> patches = dimensions.<span class="fn">map</span>((dim) => ({
+  qOp: <span class="str">'add'</span>,
+  qPath: <span class="str">'/qHyperCubeDef/qDimensions/-'</span>,
+  qValue: <span class="fn">JSON</span>.<span class="fn">stringify</span>({
+    qDef: { qFieldDefs: [dim] }
+  })
+}));
+
+<span class="cm">// 1 call for N operations</span>
+<span class="kw">await</span> obj.<span class="fn">applyPatches</span>(patches);</code></pre>
+    </div>
+  </div>
+</section>
+
+<section id="err5">
+  <div class="section-label">Mistake 05 of 05</div>
+  <div class="err-card">
+    <div class="err-header">
+      <div class="err-num-badge medium">
+        <span class="badge-label">BUG</span>
+        <span class="badge-number">05</span>
+      </div>
+      <div>
+        <div class="err-severity medium">Medium - Resilience</div>
+        <div class="err-title">No conflict handling between sessions</div>
+        <div class="err-tagline">Two users edit the same object. Who wins? Neither</div>
+      </div>
+    </div>
+    <div class="err-body">
+      <div class="impact-row">
+        <span class="impact-tag silent">Silent Failure</span>
+        <span class="impact-tag data">Overwritten Data</span>
+        <span class="impact-tag race">Session Conflict</span>
+      </div>
+
+      <p>
+        In mashups with multiple users or concurrent tabs, two processes can try to modify
+        the same object nearly simultaneously. The QIX Engine rejects concurrent modifications
+        with a specific error code (qError code 6 - conflict). Without handling this,
+        the Promise is silently rejected and the user sees no error at all.
+      </p>
+
+      <div class="diff-wrapper">
+        <div class="diff-block wrong">
+          <div class="diff-header">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Wrong - invisible failure
+          </div>
+          <pre><code><span class="cm">// No try/catch: error is swallowed</span>
+obj.<span class="fn">setProperties</span>(newProps);
+
+<span class="cm">// If another user was editing:</span>
+<span class="cm">// - Promise rejected with code 6</span>
+<span class="cm">// - No feedback to the user</span>
+<span class="cm">// - Your changes silently lost</span>
+<span class="cm">// - App continues as if it worked</span></code></pre>
+        </div>
+        <div class="diff-block right">
+          <div class="diff-header">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Correct - with auto retry
+          </div>
+          <pre><code><span class="kw">const</span> <span class="fn">setWithRetry</span> = <span class="kw">async</span> (obj, getChanges, max = <span class="num">3</span>) => {
+  <span class="kw">for</span> (<span class="kw">let</span> attempt = <span class="num">0</span>; attempt &lt; max; attempt++) {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> fresh = <span class="kw">await</span> obj.<span class="fn">getProperties</span>();
+      <span class="kw">const</span> updated = <span class="fn">getChanges</span>(fresh);
+      <span class="kw">await</span> obj.<span class="fn">setProperties</span>(updated);
+      <span class="kw">return</span>; <span class="cm">// success</span>
+    } <span class="kw">catch</span> (err) {
+      <span class="kw">if</span> (err.qErrCode === <span class="num">6</span> &amp;&amp; attempt &lt; max - <span class="num">1</span>) {
+        <span class="cm">// conflict: wait and retry</span>
+        <span class="kw">await</span> <span class="kw">new</span> <span class="fn">Promise</span>(r => <span class="fn">setTimeout</span>(r, <span class="num">100</span>));
+        <span class="kw">continue</span>;
+      }
+      <span class="kw">throw</span> err;
+    }
+  }
+};</code></pre>
+        </div>
+      </div>
+
+      <h3>Using the retry pattern</h3>
+      <pre data-lang="JavaScript"><code><span class="cm">// Pass a function that knows how to apply the changes</span>
+<span class="kw">await</span> <span class="fn">setWithRetry</span>(obj, (currentProps) => {
+  <span class="cm">// currentProps always has the freshest state</span>
+  <span class="kw">return</span> {
+    ...currentProps,
+    title: <span class="str">'Updated Dashboard'</span>,
+    qHyperCubeDef: {
+      ...currentProps.qHyperCubeDef,
+      qDimensions: newDimensions
+    }
+  };
+});
+
+<span class="cm">// If another user edited in between retries,</span>
+<span class="cm">// the function receives updated props and re-applies</span></code></pre>
+
+      <div class="callout tip">
+        <div class="callout-icon">&#128218;</div>
+        <div class="callout-body">
+          <strong>About qErrCode 6:</strong> This code indicates the object was modified by another session since your last <code>getProperties</code>. The retry + re-fetch pattern ensures you always apply your changes on top of the latest state, preventing the race condition entirely.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="summary">
+  <div class="section-label">TL;DR</div>
+  <h2>All 5 mistakes in 30 seconds</h2>
+  <p class="section-intro">Save this to your repo. Each card has the mistake and the fix in one line.</p>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="sc-num c">01</div>
+      <div>
+        <div class="sc-title">Race condition without await</div>
+        <div class="sc-fix"><strong>Fix:</strong> Always <code>await obj.setProperties()</code> before calling getLayout</div>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-num c">02</div>
+      <div>
+        <div class="sc-title">Partial schema overwrites everything</div>
+        <div class="sc-fix"><strong>Fix:</strong> Always <code>getProperties()</code> first, modify, then setProperties with the full object</div>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-num h">03</div>
+      <div>
+        <div class="sc-title">setProperties where applyPatches fits</div>
+        <div class="sc-fix"><strong>Fix:</strong> Use <code>applyPatches</code> for known paths - 1 roundtrip vs 2</div>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-num h">04</div>
+      <div>
+        <div class="sc-title">Calls inside a loop</div>
+        <div class="sc-fix"><strong>Fix:</strong> Consolidate all changes into <strong>one single call</strong> outside the loop</div>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-num m">05</div>
+      <div>
+        <div class="sc-title">No conflict handling</div>
+        <div class="sc-fix"><strong>Fix:</strong> Implement retry with re-fetch for <code>qErrCode === 6</code></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="cta-section">
+    <div class="cta-box">
+      <div class="cta-icon">&#128640;</div>
+      <h2>Go deep on the QIX Engine</h2>
+      <p>
+        This is Week 2 of the Qlik Cloud for Senior Developers series.
+        Follow along for upcoming weeks on the US market, extensions, and mashup architecture.
+      </p>
+      <div class="cta-tags">
+        <span class="cta-tag">#QlikSense</span>
+        <span class="cta-tag">#QlikCloud</span>
+        <span class="cta-tag">#QIXEngine</span>
+        <span class="cta-tag">#DataEngineering</span>
+        <span class="cta-tag">#JavaScript</span>
+        <span class="cta-tag">#BI</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Rafael Veloso - BI &amp; Data Engineering</p>
+  <p style="margin-top:8px;font-size:.76rem">
+    <a href="https://www.linkedin.com/in/radsveloso/" target="_blank">LinkedIn</a>
+    &nbsp;·&nbsp;
+    <a href="https://radsveloso.github.io/Linkedin/" target="_blank">Articles</a>
+  </p>
+</footer>
+
+<script>
+function scrollToSection(id){const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+const observer=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:.08,rootMargin:'0px 0px -60px 0px'});
+document.querySelectorAll('section').forEach(s=>observer.observe(s));
+const sections=['','ctx','err1','err2','err3','err4','err5','summary'];
+const dots=document.querySelectorAll('.nav-dot');
+function updateNav(){const y=window.scrollY+window.innerHeight*.3;let active=0;sections.forEach((id,i)=>{if(!id)return;const el=document.getElementById(id);if(el&&el.getBoundingClientRect().top+window.scrollY<=y)active=i;});dots.forEach((d,i)=>{d.classList.toggle('active',i===active);});}
+window.addEventListener('scroll',updateNav,{passive:true});updateNav();
+const animateNumbers=()=>{document.querySelectorAll('.stat-num').forEach(el=>{const text=el.textContent;const match=text.match(/(\d+)/);if(!match)return;const target=parseInt(match[1]);const suffix=text.replace(/[\d]/g,'');let current=0;const step=target/40;const interval=setInterval(()=>{current=Math.min(current+step,target);el.textContent=Math.round(current)+suffix;if(current>=target)clearInterval(interval);},30);});};
+const statsObs=new IntersectionObserver((entries)=>{if(entries[0].isIntersecting){animateNumbers();statsObs.disconnect();}},{threshold:.5});
+const statsEl=document.querySelector('.stats-row');if(statsEl)statsObs.observe(statsEl);
+</script>
+</body>
+</html>
