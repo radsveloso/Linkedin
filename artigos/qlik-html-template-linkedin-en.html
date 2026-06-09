@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How I Build Premium HTML Articles for LinkedIn | Rafael Veloso</title>
+<meta name="description" content="The template, the 5 technical pillars, and the prompt I use to generate every article in the Qlik Cloud for Senior Developers series.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --violet:#8b5cf6;--violet2:#a78bfa;--violet3:#c4b5fd;
+  --cyan:#06b6d4;--cyan2:#22d3ee;
+  --bg:#07080e;--bg2:#0d0f1a;--bg3:#111827;
+  --text:rgba(255,255,255,.88);--muted:rgba(255,255,255,.5);--subtle:rgba(255,255,255,.28);
+  --border:rgba(139,92,246,.18);--border2:rgba(139,92,246,.32);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;line-height:1.7;overflow-x:hidden}
+canvas#bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;opacity:.45}
+
+/* NAV DOTS */
+.nav-dots{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:10px}
+.nav-dot{width:10px;height:10px;border-radius:50%;background:rgba(139,92,246,.3);border:1.5px solid rgba(139,92,246,.4);cursor:pointer;transition:all .3s;position:relative}
+.nav-dot.active,.nav-dot:hover{background:var(--violet);border-color:var(--violet);transform:scale(1.4)}
+.nav-dot::after{content:attr(data-label);position:absolute;right:18px;top:50%;transform:translateY(-50%);background:rgba(13,15,26,.95);border:1px solid var(--border2);color:var(--violet2);font-size:.72rem;padding:3px 9px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s}
+.nav-dot:hover::after{opacity:1}
+
+/* LAYOUT */
+.wrapper{position:relative;z-index:1}
+section{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:80px 24px;max-width:860px;margin:0 auto}
+
+/* HERO */
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;font-size:.78rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:28px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.35);color:var(--violet2)}
+.hero-badge-dot{width:7px;height:7px;border-radius:50%;background:var(--violet);animation:pulse-v 2s infinite}
+@keyframes pulse-v{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(139,92,246,.5)}50%{opacity:.6;box-shadow:0 0 0 8px rgba(139,92,246,0)}}
+h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;line-height:1.15;margin-bottom:20px;background:linear-gradient(135deg,#fff 0%,var(--violet2) 60%,var(--cyan2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:1.1rem;color:var(--muted);max-width:600px;margin-bottom:36px}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 16px;text-align:center}
+.stat-num{font-size:1.7rem;font-weight:800;color:var(--violet2);display:block}
+.stat-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+
+/* SECTION TITLES */
+.section-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--violet);margin-bottom:12px}
+h2{font-size:clamp(1.6rem,3.5vw,2.3rem);font-weight:800;line-height:1.2;margin-bottom:20px}
+h2 span{color:var(--violet2)}
+.section-intro{font-size:1.05rem;color:var(--muted);margin-bottom:36px;max-width:680px}
+
+/* PROBLEM CARDS */
+.vs-bar{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:start}
+.vs-col{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px}
+.vs-col.good{border-color:rgba(139,92,246,.35)}
+.vs-col-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
+.vs-col.bad .vs-col-title{color:#f87171}
+.vs-col.good .vs-col-title{color:var(--violet2)}
+.vs-item{font-size:.86rem;color:var(--muted);padding:5px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.vs-item:last-child{border-bottom:none}
+.vs-icon-mid{display:flex;align-items:center;justify-content:center;font-size:1.5rem;padding-top:60px;color:var(--muted)}
+
+/* PILLAR CARDS */
+.pillar-list{display:flex;flex-direction:column;gap:20px}
+.pillar{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;display:grid;grid-template-columns:56px 1fr;gap:20px;align-items:start}
+.pillar-num{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--violet),var(--violet2));display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:900;color:#fff;flex-shrink:0}
+.pillar-title{font-size:1rem;font-weight:700;color:var(--violet2);margin-bottom:6px}
+.pillar-desc{font-size:.88rem;color:var(--muted);line-height:1.6}
+
+/* CODE BLOCK */
+.code-block{background:#0a0b14;border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin:20px 0}
+.code-header{background:rgba(139,92,246,.12);padding:10px 18px;font-size:.78rem;color:var(--violet2);font-weight:600;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.code-dots{display:flex;gap:5px}
+.code-dot{width:10px;height:10px;border-radius:50%}
+.code-dot:nth-child(1){background:#ff5f57}
+.code-dot:nth-child(2){background:#febc2e}
+.code-dot:nth-child(3){background:#28c840}
+pre{padding:20px;font-size:.82rem;line-height:1.7;overflow-x:auto;color:rgba(255,255,255,.8);font-family:'Cascadia Code','Fira Code','Consolas',monospace}
+.kw{color:#c792ea}.fn{color:#82aaff}.str{color:#c3e88d}.cm{color:#546e7a;font-style:italic}.num{color:#f78c6c}.prop{color:#ffcb6b}
+
+/* PROMPT BLOCK */
+.prompt-container{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;overflow:hidden;margin:24px 0}
+.prompt-header{background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(6,182,212,.1));padding:14px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.prompt-icon{font-size:1.2rem}
+.prompt-title{font-size:.88rem;font-weight:700;color:var(--violet2)}
+.prompt-subtitle{font-size:.75rem;color:var(--muted)}
+.prompt-body{padding:20px}
+.prompt-section{margin-bottom:18px}
+.prompt-section:last-child{margin-bottom:0}
+.prompt-section-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--cyan2);margin-bottom:8px}
+.prompt-text{font-size:.86rem;color:rgba(255,255,255,.75);line-height:1.6;background:#0a0b14;border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-family:'Cascadia Code','Fira Code','Consolas',monospace}
+
+/* PALETTE GRID */
+.palette-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.palette-card{background:var(--bg2);border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+.palette-swatch{height:64px;display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+.palette-info{padding:14px}
+.palette-theme{font-size:.88rem;font-weight:700;margin-bottom:4px}
+.palette-use{font-size:.78rem;color:var(--muted)}
+.palette-hex{font-size:.72rem;color:var(--subtle);font-family:monospace;margin-top:6px}
+
+/* PROCESS */
+.process-flow{display:flex;flex-direction:column;gap:0}
+.process-step{display:grid;grid-template-columns:48px 1fr;gap:20px;position:relative}
+.process-step:not(:last-child)::before{content:'';position:absolute;left:23px;top:52px;width:2px;height:calc(100% - 20px);background:linear-gradient(to bottom,var(--violet),transparent)}
+.process-circle{width:48px;height:48px;border-radius:50%;border:2px solid var(--violet);background:rgba(139,92,246,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;position:relative;z-index:1}
+.process-content{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:16px}
+.process-title{font-size:.95rem;font-weight:700;color:var(--violet2);margin-bottom:4px}
+.process-desc{font-size:.85rem;color:var(--muted);line-height:1.5}
+
+/* INSIGHT */
+.insight-box{background:linear-gradient(135deg,rgba(139,92,246,.08),rgba(6,182,212,.05));border:1px solid rgba(139,92,246,.25);border-radius:12px;padding:22px;margin-top:24px}
+.insight-box p{font-size:.9rem;color:rgba(255,255,255,.75);line-height:1.7}
+
+/* CTA */
+.cta-box{background:linear-gradient(135deg,rgba(139,92,246,.12),rgba(6,182,212,.08));border:1px solid rgba(139,92,246,.3);border-radius:16px;padding:36px;text-align:center;margin-bottom:28px}
+.cta-title{font-size:1.5rem;font-weight:800;margin-bottom:12px;background:linear-gradient(135deg,var(--violet2),var(--cyan2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.cta-text{font-size:.95rem;color:var(--muted);margin-bottom:20px}
+.cta-btn{display:inline-block;background:linear-gradient(135deg,var(--violet),var(--violet2));color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:700;font-size:.9rem;transition:transform .2s,box-shadow .2s}
+.cta-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(139,92,246,.4)}
+.hashtags{font-size:.82rem;color:var(--muted);line-height:2;text-align:center}
+.hashtags span{color:var(--violet2)}
+
+/* ANIMATIONS */
+.fade-up{opacity:0;transform:translateY(28px);transition:opacity .6s ease,transform .6s ease}
+.fade-up.visible{opacity:1;transform:translateY(0)}
+
+@media(max-width:600px){
+  .hero-stats{grid-template-columns:repeat(2,1fr)}
+  .vs-bar{grid-template-columns:1fr}
+  .vs-icon-mid{display:none}
+  .palette-grid{grid-template-columns:repeat(2,1fr)}
+  .pillar{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<nav class="nav-dots" id="navDots">
+  <button class="nav-dot" data-section="0" data-label="Intro" onclick="scrollToSection('hero')"></button>
+  <button class="nav-dot" data-section="1" data-label="The Problem" onclick="scrollToSection('problem')"></button>
+  <button class="nav-dot" data-section="2" data-label="5 Pillars" onclick="scrollToSection('pillars')"></button>
+  <button class="nav-dot" data-section="3" data-label="Canvas Code" onclick="scrollToSection('canvas')"></button>
+  <button class="nav-dot" data-section="4" data-label="The Prompt" onclick="scrollToSection('prompt')"></button>
+  <button class="nav-dot" data-section="5" data-label="Palettes" onclick="scrollToSection('palettes')"></button>
+  <button class="nav-dot" data-section="6" data-label="Process" onclick="scrollToSection('process')"></button>
+  <button class="nav-dot" data-section="7" data-label="CTA" onclick="scrollToSection('cta')"></button>
+</nav>
+
+<div class="wrapper">
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-badge"><span class="hero-badge-dot"></span>Behind the Scenes</div>
+  <h1>How I Build Premium HTML Articles for LinkedIn</h1>
+  <p class="hero-sub">The template, the 5 technical pillars, and the AI prompt I use to generate every article in the Qlik Cloud for Senior Developers series.</p>
+  <div class="hero-stats fade-up">
+    <div class="stat-card"><span class="stat-num">4</span><div class="stat-label">Articles published</div></div>
+    <div class="stat-card"><span class="stat-num">0</span><div class="stat-label">External dependencies</div></div>
+    <div class="stat-card"><span class="stat-num">8+</span><div class="stat-label">Sections per article</div></div>
+    <div class="stat-card"><span class="stat-num">~40KB</span><div class="stat-label">Average file size</div></div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="fade-up">
+    <div class="section-label">Why not the native editor</div>
+    <h2>LinkedIn's editor <span>holds you back</span></h2>
+    <p class="section-intro">After years of publishing technical content, I realized that LinkedIn's native editor destroys any sophisticated formatting. For high-value articles, I needed full control over the reading experience.</p>
+  </div>
+  <div class="vs-bar fade-up">
+    <div class="vs-col bad">
+      <div class="vs-col-title">LinkedIn Native Editor</div>
+      <div class="vs-item"><span>🔴</span> Strips custom styles entirely</div>
+      <div class="vs-item"><span>🔴</span> No typography control</div>
+      <div class="vs-item"><span>🔴</span> Images compressed and cropped</div>
+      <div class="vs-item"><span>🔴</span> Code blocks with no syntax highlighting</div>
+      <div class="vs-item"><span>🔴</span> No animations or interactivity</div>
+      <div class="vs-item"><span>🔴</span> Same layout as everyone else</div>
+    </div>
+    <div class="vs-icon-mid">VS</div>
+    <div class="vs-col good">
+      <div class="vs-col-title">HTML on GitHub Pages</div>
+      <div class="vs-item"><span>🟣</span> Total design control</div>
+      <div class="vs-item"><span>🟣</span> Custom typography, palette, spacing</div>
+      <div class="vs-item"><span>🟣</span> Canvas animations and particles</div>
+      <div class="vs-item"><span>🟣</span> Real syntax highlighting</div>
+      <div class="vs-item"><span>🟣</span> Smooth section navigation</div>
+      <div class="vs-item"><span>🟣</span> Permanent, free URL</div>
+    </div>
+  </div>
+</section>
+
+<!-- PILLARS -->
+<section id="pillars">
+  <div class="fade-up">
+    <div class="section-label">The architecture</div>
+    <h2>The <span>5 technical pillars</span></h2>
+    <p class="section-intro">Every article in the series is built on the same 5 pillars. What changes is the color palette and the content. The structure is always this.</p>
+  </div>
+  <div class="pillar-list fade-up">
+    <div class="pillar">
+      <div class="pillar-num">1</div>
+      <div>
+        <div class="pillar-title">Canvas Particle Animation</div>
+        <div class="pillar-desc">60 particles with theme colors, randomized velocity, and connection lines when distance is less than 110px. Creates a sense of depth without slowing down the page. Rendered in requestAnimationFrame for maximum performance.</div>
+      </div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-num">2</div>
+      <div>
+        <div class="pillar-title">IntersectionObserver for Scroll</div>
+        <div class="pillar-desc">Every element with class .fade-up gets an entrance animation when it enters the viewport. Zero scroll libraries needed. The same observer updates the active nav dot as the user navigates down the page.</div>
+      </div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-num">3</div>
+      <div>
+        <div class="pillar-title">Nav Dots with Hover Labels</div>
+        <div class="pillar-desc">Fixed side navigation with one dot per section. Hover reveals the section name via CSS ::after. Click calls scrollIntoView with smooth behavior. Active state tracked via IntersectionObserver on the sections themselves.</div>
+      </div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-num">4</div>
+      <div>
+        <div class="pillar-title">Thematic Palette via CSS Variables</div>
+        <div class="pillar-desc">Each article has its own visual identity defined in :root. Week 2 used red for errors. Week 3 used gold for career. Week 4 uses violet for meta and process. Swapping the palette takes less than 2 minutes.</div>
+      </div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-num">5</div>
+      <div>
+        <div class="pillar-title">Zero External Dependencies</div>
+        <div class="pillar-desc">No CDNs, no frameworks, no external imports. Pure HTML, CSS, and JavaScript. The file opens in any browser, on any connection, on any device. And it will never break because a library went unmaintained.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CANVAS CODE -->
+<section id="canvas">
+  <div class="fade-up">
+    <div class="section-label">Under the hood</div>
+    <h2>The <span>particle system</span></h2>
+    <p class="section-intro">This is the canvas core. The logic is simple: each particle has position, velocity, and color. The loop draws particles, then checks distances and draws the connection lines.</p>
+  </div>
+  <div class="code-block fade-up">
+    <div class="code-header">
+      <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+      canvas-particles.js
+    </div>
+    <pre><span class="cm">// Particle class - theme color via RGB string</span>
+<span class="kw">class</span> <span class="fn">Particle</span> {
+  <span class="fn">constructor</span>(w, h) {
+    <span class="kw">this</span>.<span class="prop">x</span> = Math.<span class="fn">random</span>() * w;
+    <span class="kw">this</span>.<span class="prop">y</span> = Math.<span class="fn">random</span>() * h;
+    <span class="kw">this</span>.<span class="prop">vx</span> = (Math.<span class="fn">random</span>() - <span class="num">0.5</span>) * <span class="num">0.6</span>;
+    <span class="kw">this</span>.<span class="prop">vy</span> = (Math.<span class="fn">random</span>() - <span class="num">0.5</span>) * <span class="num">0.6</span>;
+    <span class="kw">this</span>.<span class="prop">r</span>  = Math.<span class="fn">random</span>() * <span class="num">1.8</span> + <span class="num">0.6</span>;
+    <span class="cm">// Change the RGB values to swap the palette:</span>
+    <span class="kw">this</span>.<span class="prop">color</span> = Math.<span class="fn">random</span>() &gt; <span class="num">.5</span>
+      ? <span class="str">'139,92,246'</span>   <span class="cm">// violet</span>
+      : <span class="str">'6,182,212'</span>;   <span class="cm">// cyan</span>
+  }
+  <span class="fn">update</span>(w, h) {
+    <span class="kw">this</span>.<span class="prop">x</span> += <span class="kw">this</span>.<span class="prop">vx</span>;
+    <span class="kw">this</span>.<span class="prop">y</span> += <span class="kw">this</span>.<span class="prop">vy</span>;
+    <span class="kw">if</span> (<span class="kw">this</span>.<span class="prop">x</span> &lt; <span class="num">0</span> || <span class="kw">this</span>.<span class="prop">x</span> &gt; w) <span class="kw">this</span>.<span class="prop">vx</span> *= -<span class="num">1</span>;
+    <span class="kw">if</span> (<span class="kw">this</span>.<span class="prop">y</span> &lt; <span class="num">0</span> || <span class="kw">this</span>.<span class="prop">y</span> &gt; h) <span class="kw">this</span>.<span class="prop">vy</span> *= -<span class="num">1</span>;
+  }
+}
+
+<span class="kw">function</span> <span class="fn">animate</span>() {
+  ctx.<span class="fn">clearRect</span>(<span class="num">0</span>, <span class="num">0</span>, W, H);
+  particles.<span class="fn">forEach</span>(p =&gt; p.<span class="fn">update</span>(W, H));
+
+  <span class="cm">// Draw connection lines between close particles</span>
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; particles.length; i++) {
+    <span class="kw">for</span> (<span class="kw">let</span> j = i + <span class="num">1</span>; j &lt; particles.length; j++) {
+      <span class="kw">const</span> dx = particles[i].<span class="prop">x</span> - particles[j].<span class="prop">x</span>;
+      <span class="kw">const</span> dy = particles[i].<span class="prop">y</span> - particles[j].<span class="prop">y</span>;
+      <span class="kw">const</span> dist = Math.<span class="fn">sqrt</span>(dx*dx + dy*dy);
+      <span class="kw">if</span> (dist &lt; <span class="num">110</span>) {
+        ctx.<span class="prop">strokeStyle</span> = <span class="str">`rgba(139,92,246,${(1-dist/110)*.18})`</span>;
+        ctx.<span class="fn">beginPath</span>();
+        ctx.<span class="fn">moveTo</span>(particles[i].<span class="prop">x</span>, particles[i].<span class="prop">y</span>);
+        ctx.<span class="fn">lineTo</span>(particles[j].<span class="prop">x</span>, particles[j].<span class="prop">y</span>);
+        ctx.<span class="fn">stroke</span>();
+      }
+    }
+  }
+  particles.<span class="fn">forEach</span>(p =&gt; {
+    ctx.<span class="fn">beginPath</span>();
+    ctx.<span class="fn">arc</span>(p.<span class="prop">x</span>, p.<span class="prop">y</span>, p.<span class="prop">r</span>, <span class="num">0</span>, Math.<span class="prop">PI</span>*<span class="num">2</span>);
+    ctx.<span class="prop">fillStyle</span> = <span class="str">`rgba(${p.color},0.7)`</span>;
+    ctx.<span class="fn">fill</span>();
+  });
+  <span class="fn">requestAnimationFrame</span>(animate);
+}</pre>
+  </div>
+</section>
+
+<!-- PROMPT -->
+<section id="prompt">
+  <div class="fade-up">
+    <div class="section-label">The method</div>
+    <h2>The prompt I <span>use with AI</span></h2>
+    <p class="section-intro">It is not a one-line prompt. It is a structured technical specification that defines visual design, architecture, and content all at once. Here is the structure I use for every article.</p>
+  </div>
+  <div class="prompt-container fade-up">
+    <div class="prompt-header">
+      <div class="prompt-icon">🤖</div>
+      <div>
+        <div class="prompt-title">Generation Prompt Structure</div>
+        <div class="prompt-subtitle">Base template - adapt for each article</div>
+      </div>
+    </div>
+    <div class="prompt-body">
+      <div class="prompt-section">
+        <div class="prompt-section-title">1. Role and Context</div>
+        <div class="prompt-text">You are creating a premium single-file HTML article to publish on LinkedIn via GitHub Pages.
+The article must be fully self-contained: zero external dependencies, zero CDNs.
+Professional dark theme. Audience: senior Qlik Cloud developers.</div>
+      </div>
+      <div class="prompt-section">
+        <div class="prompt-section-title">2. Visual Specification</div>
+        <div class="prompt-text">- Canvas with 60 animated particles in colors [COLOR1] and [COLOR2]
+- IntersectionObserver for fade-up on scroll of all .fade-up elements
+- Fixed side nav dots with data-label and hover tooltip via CSS ::after
+- Hero badge with animated pulsing dot
+- CSS Variables in :root for the entire palette
+- Mobile responsive (grid changes at &lt;600px)</div>
+      </div>
+      <div class="prompt-section">
+        <div class="prompt-section-title">3. Thematic Palette</div>
+        <div class="prompt-text">--primary: [HEX]    /* main accent color */
+--primary2: [HEX]   /* lighter variation */
+--bg: #07080e       /* background fixed across all articles */
+
+<span style="color:#8b5cf6">// Examples by theme:</span>
+Errors/Bugs:    red     #ef4444
+Career:         gold    #f59e0b
+Meta/Process:   violet  #8b5cf6
+Cloud/Infra:    blue    #3b82f6
+Performance:    green   #10b981</div>
+      </div>
+      <div class="prompt-section">
+        <div class="prompt-section-title">4. Section Structure (8 sections)</div>
+        <div class="prompt-text">Section 0: Hero - badge + h1 + subtitle + 4 stat cards
+Section 1: Problem - why the topic matters
+Section 2: Core concept - 3 to 5 blocks with icons
+Section 3: Deep technical - code block with inline syntax highlight
+Section 4: Comparative analysis - before/after or comparison
+Section 5: Advanced insight - what most people don't know
+Section 6: Practical application - step by step
+Section 7: CTA - impact statement + hashtags</div>
+      </div>
+      <div class="prompt-section">
+        <div class="prompt-section-title">5. Non-Negotiable Rules</div>
+        <div class="prompt-text">- ZERO em dashes (--) in the entire file
+- No external links (images, fonts, scripts)
+- No frameworks: pure HTML/CSS/JS
+- File must open offline without errors
+- All code examples must be real and functional</div>
+      </div>
+    </div>
+  </div>
+  <div class="insight-box fade-up">
+    <p>The secret is not the prompt itself. It is iteration on the template. Each published article teaches something new about what works visually for a technical audience on LinkedIn. The current version is the result of 4 rounds of refinement.</p>
+  </div>
+</section>
+
+<!-- PALETTES -->
+<section id="palettes">
+  <div class="fade-up">
+    <div class="section-label">Visual identity</div>
+    <h2>How I choose <span>each palette</span></h2>
+    <p class="section-intro">Color is not decoration. It is communication. The reader associates red with error, gold with value, violet with process. The right palette reinforces the message before a single word is read.</p>
+  </div>
+  <div class="palette-grid fade-up">
+    <div class="palette-card">
+      <div class="palette-swatch" style="background:linear-gradient(135deg,#1a0505,#3d0c0c)">🔴</div>
+      <div class="palette-info">
+        <div class="palette-theme" style="color:#ef4444">Errors and Bugs</div>
+        <div class="palette-use">Articles about problems, antipatterns, what not to do</div>
+        <div class="palette-hex">#ef4444 / #f87171</div>
+      </div>
+    </div>
+    <div class="palette-card">
+      <div class="palette-swatch" style="background:linear-gradient(135deg,#1a1005,#3d2a0c)">🟡</div>
+      <div class="palette-info">
+        <div class="palette-theme" style="color:#f59e0b">Career and Market</div>
+        <div class="palette-use">Salaries, opportunities, professional positioning</div>
+        <div class="palette-hex">#f59e0b / #fbbf24</div>
+      </div>
+    </div>
+    <div class="palette-card">
+      <div class="palette-swatch" style="background:linear-gradient(135deg,#0d0a1a,#1e1040)">🟣</div>
+      <div class="palette-info">
+        <div class="palette-theme" style="color:#8b5cf6">Meta and Process</div>
+        <div class="palette-use">Techniques, methodologies, behind-the-scenes, how I do it</div>
+        <div class="palette-hex">#8b5cf6 / #a78bfa</div>
+      </div>
+    </div>
+    <div class="palette-card">
+      <div class="palette-swatch" style="background:linear-gradient(135deg,#050d1a,#0c2040)">🔵</div>
+      <div class="palette-info">
+        <div class="palette-theme" style="color:#3b82f6">Cloud and Infrastructure</div>
+        <div class="palette-use">AWS, GCP, architecture, pipelines, scalability</div>
+        <div class="palette-hex">#3b82f6 / #60a5fa</div>
+      </div>
+    </div>
+    <div class="palette-card">
+      <div class="palette-swatch" style="background:linear-gradient(135deg,#051a0d,#0c3d1e)">🟢</div>
+      <div class="palette-info">
+        <div class="palette-theme" style="color:#10b981">Performance</div>
+        <div class="palette-use">Optimization, benchmarks, response time, efficiency</div>
+        <div class="palette-hex">#10b981 / #34d399</div>
+      </div>
+    </div>
+    <div class="palette-card">
+      <div class="palette-swatch" style="background:linear-gradient(135deg,#0a0a14,#1a1a2e)">🩶</div>
+      <div class="palette-info">
+        <div class="palette-theme" style="color:#94a3b8">Neutral Content</div>
+        <div class="palette-use">General tutorials, comparisons without tonal polarity</div>
+        <div class="palette-hex">#64748b / #94a3b8</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process">
+  <div class="fade-up">
+    <div class="section-label">Zero to LinkedIn</div>
+    <h2>The <span>complete process</span></h2>
+    <p class="section-intro">From topic to published article, the process takes less than 2 hours when the template is ready. Most of the time goes into reviewing the technical content, not the generation.</p>
+  </div>
+  <div class="process-flow fade-up">
+    <div class="process-step">
+      <div class="process-circle">💡</div>
+      <div class="process-content">
+        <div class="process-title">1. Choose the Topic</div>
+        <div class="process-desc">A technical topic I have personally encountered at work. Preference for pain points with poor documentation in English on LinkedIn.</div>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="process-circle">🎨</div>
+      <div class="process-content">
+        <div class="process-title">2. Define the Palette</div>
+        <div class="process-desc">I choose the color based on the article tone. Errors? Red. Opportunity? Gold. Behind the scenes? Violet.</div>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="process-circle">🤖</div>
+      <div class="process-content">
+        <div class="process-title">3. Generate with AI</div>
+        <div class="process-desc">I use the structured prompt with Claude to generate the complete HTML. I specify palette, sections, and technical content.</div>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="process-circle">🔍</div>
+      <div class="process-content">
+        <div class="process-title">4. Technical Review</div>
+        <div class="process-desc">I verify all code snippets, language accuracy, and confirm zero em dashes anywhere in the file.</div>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="process-circle">🚀</div>
+      <div class="process-content">
+        <div class="process-title">5. Push to GitHub Pages</div>
+        <div class="process-desc">A single gh api PUT command uploads the file. Within 2 minutes it is live with a permanent URL.</div>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="process-circle">📢</div>
+      <div class="process-content">
+        <div class="process-title">6. Post on LinkedIn</div>
+        <div class="process-desc">A companion post with a strong hook, link to the article, and strategic hashtags. I never publish the HTML directly in the LinkedIn editor.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-box fade-up">
+    <div class="cta-title">Want to use this template?</div>
+    <p class="cta-text">The base template with all 5 pillars is available in my article series on GitHub. Swap the palette, swap the content, publish as your own.</p>
+    <a class="cta-btn" href="https://github.com/radsveloso/Linkedin" target="_blank">View repository on GitHub</a>
+  </div>
+  <div class="hashtags fade-up">
+    <span>#QlikCloud</span> <span>#LinkedIn</span> <span>#HTML</span> <span>#GitHubPages</span>
+    <span>#WebDevelopment</span> <span>#TechnicalContent</span> <span>#DataAnalytics</span>
+    <span>#QlikDeveloper</span> <span>#BI</span> <span>#BICareer</span>
+  </div>
+</section>
+
+</div><!-- wrapper -->
+
+<script>
+// CANVAS PARTICLES
+(function(){
+  const c = document.getElementById('bg');
+  const ctx = c.getContext('2d');
+  let W, H, particles = [];
+  class Particle {
+    constructor(){
+      this.x = Math.random()*W; this.y = Math.random()*H;
+      this.vx=(Math.random()-.5)*.6; this.vy=(Math.random()-.5)*.6;
+      this.r=Math.random()*1.8+.6;
+      this.color=Math.random()>.5?'139,92,246':'6,182,212';
+    }
+    update(){
+      this.x+=this.vx; this.y+=this.vy;
+      if(this.x<0||this.x>W) this.vx*=-1;
+      if(this.y<0||this.y>H) this.vy*=-1;
+    }
+  }
+  function init(){
+    W=c.width=window.innerWidth; H=c.height=window.innerHeight;
+    particles=Array.from({length:60},()=>new Particle());
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p=>p.update());
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<110){ctx.strokeStyle=`rgba(139,92,246,${(1-d/110)*.18})`;ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.stroke();}
+      }
+    }
+    particles.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(${p.color},.7)`;ctx.fill();});
+    requestAnimationFrame(draw);
+  }
+  init(); draw();
+  window.addEventListener('resize',init);
+})();
+
+// FADE-UP OBSERVER
+const obs = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting) e.target.classList.add('visible');});
+},{threshold:.12});
+document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
+
+// NAV DOTS ACTIVE
+const sections = ['hero','problem','pillars','canvas','prompt','palettes','process','cta'];
+const dotObs = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const idx=sections.indexOf(e.target.id);
+      document.querySelectorAll('.nav-dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+    }
+  });
+},{threshold:.3});
+sections.forEach(id=>{const el=document.getElementById(id);if(el)dotObs.observe(el);});
+
+function scrollToSection(id){
+  document.getElementById(id)?.scrollIntoView({behavior:'smooth'});
+}
+</script>
+</body>
+</html>
