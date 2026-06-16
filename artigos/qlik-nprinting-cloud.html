@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NPrinting no Qlik Cloud: o que ninguem te conta sobre a migracao | Rafael Veloso</title>
+<meta name="description" content="Arquitetura hibrida, paridade de features e o plano de migracao que o vendor nao entrega no kickoff. Guia para devs senior Qlik.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --em:#10b981;--em2:#34d399;--em3:#6ee7b7;
+  --tl:#14b8a6;--tl2:#2dd4bf;
+  --bg:#07080e;--bg2:#080f0d;--bg3:#0c1a16;
+  --text:rgba(255,255,255,.88);--muted:rgba(255,255,255,.5);
+  --subtle:rgba(255,255,255,.28);
+  --border:rgba(16,185,129,.18);--border2:rgba(16,185,129,.32);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;line-height:1.7;overflow-x:hidden}
+canvas#bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;opacity:.42}
+
+/* NAV DOTS */
+.nav-dots{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:10px}
+.nav-dot{width:10px;height:10px;border-radius:50%;background:rgba(16,185,129,.25);border:1.5px solid rgba(16,185,129,.38);cursor:pointer;transition:all .3s;position:relative;padding:0}
+.nav-dot.active,.nav-dot:hover{background:var(--em);border-color:var(--em);transform:scale(1.4)}
+.nav-dot::after{content:attr(data-label);position:absolute;right:18px;top:50%;transform:translateY(-50%);background:rgba(5,12,10,.96);border:1px solid var(--border2);color:var(--em2);font-size:.7rem;padding:3px 9px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s}
+.nav-dot:hover::after{opacity:1}
+
+/* LAYOUT */
+.wrapper{position:relative;z-index:1}
+section{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:80px 24px;max-width:860px;margin:0 auto}
+
+/* HERO */
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;font-size:.76rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:28px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.35);color:var(--em2)}
+.hero-badge-dot{width:7px;height:7px;border-radius:50%;background:var(--em);animation:pulse-em 2s infinite;flex-shrink:0}
+@keyframes pulse-em{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(16,185,129,.5)}50%{opacity:.6;box-shadow:0 0 0 8px rgba(16,185,129,0)}}
+h1{font-size:clamp(1.9rem,4.8vw,3.1rem);font-weight:800;line-height:1.15;margin-bottom:20px;background:linear-gradient(135deg,#fff 0%,var(--em2) 60%,var(--tl2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:1.08rem;color:var(--muted);max-width:620px;margin-bottom:36px;line-height:1.65}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 14px;text-align:center;transition:border-color .3s}
+.stat-card:hover{border-color:var(--border2)}
+.stat-num{font-size:1.65rem;font-weight:800;color:var(--em2);display:block}
+.stat-label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:4px;line-height:1.4}
+
+/* SECTION HEADERS */
+.sec-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--em);margin-bottom:10px}
+h2{font-size:clamp(1.5rem,3.5vw,2.2rem);font-weight:800;line-height:1.2;margin-bottom:18px}
+h2 span{color:var(--em2)}
+.sec-intro{font-size:1rem;color:var(--muted);margin-bottom:34px;max-width:680px;line-height:1.7}
+
+/* PROBLEM GRID */
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:22px;transition:border-color .3s}
+.card:hover{border-color:var(--border2)}
+.card-icon{font-size:1.9rem;margin-bottom:10px}
+.card-title{font-size:.95rem;font-weight:700;color:var(--em2);margin-bottom:7px}
+.card-desc{font-size:.86rem;color:var(--muted);line-height:1.6}
+
+/* PILLARS */
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.pillar{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:22px;text-align:center;transition:all .3s}
+.pillar:hover{border-color:var(--em);transform:translateY(-4px)}
+.pillar-icon{font-size:2rem;margin-bottom:12px}
+.pillar-title{font-size:.9rem;font-weight:700;color:var(--em2);margin-bottom:7px}
+.pillar-desc{font-size:.8rem;color:var(--muted);line-height:1.6}
+
+/* CODE BLOCK */
+.code-block{background:#040c09;border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin:22px 0}
+.code-header{background:rgba(16,185,129,.1);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.c-dots{display:flex;gap:6px}
+.c-dot{width:10px;height:10px;border-radius:50%}
+.c-lang{margin-left:auto;font-size:.7rem;color:var(--em);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+pre{padding:20px;overflow-x:auto;font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:.8rem;line-height:1.75}
+.ck{color:#34d399}.cs{color:#2dd4bf}.cc{color:rgba(255,255,255,.32);font-style:italic}.cn{color:#6ee7b7}.cp{color:rgba(255,255,255,.55)}.cv{color:#a7f3d0}
+
+/* COMPARISON TABLE */
+.tbl-wrap{overflow-x:auto;margin:24px 0}
+.cmp-table{width:100%;border-collapse:separate;border-spacing:0;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+.cmp-table th{background:rgba(16,185,129,.14);padding:13px 16px;text-align:left;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--em2)}
+.cmp-table td{padding:12px 16px;border-top:1px solid var(--border);font-size:.86rem;color:var(--muted)}
+.cmp-table tr:hover td{background:rgba(16,185,129,.04)}
+.ok{color:#34d399;font-weight:700}.no{color:#ef4444;font-weight:700}.par{color:#f59e0b;font-weight:700}
+.feat{color:var(--text);font-weight:600}
+
+/* INSIGHT BOX */
+.insight{background:linear-gradient(135deg,rgba(16,185,129,.07),rgba(20,184,166,.04));border:1px solid var(--border2);border-radius:14px;padding:26px 30px;margin:26px 0;position:relative;overflow:hidden}
+.insight::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(to bottom,var(--em),var(--tl))}
+.insight-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--em);margin-bottom:9px}
+.insight-text{font-size:1rem;color:rgba(255,255,255,.82);line-height:1.7}
+
+/* STEPS */
+.steps{display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:18px;padding:22px 0;border-bottom:1px solid var(--border)}
+.step:last-child{border-bottom:none}
+.step-num{width:38px;height:38px;border-radius:50%;background:rgba(16,185,129,.14);border:1.5px solid var(--em);display:flex;align-items:center;justify-content:center;font-size:.88rem;font-weight:800;color:var(--em2);flex-shrink:0;margin-top:4px}
+.step-title{font-size:.98rem;font-weight:700;color:var(--em2);margin-bottom:5px}
+.step-desc{font-size:.86rem;color:var(--muted);line-height:1.65}
+.step-tag{display:inline-block;background:rgba(16,185,129,.09);border:1px solid var(--border);color:var(--em3);font-size:.68rem;padding:2px 8px;border-radius:4px;margin-top:7px}
+
+/* CTA */
+.cta-card{background:linear-gradient(135deg,rgba(16,185,129,.09),rgba(20,184,166,.05));border:1px solid var(--border2);border-radius:16px;padding:46px 38px;text-align:center}
+.cta-emoji{font-size:2.8rem;margin-bottom:18px;display:block}
+.cta-title{font-size:clamp(1.3rem,2.8vw,1.9rem);font-weight:800;margin-bottom:14px;line-height:1.3}
+.cta-text{font-size:.98rem;color:var(--muted);max-width:520px;margin:0 auto 26px}
+.tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.tag{background:rgba(16,185,129,.1);border:1px solid var(--border);color:var(--em2);padding:4px 13px;border-radius:20px;font-size:.78rem;font-weight:600}
+
+/* FADE UP */
+.fade-up{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease}
+.fade-up.visible{opacity:1;transform:translateY(0)}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .hero-stats{grid-template-columns:1fr 1fr}
+  .grid-2{grid-template-columns:1fr}
+  .grid-3{grid-template-columns:1fr 1fr}
+  .cta-card{padding:30px 18px}
+  .cmp-table{font-size:.78rem}
+}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<nav class="nav-dots" aria-label="Navegação por seção">
+  <button class="nav-dot" data-label="Intro" onclick="goTo('hero')"></button>
+  <button class="nav-dot" data-label="O Problema" onclick="goTo('problema')"></button>
+  <button class="nav-dot" data-label="O que o NPrinting faz" onclick="goTo('pilares')"></button>
+  <button class="nav-dot" data-label="Arquitetura" onclick="goTo('tecnica')"></button>
+  <button class="nav-dot" data-label="Comparação" onclick="goTo('comparacao')"></button>
+  <button class="nav-dot" data-label="Insight" onclick="goTo('insight')"></button>
+  <button class="nav-dot" data-label="Migração" onclick="goTo('migracao')"></button>
+  <button class="nav-dot" data-label="CTA" onclick="goTo('cta')"></button>
+</nav>
+
+<div class="wrapper">
+
+<!-- HERO -->
+<section id="hero">
+  <div class="fade-up">
+    <div class="hero-badge">
+      <div class="hero-badge-dot"></div>
+      Qlik Cloud para Devs Sênior · Semana 5
+    </div>
+    <h1>NPrinting no Qlik Cloud: o que ninguém te conta sobre a migração</h1>
+    <p class="hero-sub">Arquitetura híbrida, paridade de features e o plano de migração que o vendor não entrega no kickoff. Para quem precisa tomar decisões reais sem achismo.</p>
+  </div>
+  <div class="hero-stats fade-up">
+    <div class="stat-card">
+      <span class="stat-num" data-target="10">0</span>
+      <span class="stat-label">anos de NPrinting no mercado</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num" data-target="3">0</span>
+      <span class="stat-label">outputs que o Cloud ainda não replica</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num">80%</span>
+      <span class="stat-label">dos relatórios críticos dependem de Excel formatado</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num">2028</span>
+      <span class="stat-label">estimativa de suporte ativo ao NPrinting</span>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEMA -->
+<section id="problema">
+  <div class="fade-up">
+    <div class="sec-label">A realidade ignorada</div>
+    <h2>Por que a migração <span>não é simples</span></h2>
+    <p class="sec-intro">O Qlik Cloud foi construído para apps interativos em SaaS. O NPrinting foi construído para distribuição em escala de relatórios formatados, pixel a pixel. São produtos diferentes, com filosofias diferentes. Migrar um para o outro não é um upgrade, é uma transformação.</p>
+  </div>
+  <div class="grid-2 fade-up">
+    <div class="card">
+      <div class="card-icon">🏗️</div>
+      <div class="card-title">NPrinting roda em Windows Server</div>
+      <div class="card-desc">Até hoje, o NPrinting Server exige infraestrutura on-premises ou IaaS Windows. Não existe versão cloud-native. Ele conecta ao Qlik Sense Enterprise (Windows) ou QlikView - não diretamente ao Qlik Cloud.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <div class="card-title">Qlik Cloud Reporting ainda tem lacunas</div>
+      <div class="card-desc">O Reporting nativo do Qlik Cloud evoluiu muito, mas ainda não suporta templates Word, PowerPoint e Excel pixel-perfect - obrigatórios em ambientes regulados, financeiros e farmacêuticos.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔀</div>
+      <div class="card-title">Burst reporting é o gargalo real</div>
+      <div class="card-desc">Gerar 500 relatórios com filtros diferentes por destinatário, de forma automática e agendada, ainda é o ponto onde o Qlik Cloud não alcançou a maturidade do NPrinting. Nenhum workaround é elegante.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">⚠️</div>
+      <div class="card-title">O vendor minimiza o impacto</div>
+      <div class="card-desc">Na venda da migração para Qlik Cloud, o foco vai para os benefícios do SaaS. As lacunas de reporting raramente aparecem no deck de vendas. Elas aparecem no go-live, quando os relatórios críticos param de funcionar.</div>
+    </div>
+  </div>
+</section>
+
+<!-- PILARES -->
+<section id="pilares">
+  <div class="fade-up">
+    <div class="sec-label">Capacidades exclusivas</div>
+    <h2>O que o NPrinting faz que <span>o Cloud ainda não faz</span></h2>
+    <p class="sec-intro">Antes de qualquer decisão de migração, mapeie quais funcionalidades são críticas no seu ambiente. Estas são as que com mais frequência travam projetos de migração em produção.</p>
+  </div>
+  <div class="grid-3 fade-up">
+    <div class="pillar">
+      <div class="pillar-icon">📄</div>
+      <div class="pillar-title">Templates pixel-perfect</div>
+      <div class="pillar-desc">Mapear células específicas do Excel, tabelas do Word e slides do PowerPoint com precisão milimétrica. Relatórios regulatórios exigem isso - qualquer diferença de layout rejeita a entrega.</div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-icon">📨</div>
+      <div class="pillar-title">Burst reporting granular</div>
+      <div class="pillar-desc">Um template, N destinatários, cada um recebendo seus dados filtrados automaticamente. Com agendamento, condições de execução e logs de entrega detalhados por destinatário.</div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-icon">🗞️</div>
+      <div class="pillar-title">NewsStand portal</div>
+      <div class="pillar-desc">Portal de autoatendimento onde usuários acessam relatórios on-demand sem precisar do Qlik Sense. Fundamental em empresas com muitos usuários de consumo sem licença analítica.</div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-icon">🗂️</div>
+      <div class="pillar-title">Multi-format output</div>
+      <div class="pillar-desc">Excel (.xlsx), Word (.docx), PowerPoint (.pptx), PDF, HTML e CSV na mesma tarefa agendada. O Cloud Reporting ainda foca principalmente em PDF e tabelas simples sem formatação avançada.</div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-icon">⏰</div>
+      <div class="pillar-title">Agendamento com dependências</div>
+      <div class="pillar-desc">Pipeline nativo: "execute este relatório somente após o reload desta app terminar com sucesso". Encadeamento de tarefas com retry e notificação de falha integrados.</div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-icon">👥</div>
+      <div class="pillar-title">Integração AD/LDAP</div>
+      <div class="pillar-desc">Distribuição de relatórios baseada em grupos do Active Directory. Sem listas manuais de destinatários: quando o usuário entra ou sai do grupo, recebe ou para de receber automaticamente.</div>
+    </div>
+  </div>
+</section>
+
+<!-- TECNICA -->
+<section id="tecnica">
+  <div class="fade-up">
+    <div class="sec-label">Arquitetura real</div>
+    <h2>Como o NPrinting <span>se conecta ao Cloud</span></h2>
+    <p class="sec-intro">O NPrinting não se conecta diretamente ao Qlik Cloud para gerar relatórios. O fluxo é contra-intuitivo e muitos times descobrem tarde demais no projeto - geralmente na semana do go-live.</p>
+  </div>
+  <div class="code-block fade-up">
+    <div class="code-header">
+      <div class="c-dots">
+        <div class="c-dot" style="background:#ef4444"></div>
+        <div class="c-dot" style="background:#f59e0b"></div>
+        <div class="c-dot" style="background:#10b981"></div>
+      </div>
+      <span class="c-lang">Arquitetura de Reporting - 3 cenários</span>
+    </div>
+    <pre><span class="cc">// ===================================================
+// CENARIO A: NPrinting classico (sem Qlik Cloud)
+// ===================================================</span>
+
+<span class="cn">QlikView / Qlik Sense Enterprise (Windows)</span>
+      <span class="cp">|</span>
+      <span class="cp">|</span>  <span class="cs">QIX Engine + certificados mutuos</span>
+      <span class="cp">|</span>
+      <span class="cp">v</span>
+<span class="ck">NPrinting Server</span> <span class="cp">(</span><span class="cs">Windows Server - on-prem ou IaaS</span><span class="cp">)</span>
+  <span class="cp">|</span>  engine de templates Excel/Word/PDF/PPTX
+  <span class="cp">|</span>  scheduler com dependencias
+  <span class="cp">|</span>  gerenciamento de destinatarios via AD
+      <span class="cp">|</span>
+      <span class="cp">|</span>  <span class="cs">Email / SMTP / FileSystem / NewsStand</span>
+      <span class="cp">v</span>
+<span class="cn">Destinatarios recebem .xlsx / .docx / .pdf / .pptx</span>
+
+<span class="cc">// ===================================================
+// CENARIO B: Hibrido (estrategia recomendada atual)
+// ===================================================</span>
+
+<span class="ck">Qlik Cloud</span> <span class="cp">(</span><span class="cs">apps interativos, reloads via gateway</span><span class="cp">)</span>
+      <span class="cp">|</span>
+      <span class="cp">|</span>  <span class="cs">Qlik NPrinting Connector (leitura via QIX)</span>
+      <span class="cp">|</span>  <span class="cc">// NPrinting LE dados da app Cloud</span>
+      <span class="cp">|</span>  <span class="cc">// mas o SERVER ainda roda on-prem</span>
+      <span class="cp">v</span>
+<span class="ck">NPrinting Server</span> <span class="cp">(</span><span class="cs">ainda on-prem</span><span class="cp">)</span>
+  <span class="cp">|</span>  processa templates com dados do Cloud
+      <span class="cp">v</span>
+<span class="cn">Distribuicao normal: email / pasta / portal</span>
+
+<span class="cc">// ===================================================
+// CENARIO C: Cloud-native puro (limitacao atual)
+// ===================================================</span>
+
+<span class="ck">Qlik Cloud Reporting</span> <span class="cp">(</span><span class="cs">nativo, sem servidor</span><span class="cp">)</span>
+  <span class="cp">|</span>  PDF de apps e stories
+  <span class="cp">|</span>  tabelas em CSV/Excel basico (sem formatacao)
+  <span class="cp">|</span>  agendamento simples por email
+      <span class="cp">v</span>
+<span class="cn">Funciona para casos simples</span>
+<span class="cp">// NAO substitui NPrinting para casos complexos</span></pre>
+  </div>
+  <div class="insight fade-up">
+    <div class="insight-label">Ponto crítico para o seu projeto</div>
+    <div class="insight-text">O Qlik NPrinting Connector para Qlik Cloud permite ao NPrinting <strong style="color:var(--em2)">ler dados</strong> das apps na cloud para gerar relatórios. Mas o NPrinting em si continua rodando em infraestrutura Windows. Não confunda "conectado ao Cloud" com "rodando na cloud" - são coisas completamente diferentes.</div>
+  </div>
+</section>
+
+<!-- COMPARACAO -->
+<section id="comparacao">
+  <div class="fade-up">
+    <div class="sec-label">Decisão técnica</div>
+    <h2>NPrinting vs <span>Qlik Cloud Reporting</span></h2>
+    <p class="sec-intro">Feature por feature, sem marketing. Use esta tabela para mapear quais capacidades são críticas no seu ambiente antes de qualquer comprometimento de prazo ou escopo.</p>
+  </div>
+  <div class="tbl-wrap fade-up">
+    <table class="cmp-table">
+      <thead>
+        <tr>
+          <th>Funcionalidade</th>
+          <th>NPrinting</th>
+          <th>Qlik Cloud Reporting</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="feat">Templates Excel pixel-perfect</span></td>
+          <td><span class="ok">✔ Completo</span></td>
+          <td><span class="no">✘ Não disponível</span></td>
+        </tr>
+        <tr>
+          <td><span class="feat">Output Word / PowerPoint</span></td>
+          <td><span class="ok">✔ Nativo</span></td>
+          <td><span class="no">✘ Não disponível</span></td>
+        </tr>
+        <tr>
+          <td><span class="feat">Burst reporting por destinatário</span></td>
+          <td><span class="ok">✔ Completo</span></td>
+          <td><span class="par">◐ Limitado</span></td>
+        </tr>
+        <tr>
+          <td><span class="feat">Agendamento com dependências</span></td>
+          <td><span class="ok">✔ Pipeline nativo</span></td>
+          <td><span class="par">◐ Básico</span></td>
+        </tr>
+        <tr>
+          <td><span class="feat">NewsStand / portal self-service</span></td>
+          <td><span class="ok">✔ Incluso</span></td>
+          <td><span class="no">✘ Não disponível</span></td>
+        </tr>
+        <tr>
+          <td><span class="feat">Integração AD / LDAP</span></td>
+          <td><span class="ok">✔ Nativo</span></td>
+          <td><span class="par">◐ Via IdP externo</span></td>
+        </tr>
+        <tr>
+          <td><span class="feat">PDF de app / story</span></td>
+          <td><span class="ok">✔ Disponível</span></td>
+          <td><span class="ok">✔ Disponível</span></td>
+        </tr>
+        <tr>
+          <td><span class="feat">SaaS cloud-native (sem servidor)</span></td>
+          <td><span class="no">✘ Windows Server</span></td>
+          <td><span class="ok">✔ Completamente</span></td>
+        </tr>
+        <tr>
+          <td><span class="feat">Escalabilidade automática</span></td>
+          <td><span class="no">✘ Manual</span></td>
+          <td><span class="ok">✔ Elástico</span></td>
+        </tr>
+        <tr>
+          <td><span class="feat">Manutenção de infra necessária</span></td>
+          <td><span class="no">✘ Alta</span></td>
+          <td><span class="ok">✔ Zero</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:.77rem;color:var(--subtle);margin-top:10px;text-align:right" class="fade-up">Baseado nas capacidades documentadas até meados de 2025. O Qlik Cloud Reporting evolui a cada trimestre.</p>
+</section>
+
+<!-- INSIGHT -->
+<section id="insight">
+  <div class="fade-up">
+    <div class="sec-label">O que a maioria não percebe</div>
+    <h2>O estado híbrido <span>vai durar anos</span></h2>
+    <p class="sec-intro">Depois de acompanhar dezenas de projetos de migração para Qlik Cloud, o padrão é sempre o mesmo. Aceitar isso mais cedo poupa muito tempo, dinheiro e retrabalho político.</p>
+  </div>
+  <div class="insight fade-up">
+    <div class="insight-label">A realidade que o kickoff não mostra</div>
+    <div class="insight-text">Empresas com relatórios regulatórios - financeiro, farmacêutico, manufatura - não conseguem migrar NPrinting em 6 meses. A arquitetura híbrida (Qlik Cloud para analytics + NPrinting para reporting formatado) não é um problema temporário. Para muitas organizações, é a estratégia realista de 3 a 5 anos.</div>
+  </div>
+  <div class="grid-2 fade-up" style="margin-top:26px">
+    <div class="card">
+      <div class="card-icon">🎯</div>
+      <div class="card-title">Avalie antes de migrar</div>
+      <div class="card-desc">Mapeie todos os templates NPrinting ativos: formato de saída, destinatários, frequência, responsável técnico e quando foi usado pela última vez. Muitos times descobrem que 30% dos relatórios não são mais usados por ninguém.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔄</div>
+      <div class="card-title">Comece pelos simples</div>
+      <div class="card-desc">PDFs de app e tabelas CSV básicas migram agora para Qlik Cloud Reporting. Isso reduz a carga do NPrinting e cria experiência de migração com o time antes dos casos críticos aparecerem.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📡</div>
+      <div class="card-title">Monitore o roadmap do Qlik</div>
+      <div class="card-desc">O Qlik tem investido consistentemente no Cloud Reporting. O que falta hoje pode chegar em 6 a 12 meses. Reescrever templates complexos antes da paridade de features é retrabalho garantido.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📋</div>
+      <div class="card-title">Documente as dependências ocultas</div>
+      <div class="card-desc">Muitas organizações não sabem quantos relatórios NPrinting existem nem quais são críticos. Um audit completo antes da migração é obrigatório. Localize os "relatórios órfãos" que ninguém lembra que existem mas que alguém usa todo fechamento de mês.</div>
+    </div>
+  </div>
+</section>
+
+<!-- MIGRACAO -->
+<section id="migracao">
+  <div class="fade-up">
+    <div class="sec-label">Plano prático</div>
+    <h2>6 passos para <span>migrar sem caos</span></h2>
+    <p class="sec-intro">Este é o fluxo que funciona na prática. Não o que aparece no deck de vendas. Adapte ao seu contexto, mas não pule as etapas de inventário e classificação - elas salvam o projeto.</p>
+  </div>
+  <div class="steps fade-up">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">Faça o inventário completo</div>
+        <div class="step-desc">Liste todos os relatórios NPrinting ativos: template, formato de saída, destinatários, frequência, responsável técnico e data do último uso confirmado. Muitos times descobrem que 30% dos relatórios não são mais utilizados - tempo perdido se migrar sem checar.</div>
+        <span class="step-tag">Ferramenta: NPrinting REST API ou export manual do Console de administração</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">Classifique por complexidade e criticidade</div>
+        <div class="step-desc">Simples: PDF de app, tabela CSV básica. Médio: Excel tabelado sem formatação avançada. Complexo: Excel pixel-perfect, Word com layout fixo, PowerPoint corporativo. Crítico: relatórios regulatórios ou financeiros com SLA e auditoria.</div>
+        <span class="step-tag">Entregável: matriz de priorização de migração com esforço x criticidade</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">Migre os simples primeiro via Qlik Cloud Reporting</div>
+        <div class="step-desc">PDFs e tabelas básicas migram agora sem nenhum bloqueio técnico. Isso reduz volume no NPrinting e cria experiência de migração com o time antes dos casos críticos. Meta: descomissionar 40% dos relatórios NPrinting nos primeiros 60 dias.</div>
+        <span class="step-tag">Win rápido: validação do processo de migração com relatórios de baixo risco</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div>
+        <div class="step-title">Configure o Qlik NPrinting Connector para Qlik Cloud</div>
+        <div class="step-desc">Para relatórios complexos que ficam no NPrinting, configure o conector para que ele leia dados do Qlik Cloud. Isso permite manter o NPrinting operando enquanto as apps migram para a cloud, sem precisar reescrever os templates mais críticos agora.</div>
+        <span class="step-tag">Referência: Qlik Help - "NPrinting Connector for Qlik Cloud"</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div>
+        <div class="step-title">Monitore o roadmap antes de reescrever templates complexos</div>
+        <div class="step-desc">Antes de investir em reescrever templates Excel pixel-perfect em uma alternativa, verifique se o Qlik Cloud Reporting vai entregar a funcionalidade nos próximos 6 a 12 meses. Reescrever prematuramente é o maior desperdício nesses projetos - acontece com frequência.</div>
+        <span class="step-tag">Recurso: Qlik Ideation + Release Notes trimestrais do Qlik Cloud</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div>
+        <div class="step-title">Defina critérios claros para o descomissionamento final</div>
+        <div class="step-desc">Documente a condição técnica para desligar o NPrinting: "quando o Qlik Cloud Reporting suportar Excel pixel-perfect E burst reporting granular com filtros por destinatário". Com critério claro, a decisão deixa de ser política e vira técnica - muito mais fácil de conduzir com stakeholders.</div>
+        <span class="step-tag">Entregável: critérios documentados de Go/No-Go para descomissionamento</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-card fade-up">
+    <span class="cta-emoji">📊</span>
+    <div class="cta-title">Você já passou por uma migração de NPrinting?</div>
+    <p class="cta-text">Qual foi o maior obstáculo que ninguém tinha previsto? Comenta aqui. Esses casos reais ensinam muito mais do que qualquer whitepaper do vendor - e provavelmente alguém nessa audiência vai precisar exatamente do que você aprendeu.</p>
+    <div class="tags">
+      <span class="tag">#QlikCloud</span>
+      <span class="tag">#NPrinting</span>
+      <span class="tag">#Qlik</span>
+      <span class="tag">#QlikSense</span>
+      <span class="tag">#DataAnalytics</span>
+      <span class="tag">#BusinessIntelligence</span>
+      <span class="tag">#Reporting</span>
+      <span class="tag">#DataEngineering</span>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script>
+// CANVAS PARTICLES
+const canvas = document.getElementById('bg');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
+
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
+resize();
+window.addEventListener('resize',resize);
+
+class Particle{
+  constructor(){this.reset()}
+  reset(){
+    this.x=Math.random()*W;
+    this.y=Math.random()*H;
+    this.vx=(Math.random()-.5)*.38;
+    this.vy=(Math.random()-.5)*.38;
+    this.r=Math.random()*1.7+.7;
+    this.color=Math.random()>.5?'16,185,129':'20,184,166';
+  }
+  update(){
+    this.x+=this.vx;this.y+=this.vy;
+    if(this.x<0||this.x>W||this.y<0||this.y>H)this.reset();
+  }
+  draw(){
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(${this.color},.82)`;
+    ctx.fill();
+  }
+}
+
+for(let i=0;i<60;i++)particles.push(new Particle());
+
+function animate(){
+  ctx.clearRect(0,0,W,H);
+  particles.forEach(p=>{p.update();p.draw()});
+  for(let i=0;i<particles.length;i++){
+    for(let j=i+1;j<particles.length;j++){
+      const dx=particles[i].x-particles[j].x;
+      const dy=particles[i].y-particles[j].y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<110){
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x,particles[i].y);
+        ctx.lineTo(particles[j].x,particles[j].y);
+        ctx.strokeStyle=`rgba(16,185,129,${(1-d/110)*.11})`;
+        ctx.lineWidth=.55;
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(animate);
+}
+animate();
+
+// FADE UP
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')});
+},{threshold:.1});
+document.querySelectorAll('.fade-up').forEach(el=>io.observe(el));
+
+// NAV DOTS ACTIVE
+const sids=['hero','problema','pilares','tecnica','comparacao','insight','migracao','cta'];
+const dots=document.querySelectorAll('.nav-dot');
+const sio=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const idx=sids.indexOf(e.target.id);
+      dots.forEach((d,i)=>d.classList.toggle('active',i===idx));
+    }
+  });
+},{threshold:.35});
+sids.forEach(id=>{const el=document.getElementById(id);if(el)sio.observe(el)});
+
+function goTo(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth'})}
+
+// NUMBER COUNTERS
+const counters=document.querySelectorAll('[data-target]');
+const cio=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting)return;
+    const target=+e.target.dataset.target;
+    let cur=0;
+    const step=target/40;
+    const t=setInterval(()=>{
+      cur=Math.min(cur+step,target);
+      e.target.textContent=Math.round(cur)+'+';
+      if(cur>=target)clearInterval(t);
+    },32);
+    cio.unobserve(e.target);
+  });
+},{threshold:.6});
+counters.forEach(el=>cio.observe(el));
+</script>
+</body>
+</html>
