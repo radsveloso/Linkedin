@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agentic Data Engineering no Qlik Cloud: o que muda para devs sênior | Rafael Veloso</title>
+<meta name="description" content="Qlik lançou em GA os agentes de IA para engenharia de dados em 30 de junho de 2026. Pipelines declarativos, Data Products e integração MCP com Claude Code. O guia técnico para quem já sabe Qlik.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Agentic Data Engineering no Qlik Cloud: o que muda para devs sênior">
+<meta property="og:description" content="Qlik lançou em GA os agentes de IA para engenharia de dados em 30 de junho de 2026. Pipelines declarativos, Data Products e integração MCP com Claude Code. O guia técnico para quem já sabe Qlik.">
+<meta property="og:url" content="https://radsveloso.github.io/Linkedin/artigos/qlik-agentic-data-engineering.html">
+<meta property="og:site_name" content="Rafael Veloso">
+<meta name="author" content="Rafael Veloso">
+<style>
+:root{
+  --bg:#07080e;
+  --surface:#0f1020;
+  --surface2:#171828;
+  --accent:#7c3aed;
+  --accent2:#a855f7;
+  --accent3:#c084fc;
+  --glow:rgba(124,58,237,0.18);
+  --text:#e8e9f0;
+  --muted:#8b8fa8;
+  --border:rgba(124,58,237,0.22);
+  --code-bg:#12131e;
+  --tag-bg:rgba(124,58,237,0.14);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.75;min-height:100vh}
+
+/* HERO */
+.hero{
+  background:linear-gradient(160deg,#0f0820 0%,#100a28 40%,#0a0515 100%);
+  border-bottom:1px solid var(--border);
+  padding:64px 24px 56px;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:'';
+  position:absolute;
+  top:-80px;right:-80px;
+  width:400px;height:400px;
+  background:radial-gradient(circle,rgba(124,58,237,0.22) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero::after{
+  content:'';
+  position:absolute;
+  bottom:-100px;left:-60px;
+  width:320px;height:320px;
+  background:radial-gradient(circle,rgba(168,85,247,0.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-inner{max-width:780px;margin:0 auto;position:relative;z-index:1}
+
+.badge-row{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--tag-bg);
+  border:1px solid var(--border);
+  color:var(--accent3);
+  padding:4px 14px;border-radius:20px;
+  font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+}
+.badge-hot{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.3);color:#f87171}
+.badge-ga{background:rgba(34,197,94,0.10);border-color:rgba(34,197,94,0.28);color:#4ade80}
+
+.hero h1{
+  font-size:clamp(1.75rem,4.5vw,2.6rem);
+  font-weight:800;
+  line-height:1.2;
+  color:#fff;
+  margin-bottom:20px;
+}
+.hero h1 span{
+  background:linear-gradient(90deg,var(--accent2),var(--accent3));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero-lead{font-size:1.1rem;color:var(--muted);max-width:640px;line-height:1.7}
+.hero-meta{
+  display:flex;align-items:center;gap:16px;
+  margin-top:28px;flex-wrap:wrap;
+}
+.author-chip{
+  display:flex;align-items:center;gap:10px;
+}
+.author-avatar{
+  width:40px;height:40px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:0.95rem;color:#fff;flex-shrink:0;
+}
+.author-info{display:flex;flex-direction:column}
+.author-name{font-size:0.9rem;font-weight:700;color:#fff}
+.author-role{font-size:0.75rem;color:var(--muted)}
+.meta-sep{width:1px;height:32px;background:var(--border)}
+.meta-date{font-size:0.8rem;color:var(--muted)}
+
+/* CONTENT */
+.content{max-width:780px;margin:0 auto;padding:48px 24px 80px}
+
+h2{
+  font-size:1.5rem;font-weight:800;color:#fff;
+  margin:48px 0 16px;
+  padding-left:16px;
+  border-left:3px solid var(--accent2);
+  line-height:1.3;
+}
+h3{font-size:1.15rem;font-weight:700;color:var(--accent3);margin:32px 0 12px}
+p{margin-bottom:18px;color:#c8c9d8;font-size:1.02rem}
+strong{color:#fff}
+
+/* CALLOUT */
+.callout{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-left:3px solid var(--accent2);
+  border-radius:10px;
+  padding:20px 24px;
+  margin:28px 0;
+}
+.callout-label{
+  font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--accent3);margin-bottom:8px;
+}
+.callout p{margin:0;color:#c8c9d8;font-size:0.97rem}
+
+/* GA ANNOUNCEMENT */
+.ga-box{
+  background:linear-gradient(135deg,rgba(124,58,237,0.1) 0%,rgba(168,85,247,0.06) 100%);
+  border:1px solid rgba(124,58,237,0.35);
+  border-radius:12px;
+  padding:24px 28px;
+  margin:28px 0;
+  display:flex;gap:16px;align-items:flex-start;
+}
+.ga-icon{font-size:1.8rem;flex-shrink:0;line-height:1}
+.ga-text h4{font-size:0.85rem;font-weight:700;color:var(--accent3);margin-bottom:6px}
+.ga-text p{margin:0;font-size:0.96rem;color:#c8c9d8}
+
+/* AGENTS GRID */
+.agents-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:16px;margin:28px 0;
+}
+.agent-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:20px;
+  transition:border-color 0.2s;
+}
+.agent-card:hover{border-color:var(--accent2)}
+.agent-icon{font-size:1.5rem;margin-bottom:10px}
+.agent-title{font-size:0.95rem;font-weight:700;color:#fff;margin-bottom:6px}
+.agent-desc{font-size:0.83rem;color:var(--muted);line-height:1.55}
+.agent-status{
+  display:inline-block;margin-top:10px;
+  font-size:0.68rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+  padding:2px 10px;border-radius:10px;
+}
+.status-ga{background:rgba(34,197,94,0.1);color:#4ade80;border:1px solid rgba(34,197,94,0.25)}
+.status-preview{background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.25)}
+
+/* CODE */
+.code-block{
+  background:var(--code-bg);
+  border:1px solid rgba(124,58,237,0.2);
+  border-radius:10px;
+  padding:0;
+  margin:20px 0;
+  overflow:hidden;
+}
+.code-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;
+  background:rgba(124,58,237,0.08);
+  border-bottom:1px solid rgba(124,58,237,0.15);
+}
+.code-lang{font-size:0.72rem;font-weight:700;color:var(--accent3);text-transform:uppercase;letter-spacing:0.08em}
+.code-file{font-size:0.72rem;color:var(--muted)}
+pre{padding:20px;overflow-x:auto;font-size:0.86rem;line-height:1.65}
+code{font-family:'Cascadia Code','Fira Code','Consolas',monospace;color:#c8c9d8}
+.c-comment{color:#5a5f7d}
+.c-key{color:#a855f7}
+.c-str{color:#86efac}
+.c-val{color:#c084fc}
+.c-num{color:#f9a8d4}
+.c-kw{color:#7dd3fc}
+.c-fn{color:#fbbf24}
+
+/* COMPARISON */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+.compare-box{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:18px;
+}
+.compare-label{
+  font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+  margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);
+}
+.label-before{color:#f87171}
+.label-after{color:#4ade80}
+.compare-box ul{list-style:none;padding:0}
+.compare-box li{
+  font-size:0.87rem;color:var(--muted);padding:4px 0;
+  display:flex;align-items:flex-start;gap:8px;
+}
+.compare-box li::before{content:'';flex-shrink:0;margin-top:6px}
+.box-before li::before{content:'•';color:#f87171}
+.box-after li::before{content:'•';color:#4ade80}
+.compare-box li strong{color:#fff}
+@media(max-width:580px){.compare{grid-template-columns:1fr}}
+
+/* STATUS TABLE */
+.status-table{width:100%;border-collapse:collapse;margin:24px 0;font-size:0.88rem}
+.status-table th{
+  text-align:left;padding:12px 16px;
+  background:var(--surface2);color:var(--accent3);
+  font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+  border-bottom:1px solid var(--border);
+}
+.status-table td{padding:12px 16px;border-bottom:1px solid rgba(124,58,237,0.1);color:#c8c9d8}
+.status-table tr:last-child td{border-bottom:none}
+.status-table tr:hover td{background:rgba(124,58,237,0.04)}
+.tag-ga2{background:rgba(34,197,94,0.1);color:#4ade80;border:1px solid rgba(34,197,94,0.25);padding:2px 10px;border-radius:8px;font-size:0.72rem;font-weight:700;white-space:nowrap}
+.tag-preview2{background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.25);padding:2px 10px;border-radius:8px;font-size:0.72rem;font-weight:700;white-space:nowrap}
+.tag-q3{background:rgba(96,165,250,0.1);color:#60a5fa;border:1px solid rgba(96,165,250,0.25);padding:2px 10px;border-radius:8px;font-size:0.72rem;font-weight:700;white-space:nowrap}
+
+/* BOTTOM LINE */
+.bottom-line{
+  background:linear-gradient(135deg,rgba(124,58,237,0.08) 0%,rgba(168,85,247,0.04) 100%);
+  border:1px solid rgba(124,58,237,0.3);
+  border-radius:14px;
+  padding:28px 32px;
+  margin:40px 0;
+}
+.bottom-line h3{color:var(--accent2);margin-top:0;font-size:1.1rem}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px}
+.col-item h4{font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px}
+.col-yes h4{color:#4ade80}
+.col-no h4{color:#f87171}
+.col-item ul{list-style:none;padding:0}
+.col-item li{font-size:0.87rem;color:var(--muted);padding:3px 0;display:flex;gap:8px}
+.col-yes li::before{content:'✓';color:#4ade80;flex-shrink:0}
+.col-no li::before{content:'✗';color:#f87171;flex-shrink:0}
+@media(max-width:580px){.two-col{grid-template-columns:1fr}}
+
+/* CTA */
+.cta{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:32px;
+  text-align:center;
+  margin:40px 0;
+}
+.cta h3{font-size:1.3rem;color:#fff;margin-bottom:10px;font-weight:800}
+.cta p{color:var(--muted);font-size:0.97rem;max-width:500px;margin:0 auto 20px}
+.cta-btn{
+  display:inline-block;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  color:#fff;font-weight:700;font-size:0.9rem;
+  padding:12px 28px;border-radius:8px;text-decoration:none;
+  letter-spacing:0.02em;
+}
+
+/* HASHTAGS */
+.hashtags{
+  display:flex;flex-wrap:wrap;gap:8px;
+  padding:24px 0;
+  border-top:1px solid var(--border);
+  margin-top:8px;
+}
+.tag{
+  font-size:0.8rem;color:var(--accent3);
+  background:var(--tag-bg);
+  border:1px solid var(--border);
+  padding:4px 12px;border-radius:20px;
+}
+
+/* FOOTER */
+footer{
+  border-top:1px solid var(--border);
+  padding:28px 24px;
+  text-align:center;
+  color:var(--muted);font-size:0.82rem;
+  max-width:780px;margin:0 auto;
+}
+footer a{color:var(--accent3);text-decoration:none}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="badge-row">
+      <span class="badge">Semana 6</span>
+      <span class="badge">Qlik Cloud para Devs Sênior</span>
+      <span class="badge-hot badge">Novidade</span>
+      <span class="badge-ga badge">GA: 30 Jun 2026</span>
+    </div>
+    <h1>Agentic Data Engineering no Qlik Cloud:<br><span>o que muda para quem vive de Load Script</span></h1>
+    <p class="hero-lead">Em 30 de junho de 2026, o Qlik tornou disponível em produção os agentes de IA para engenharia de dados. Três dias depois, a maioria dos artigos em português ainda copia o press release. Este não é um desses artigos.</p>
+    <div class="hero-meta">
+      <div class="author-chip">
+        <div class="author-avatar">RV</div>
+        <div class="author-info">
+          <span class="author-name">Rafael Veloso</span>
+          <span class="author-role">Data &amp; BI Architect | Qlik Expert</span>
+        </div>
+      </div>
+      <div class="meta-sep"></div>
+      <span class="meta-date">Julho 2026 &middot; 8 min de leitura</span>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="ga-box">
+    <div class="ga-icon">&#128640;</div>
+    <div class="ga-text">
+      <h4>Anúncio de GA</h4>
+      <p>O Qlik anunciou a disponibilidade geral (GA) das capacidades de agentic data engineering no Qlik Cloud em 30 de junho de 2026. A novidade está disponível no Qlik Talend Cloud e no Qlik Cloud Analytics. Os primeiros artigos técnicos em PT-BR sobre isso aparecem agora.</p>
+    </div>
+  </div>
+
+  <h2>O que o Qlik chama de "agentic"</h2>
+
+  <p>Antes de entrar no código, vale alinhar o vocabulário. O Qlik não criou um chatbot de dados com acesso ao seu app. Criou quatro agentes especializados, cada um com escopo definido, disponíveis via interface conversacional e via protocolo MCP (Model Context Protocol).</p>
+
+  <p>A diferença importa: um chatbot responde perguntas. Um agente executa tarefas, mantém contexto entre etapas e pode ser orquestrado por outros sistemas. É essa distinção que muda o workflow do dev sênior.</p>
+
+  <div class="agents-grid">
+    <div class="agent-card">
+      <div class="agent-icon">&#9989;</div>
+      <div class="agent-title">Agente de Data Quality</div>
+      <div class="agent-desc">Recupera trust scores, cria e edita regras de qualidade, define SLOs, roda cálculos e detecta anomalias via linguagem natural ou workflows MCP.</div>
+      <span class="agent-status status-ga">GA</span>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon">&#128230;</div>
+      <div class="agent-title">Agente de Data Products</div>
+      <div class="agent-desc">Cria, gerencia e governa Data Products prontos para IA. Facilita a especificação, manutenção e consumo de datasets curados em workflows de analytics.</div>
+      <span class="agent-status status-ga">GA</span>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon">&#128218;</div>
+      <div class="agent-title">Agente de Catalog Glossary</div>
+      <div class="agent-desc">Ajuda a descobrir ativos de dados, padroniza terminologia e conecta definições de negócio a metadados governados. Reduz ambiguidade para times e sistemas de IA.</div>
+      <span class="agent-status status-ga">GA</span>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon">&#128296;</div>
+      <div class="agent-title">Pipelines Declarativos</div>
+      <div class="agent-desc">Define a lógica de pipeline como um contrato estável, independente de implementação. O agente gera, refatora e estende pipelines a partir de especificações em linguagem natural.</div>
+      <span class="agent-status status-ga">GA</span>
+    </div>
+  </div>
+
+  <h2>Pipelines Declarativos: a maior mudança para engenheiros</h2>
+
+  <p>Esta é a funcionalidade que mais impacta quem trabalha diariamente com Load Script. Vale entender a diferença conceitual antes de avaliar quando usar.</p>
+
+  <p>O Load Script tradicional é <strong>imperativo</strong>: você especifica passo a passo como transformar e carregar cada tabela. O pipeline declarativo é um <strong>contrato</strong>: você define o que quer que exista, e o sistema decide como gerar, otimizar e manter.</p>
+
+  <div class="compare">
+    <div class="compare-box box-before">
+      <div class="compare-label label-before">Antes: Load Script imperativo</div>
+      <ul>
+        <li><strong>Você escreve cada passo</strong></li>
+        <li>Ordem de LOAD importa para associações</li>
+        <li>Refatoração exige reescrita manual</li>
+        <li>Documentação separada do código</li>
+        <li>Difícil de versionar como contrato</li>
+      </ul>
+    </div>
+    <div class="compare-box box-after">
+      <div class="compare-label label-after">Depois: Pipeline Declarativo</div>
+      <ul>
+        <li><strong>Você define o que quer</strong></li>
+        <li>Contrato estável e versionável</li>
+        <li>Agente gera e refatora automaticamente</li>
+        <li>Documentação embutida na especificação</li>
+        <li>Compatível com agentes de código externos</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Ponto técnico</div>
+    <p>O Load Script não desapareceu. Pipelines declarativos coexistem com scripts existentes. A lógica complexa de negócio, o modelo associativo do Qlik e as transformações avançadas com Set Analysis continuam sendo responsabilidade do engenheiro. O que o agente assume é a geração e manutenção do boilerplate de ingestão e transformação padrão.</p>
+  </div>
+
+  <h3>Exemplo: ingestão tradicional vs. declarativa</h3>
+
+  <p>Um cenário comum: carregar pedidos de um QVD com formatação regional e filtro de data.</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">QVS &middot; Load Script (modo imperativo)</span>
+      <span class="code-file">OrdersFact.qvs</span>
+    </div>
+    <pre><code><span class="c-comment">// Abordagem tradicional: você escreve cada linha</span>
+<span class="c-key">OrdersFact</span>:
+<span class="c-kw">LOAD</span>
+    OrderID,
+    CustomerID,
+    <span class="c-fn">Date</span>(OrderDate, <span class="c-str">'YYYY-MM-DD'</span>) <span class="c-kw">as</span> OrderDate,
+    <span class="c-fn">Num</span>(TotalAmount, <span class="c-str">'R$ #.##0,00'</span>) <span class="c-kw">as</span> TotalAmount,
+    ProductID,
+    StatusCode
+<span class="c-kw">FROM</span> [lib://DataLake/orders.qvd] (qvd)
+<span class="c-kw">WHERE</span> <span class="c-fn">Year</span>(OrderDate) >= <span class="c-num">2024</span>;
+
+<span class="c-comment">// Problema: qualquer mudança de schema exige reescrita manual</span>
+<span class="c-comment">// Sem documentação sobre a intenção, só sobre a execução</span></code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Prompt para o Agente de Pipeline</span>
+      <span class="code-file">via chat ou MCP</span>
+    </div>
+    <pre><code><span class="c-comment">// Você descreve a intenção; o agente gera a especificação declarativa</span>
+<span class="c-comment">// e o script otimizado a partir dela</span>
+
+<span class="c-str">"Crie um pipeline para a tabela OrdersFact com as seguintes regras:
+ - Fonte: QVD em lib://DataLake/orders.qvd
+ - Formatar OrderDate como YYYY-MM-DD
+ - Formatar TotalAmount como moeda BRL
+ - Filtrar apenas registros de 2024 em diante
+ - CustomerID é chave de join com CustomersDim
+ - Freshness SLO: dados disponíveis até as 06h de cada dia"</span>
+
+<span class="c-comment">// Resultado: especificação versionável + script gerado + regra de qualidade</span>
+<span class="c-comment">// Quando o schema da fonte muda, o agente refatora o script mantendo o contrato</span></code></pre>
+  </div>
+
+  <h2>MCP Integration: Qlik com Claude Code ou GitHub Copilot</h2>
+
+  <p>Esta é a parte que mais vai interessar devs que já usam ferramentas de IA no workflow diário. O Qlik disponibilizou ferramentas MCP que permitem configurar <strong>qualquer agente de codificação compatível</strong>, incluindo Claude Code e GitHub Copilot, para interagir diretamente com o Qlik Cloud.</p>
+
+  <p>Isso significa que você pode usar o agente de codificação que já está aprovado pela sua empresa para construir pipelines, gerenciar Data Products e consultar o catálogo do Qlik sem abrir outra interface.</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">JSON &middot; Configuração MCP</span>
+      <span class="code-file">claude_desktop_config.json</span>
+    </div>
+    <pre><code>{
+  <span class="c-key">"mcpServers"</span>: {
+    <span class="c-key">"qlik-cloud"</span>: {
+      <span class="c-key">"command"</span>: <span class="c-str">"npx"</span>,
+      <span class="c-key">"args"</span>: [<span class="c-str">"@qlik/mcp-server"</span>],
+      <span class="c-key">"env"</span>: {
+        <span class="c-key">"QLIK_HOST"</span>: <span class="c-str">"seu-tenant.us.qlikcloud.com"</span>,
+        <span class="c-key">"QLIK_CLIENT_ID"</span>: <span class="c-str">"seu-oauth-client-id"</span>,
+        <span class="c-key">"QLIK_CLIENT_SECRET"</span>: <span class="c-str">"seu-client-secret"</span>
+      }
+    }
+  }
+}</code></pre>
+  </div>
+
+  <p>Com a configuração ativa, você passa a poder pedir ao agente diretamente no seu editor:</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Exemplos de prompts via MCP</span>
+    </div>
+    <pre><code><span class="c-comment">// Auditoria de qualidade</span>
+<span class="c-str">"Liste todos os Data Products com trust score abaixo de 80%"</span>
+
+<span class="c-comment">// Criação de regra de qualidade</span>
+<span class="c-str">"Crie uma regra de qualidade para garantir que OrderDate
+ nunca seja nulo na tabela OrdersFact"</span>
+
+<span class="c-comment">// Geração de pipeline</span>
+<span class="c-str">"Gere o pipeline declarativo para carregar a tabela Customers
+ do Snowflake para o DataLake do Qlik, com SLO de freshness
+ de 4 horas e detecção automática de duplicatas"</span>
+
+<span class="c-comment">// Exploração de catálogo</span>
+<span class="c-str">"Quais tabelas no catálogo contêm dados de transação financeira
+ e têm documentação de glossário incompleta?"</span></code></pre>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">O que isso representa na prática</div>
+    <p>O workflow muda de: abrir o Qlik Hub, navegar para Data Integration, criar pipeline manualmente, voltar para o editor para integrar. Para: descrever o que precisa no seu editor e receber o pipeline gerado com SLO e documentação. A mudança é no custo de contexto, não na capacidade técnica.</p>
+  </div>
+
+  <h2>Data Quality com SLOs: dados com contrato de nível de serviço</h2>
+
+  <p>O conceito de SLO (Service Level Objective) veio do mundo de engenharia de software (SRE) e o Qlik o trouxe para dados. Em vez de verificações de qualidade manuais e esporádicas, você define contratos de qualidade que são monitorados continuamente.</p>
+
+  <p>O agente de Data Quality permite criar esses contratos via linguagem natural e os <strong>trust scores</strong> resultantes aparecem diretamente nos apps Qlik para os usuarios finais.</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Exemplo: SLO via agente</span>
+    </div>
+    <pre><code><span class="c-comment">// Definição de SLO para a tabela OrdersFact</span>
+<span class="c-str">"Defina um SLO para OrdersFact com os seguintes critérios:
+ - Completude de OrderDate: >= 99.5%
+ - Unicidade de OrderID: 100%
+ - Freshness: dados do dia disponíveis até 06h AM (fuso BRT)
+ - TotalAmount não pode ser negativo: 100%
+ - CustomerID deve existir em CustomersDim: >= 99%"</span>
+
+<span class="c-comment">// O agente:</span>
+<span class="c-comment">// 1. Cria as regras de qualidade</span>
+<span class="c-comment">// 2. Agenda a verificacao automatica</span>
+<span class="c-comment">// 3. Calcula o trust score composto</span>
+<span class="c-comment">// 4. Configura alertas quando SLO é violado</span>
+<span class="c-comment">// 5. Expoe o trust score no app Qlik</span></code></pre>
+  </div>
+
+  <h3>Por que isso importa para devs sênior</h3>
+
+  <p>Antes, um trust score era um número que você inventava ou calculava manualmente. Agora ele é um contrato auditável, com histórico de violações e responsável definido. O usuário que vê o gráfico também vê o score de confiança dos dados que está analisando.</p>
+
+  <p>Para times que atendem áreas reguladas (financeiro, saúde, compliance), isso deixa de ser um diferencial e passa a ser obrigatório nos próximos 12 a 24 meses.</p>
+
+  <h2>O que e GA e o que ainda e Preview</h2>
+
+  <p>O press release do Qlik foi cirurgico em misturar anuncios de GA com capacidades que ainda estao em preview ou previstas para Q3 2026. Aqui esta o mapa real:</p>
+
+  <table class="status-table">
+    <thead>
+      <tr>
+        <th>Capacidade</th>
+        <th>Status</th>
+        <th>Disponivel em</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Agente de Data Quality</td>
+        <td><span class="tag-ga2">GA</span></td>
+        <td>Qlik Talend Cloud / Qlik Cloud Analytics</td>
+      </tr>
+      <tr>
+        <td>Agente de Data Products</td>
+        <td><span class="tag-ga2">GA</span></td>
+        <td>Talend Cloud Premium / Cloud Analytics Enterprise</td>
+      </tr>
+      <tr>
+        <td>Agente de Catalog Glossary</td>
+        <td><span class="tag-ga2">GA</span></td>
+        <td>Qlik Talend Cloud / Qlik Cloud Analytics</td>
+      </tr>
+      <tr>
+        <td>Pipelines Declarativos</td>
+        <td><span class="tag-ga2">GA</span></td>
+        <td>Qlik Talend Cloud</td>
+      </tr>
+      <tr>
+        <td>MCP Integration</td>
+        <td><span class="tag-ga2">GA</span></td>
+        <td>Qlik Talend Cloud / Cloud Analytics</td>
+      </tr>
+      <tr>
+        <td>Qlik Predict Agent</td>
+        <td><span class="tag-preview2">Lancado em Jun/26</span></td>
+        <td>Qlik Cloud Analytics</td>
+      </tr>
+      <tr>
+        <td>Qlik Automate Agent</td>
+        <td><span class="tag-preview2">Lancado em Jun/26</span></td>
+        <td>Qlik Cloud Analytics</td>
+      </tr>
+      <tr>
+        <td>Qlik Analytics Agent</td>
+        <td><span class="tag-q3">Previsto Q3 2026</span></td>
+        <td>A confirmar</td>
+      </tr>
+      <tr>
+        <td>Streaming Nativo (Open Lakehouse)</td>
+        <td><span class="tag-q3">Roadmap</span></td>
+        <td>A confirmar</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>O ponto que ninguem fala</h2>
+
+  <p>Toda vez que uma plataforma lança IA para engenharia de dados, a discussão migra para "o engenheiro vai ser substituído?". Essa não é a pergunta certa.</p>
+
+  <div class="bottom-line">
+    <h3>O que os agentes eliminam vs. o que continuam sendo sua responsabilidade</h3>
+    <div class="two-col">
+      <div class="col-item col-yes">
+        <h4>Agentes assumem</h4>
+        <ul>
+          <li>Boilerplate de ingestão e carga padrão</li>
+          <li>Catalogação e documentação de ativos</li>
+          <li>Criação de regras de qualidade repetitivas</li>
+          <li>Detecção de anomalias em pipelines</li>
+          <li>Geração de especificações declarativas</li>
+          <li>Refatoração ao mudar schema de fonte</li>
+        </ul>
+      </div>
+      <div class="col-item col-no">
+        <h4>Você continua sendo responsável</h4>
+        <ul>
+          <li>Modelagem do modelo associativo Qlik</li>
+          <li>Lógica complexa de negócio no script</li>
+          <li>Set Analysis para métricas específicas</li>
+          <li>Estratégia de QVD layers e incremental</li>
+          <li>Section Access e governança de acesso</li>
+          <li>Conhecimento do domínio de negócio</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <p>O dev sênior que já entende o modelo associativo do Qlik se torna mais produtivo com agentes. O dev que ainda não entende vai criar problemas mais rápido, porque o agente vai gerar código sem o contexto de como o Qlik associa dados na memória.</p>
+
+  <p>A curva de aprendizado não desapareceu. Ela se deslocou: de "como escrever o script" para "como especificar bem o que o agente deve gerar".</p>
+
+  <div class="callout">
+    <div class="callout-label">Recomendação prática</div>
+    <p>Se você já tem Qlik Talend Cloud ou Qlik Cloud Analytics Enterprise, comece pelo agente de Data Quality. É o que tem ROI mais rápido: você vê os trust scores aparecendo nos apps e o time de negócio percebe a diferença em dias, não em meses. Os pipelines declarativos exigem mais planejamento de especificação para dar resultado consistente.</p>
+  </div>
+
+  <h2>Próximo passo para devs sênior</h2>
+
+  <p>O roteiro para quem quer estar na frente da curva nos próximos seis meses:</p>
+
+  <p><strong>1. Configurar o MCP do Qlik no seu agente de codificação.</strong> Isso já está disponível e não exige mudança de licença se você já tem Qlik Cloud Analytics. É o ponto de entrada mais rápido.</p>
+
+  <p><strong>2. Mapear quais pipelines de ingestão são candidatos para declarativos.</strong> Ingestão simples de fontes estruturadas, sem lógica de negócio complexa, são os melhores candidatos. Scripts com transformação pesada de negócio continuam sendo código manual por ora.</p>
+
+  <p><strong>3. Definir os primeiros SLOs para as tabelas mais críticas.</strong> Identifique as três tabelas que o negócio mais usa e defina contratos de qualidade explícitos. Isso cria evidência auditável e visibilidade para o usuário final.</p>
+
+  <div class="cta">
+    <h3>Você já está usando IA no seu workflow Qlik?</h3>
+    <p>Configurou o MCP, testou os pipelines declarativos ou definiu o primeiro SLO? Conta nos comentários como está sendo a experiência.</p>
+    <a href="https://www.linkedin.com/in/rafaelveloso/" class="cta-btn">Conectar no LinkedIn</a>
+  </div>
+
+  <div class="hashtags">
+    <span class="tag">#QlikCloud</span>
+    <span class="tag">#DataEngineering</span>
+    <span class="tag">#AgenticAI</span>
+    <span class="tag">#DataQuality</span>
+    <span class="tag">#DataProducts</span>
+    <span class="tag">#BI</span>
+    <span class="tag">#MCP</span>
+    <span class="tag">#QlikSense</span>
+    <span class="tag">#EngenhariaDeDados</span>
+    <span class="tag">#IA</span>
+  </div>
+
+</div>
+
+<footer>
+  <p>Escrito por <a href="https://www.linkedin.com/in/rafaelveloso/">Rafael Veloso</a> &middot; Julho 2026 &middot; Série <em>Qlik Cloud para Devs Sênior</em></p>
+  <p style="margin-top:6px">Parte de uma série de artigos técnicos sobre Qlik Cloud publicados no GitHub Pages.</p>
+</footer>
+
+</body>
+</html>
