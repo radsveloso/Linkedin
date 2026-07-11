@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qlik Predict Agent: o que o AutoML com IA significa para quem já une Python e Qlik</title>
+  <meta name="description" content="O Qlik lançou o Predict Agent em junho de 2026: agente de IA que conduz o ciclo completo de machine learning dentro do Qlik Cloud. Quando substituir seu Python e quando não substituir.">
+
+  <meta property="og:title" content="Qlik Predict Agent: o que o AutoML com IA significa para quem já une Python e Qlik">
+  <meta property="og:description" content="O Qlik lançou o Predict Agent em junho de 2026: agente de IA que conduz o ciclo completo de ML dentro do Qlik Cloud. Quando substituir seu Python e quando não substituir.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://radsveloso.github.io/Linkedin/artigos/qlik-predict-agent.html">
+  <meta property="og:image" content="https://radsveloso.github.io/Linkedin/artigos/covers/qlik-predict-agent.png">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <style>
+    :root {
+      --bg: #07080e;
+      --surface: #0f1117;
+      --border: #1e2030;
+      --accent: #7c3aed;
+      --accent2: #a855f7;
+      --accent3: #c084fc;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --green: #10b981;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --blue: #3b82f6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.75;
+      padding: 0 1rem;
+    }
+    .container { max-width: 760px; margin: 0 auto; padding: 3rem 0 5rem; }
+
+    /* Badges */
+    .badges { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .badge {
+      font-size: .7rem; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; padding: .25rem .75rem; border-radius: 999px;
+    }
+    .badge-week  { background: #1e1b4b; color: var(--accent3); border: 1px solid var(--accent); }
+    .badge-series{ background: #1a0533; color: var(--accent2); border: 1px solid #6d28d9; }
+    .badge-new   { background: #14532d; color: #6ee7b7;       border: 1px solid var(--green); }
+    .badge-ga    { background: #1c1917; color: var(--yellow);  border: 1px solid var(--yellow); }
+
+    h1 {
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 800; line-height: 1.25; letter-spacing: -.02em;
+      margin-bottom: 1.25rem;
+      background: linear-gradient(135deg, #fff 60%, var(--accent3));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .lead {
+      font-size: 1.1rem; color: var(--muted);
+      border-left: 3px solid var(--accent); padding-left: 1rem;
+      margin-bottom: 2.5rem;
+    }
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+      margin: 2.5rem 0;
+    }
+    h2 {
+      font-size: 1.3rem; font-weight: 700; color: var(--accent3);
+      margin-bottom: 1rem; padding-bottom: .5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    h3 { font-size: 1rem; font-weight: 700; color: var(--accent2); margin: 1.5rem 0 .5rem; }
+    p  { margin-bottom: 1rem; }
+
+    /* Callouts */
+    .callout {
+      background: #130d2b; border: 1px solid var(--accent); border-left: 4px solid var(--accent);
+      border-radius: .5rem; padding: 1rem 1.25rem; margin: 1.5rem 0; font-size: .95rem;
+    }
+    .callout.yellow { border-color: var(--yellow); border-left-color: var(--yellow); background: #1c1400; }
+    .callout.green  { border-color: var(--green);  border-left-color: var(--green);  background: #001a0f; }
+    .callout.red    { border-color: var(--red);    border-left-color: var(--red);    background: #1a0000; }
+    .callout-title {
+      font-weight: 700; font-size: .8rem; text-transform: uppercase;
+      letter-spacing: .08em; margin-bottom: .5rem; color: var(--accent3);
+    }
+    .callout.yellow .callout-title { color: var(--yellow); }
+    .callout.green  .callout-title { color: #6ee7b7; }
+    .callout.red    .callout-title { color: #fca5a5; }
+
+    /* Code */
+    code {
+      font-family: 'SF Mono','Fira Code','Consolas',monospace;
+      background: #0d0f1a; border: 1px solid var(--border);
+      border-radius: .3rem; padding: .1em .4em; font-size: .85em; color: var(--accent3);
+    }
+    pre {
+      background: #0a0c14; border: 1px solid var(--border);
+      border-radius: .5rem; padding: 1.25rem;
+      overflow-x: auto; margin: 1.25rem 0; font-size: .85rem; line-height: 1.6;
+    }
+    pre code { background: none; border: none; padding: 0; color: #e2e8f0; }
+    .comment { color: #64748b; }
+    .str { color: #6ee7b7; }
+    .kw  { color: #a78bfa; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; margin: 1.5rem 0; }
+    table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+    th {
+      background: #1a1235; color: var(--accent3); font-weight: 700;
+      padding: .75rem 1rem; text-align: left; border-bottom: 2px solid var(--accent);
+    }
+    td { padding: .65rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:hover td { background: #0d0f1a; }
+    .ok   { color: var(--green);  font-weight: 700; }
+    .no   { color: var(--red);    font-weight: 700; }
+    .warn { color: var(--yellow); font-weight: 600; }
+
+    /* Cycle */
+    .cycle { display: flex; gap: 0; margin: 1.5rem 0; flex-wrap: wrap; }
+    .cycle-step {
+      background: #0f0a1f; border: 1px solid var(--border); border-right: none;
+      padding: .75rem 1rem; font-size: .82rem; flex: 1; min-width: 120px;
+    }
+    .cycle-step:first-child { border-radius: .4rem 0 0 .4rem; }
+    .cycle-step:last-child  { border-right: 1px solid var(--border); border-radius: 0 .4rem .4rem 0; }
+    .cycle-step .step-num  { font-size: .65rem; color: var(--accent3); font-weight: 700; display: block; margin-bottom: .2rem; }
+    .cycle-step .step-name { font-weight: 600; color: var(--text); font-size: .8rem; }
+
+    /* Agent grid */
+    .agent-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem; margin: 1.5rem 0;
+    }
+    .agent-card {
+      background: #0f0a1f; border: 1px solid var(--border);
+      border-top: 3px solid var(--accent); border-radius: .5rem; padding: 1.25rem;
+    }
+    .agent-card h4 { font-size: .95rem; color: var(--accent2); margin-bottom: .5rem; }
+    .agent-card p  { font-size: .85rem; color: var(--muted); margin: 0; }
+    .agent-card .status-badge {
+      display: inline-block; font-size: .65rem; font-weight: 700;
+      padding: .2rem .5rem; border-radius: 999px; margin-top: .75rem;
+      background: #14532d; color: #6ee7b7;
+    }
+    .agent-card .status-badge.soon {
+      background: #1c1400; color: var(--yellow);
+    }
+
+    /* Bottom-line cols */
+    .bottom-line {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1rem; margin: 1.5rem 0;
+    }
+    .bl-col {
+      background: #0f0a1f; border: 1px solid var(--border);
+      border-radius: .5rem; padding: 1.25rem;
+    }
+    .bl-col h4 {
+      font-size: .85rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .07em; margin-bottom: .75rem;
+    }
+    .bl-col.yes { border-top: 3px solid var(--green); }
+    .bl-col.no  { border-top: 3px solid var(--red);   }
+    .bl-col.yes h4 { color: #6ee7b7;  }
+    .bl-col.no  h4 { color: #fca5a5; }
+    .bl-col ul { list-style: none; }
+    .bl-col ul li { font-size: .875rem; color: var(--muted); padding: .3rem 0; }
+    .bl-col.yes ul li::before { content: "✓ "; color: var(--green); font-weight: 700; }
+    .bl-col.no  ul li::before { content: "✗ "; color: var(--red);   font-weight: 700; }
+
+    /* CTA */
+    .cta {
+      background: linear-gradient(135deg, #130d2b, #1a0533);
+      border: 1px solid var(--accent); border-radius: .75rem;
+      padding: 1.75rem; margin-top: 3rem; text-align: center;
+    }
+    .cta p { color: var(--muted); font-size: .95rem; margin-bottom: 0; }
+    .cta strong { color: var(--accent3); }
+
+    /* Hashtags + footer */
+    .hashtags { margin-top: 2rem; font-size: .85rem; color: var(--accent2); line-height: 2; }
+    footer {
+      border-top: 1px solid var(--border); margin-top: 3rem;
+      padding-top: 1.5rem; font-size: .8rem; color: #475569; text-align: center;
+    }
+    footer a { color: var(--accent2); }
+
+    @media (max-width: 600px) {
+      .bottom-line { grid-template-columns: 1fr; }
+      .cycle-step  { min-width: 45%; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="badges">
+      <span class="badge badge-week">Semana 7</span>
+      <span class="badge badge-series">Qlik Cloud para Devs Sênior</span>
+      <span class="badge badge-new">Novo</span>
+      <span class="badge badge-ga">GA: Jun 2026</span>
+    </div>
+
+    <h1>Qlik Predict Agent: o que o AutoML com IA significa para quem já une Python e Qlik</h1>
+
+    <p class="lead">
+      Em junho de 2026, o Qlik lançou o Predict Agent: um agente de IA que conduz o ciclo
+      completo de machine learning dentro do Qlik Cloud, com SHAP individual por registro e
+      aprendizado contínuo. A pergunta que nenhum artigo em PT-BR respondeu ainda: quando isso
+      substitui seu pipeline Python e quando definitivamente não substitui.
+    </p>
+  </header>
+
+  <div class="divider"></div>
+
+  <!-- SEÇÃO 1 -->
+  <section>
+    <h2>Não é só AutoML rebatizado</h2>
+
+    <p>
+      O Qlik Predict existe desde a fase chamada Qlik AutoML. O que mudou em junho de 2026 foi
+      a adição de uma camada de agente de IA sobre esse motor. A diferença prática é relevante
+      para quem já usou o AutoML anterior.
+    </p>
+
+    <p>
+      Com o AutoML puro, você configurava um experimento manualmente: escolhia a variável-alvo,
+      selecionava as features, iniciava o treinamento e interpretava os gráficos de resultado.
+      Era mais rápido que código, mas ainda exigia que você soubesse o que estava pedindo e
+      entendesse os resultados.
+    </p>
+
+    <p>
+      Com o Predict Agent, você faz uma pergunta em linguagem natural:
+      <em>"Quais clientes têm maior probabilidade de cancelar nos próximos 30 dias?"</em>
+      O agente entende o problema, identifica as features relevantes, treina múltiplos modelos,
+      compara a acurácia entre eles, gera as previsões e explica os resultados com visualizações
+      de SHAP. O ciclo completo acontece dentro de uma conversa.
+    </p>
+
+    <div class="callout">
+      <div class="callout-title">Ponto técnico</div>
+      O motor de ML subjacente não mudou. O que o agente adiciona é: (1) tradução de perguntas
+      em linguagem natural para configurações de experimento, (2) decisões automáticas sobre
+      seleção de features e tipo de problema de ML, (3) narrativa de interpretação dos resultados
+      sem exigir que o usuário leia um gráfico de SHAP sozinho.
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SEÇÃO 2 -->
+  <section>
+    <h2>O ciclo de ML que o agente conduz</h2>
+
+    <p>
+      O Predict Agent cobre seis etapas do ciclo de data science sem exigir configuração manual
+      em cada uma. Para o dev sênior, isso significa que o boilerplate de ML, antes seu, migra
+      para o agente.
+    </p>
+
+    <div class="cycle">
+      <div class="cycle-step">
+        <span class="step-num">01</span>
+        <span class="step-name">Entender o problema</span>
+      </div>
+      <div class="cycle-step">
+        <span class="step-num">02</span>
+        <span class="step-name">Preparar os dados</span>
+      </div>
+      <div class="cycle-step">
+        <span class="step-num">03</span>
+        <span class="step-name">Construir modelos</span>
+      </div>
+      <div class="cycle-step">
+        <span class="step-num">04</span>
+        <span class="step-name">Validar resultados</span>
+      </div>
+      <div class="cycle-step">
+        <span class="step-num">05</span>
+        <span class="step-name">Gerar previsões</span>
+      </div>
+      <div class="cycle-step">
+        <span class="step-num">06</span>
+        <span class="step-name">Interpretar com IA</span>
+      </div>
+    </div>
+
+    <h3>O que está disponível em GA</h3>
+
+    <p>
+      Previsão de séries temporais multivariada com suporte a sazonalidade e dependências
+      complexas entre variáveis. SHAP values a nível de registro individual: não só "quais
+      features importam para o modelo geral", mas "por que este cliente específico recebeu
+      este score". Aprendizado contínuo, onde os modelos se atualizam automaticamente à medida
+      que novos dados chegam. Governança com documentação embutida, logs de auditoria e
+      rastreamento do ciclo de vida do modelo.
+    </p>
+
+    <div class="callout yellow">
+      <div class="callout-title">SHAP individual: o que muda na prática</div>
+      A maioria das ferramentas de AutoML mostra importância de feature global, ou seja,
+      "recência de compra contribui 28% para o modelo". O Predict Agent mostra por que aquele
+      registro específico recebeu aquele score. Para um analista apresentar a previsão de churn
+      para o gerente de conta, isso muda a conversa: de "o modelo diz que a probabilidade
+      é 87%" para "este cliente está em risco porque o volume de pedidos caiu 40% nos últimos
+      60 dias e o ticket médio ficou 35% abaixo do histórico dele". O stakeholder entende sem
+      precisar de treinamento em ML.
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SEÇÃO 3 -->
+  <section>
+    <h2>Predict Agent vs. Python externo: quando usar cada um</h2>
+
+    <p>
+      Esta é a decisão que mais vai impactar devs sênior que já têm pipelines de ML fora do
+      Qlik. A resposta honesta: depende do cenário. Os dois coexistem e não há razão para
+      migrar tudo para o agente só porque ele existe.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Cenário</th>
+            <th>Predict Agent</th>
+            <th>Python Externo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Previsão de churn com dados já no Qlik</td>
+            <td class="ok">Ideal</td>
+            <td class="warn">Complexidade desnecessária</td>
+          </tr>
+          <tr>
+            <td>Modelo com feature engineering complexa e pré-processamento customizado</td>
+            <td class="warn">Limitado</td>
+            <td class="ok">Ideal</td>
+          </tr>
+          <tr>
+            <td>Explicar resultado para stakeholder não técnico</td>
+            <td class="ok">SHAP nativo com narrativa em linguagem natural</td>
+            <td class="warn">Depende do seu framework</td>
+          </tr>
+          <tr>
+            <td>Integração direta no app Qlik sem saída de dados</td>
+            <td class="ok">Nativo</td>
+            <td class="warn">Requer API e conector adicional</td>
+          </tr>
+          <tr>
+            <td>Feature engineering com transformações específicas de domínio</td>
+            <td class="no">Fora do escopo</td>
+            <td class="ok">Controle total</td>
+          </tr>
+          <tr>
+            <td>Modelo com requisito de auditoria regulatória (BACEN, LGPD)</td>
+            <td class="warn">Governança básica incluída</td>
+            <td class="ok">Controle total do artefato</td>
+          </tr>
+          <tr>
+            <td>Deep learning ou ensemble customizado</td>
+            <td class="no">Fora do escopo</td>
+            <td class="ok">Ideal</td>
+          </tr>
+          <tr>
+            <td>ROI rápido sem time de dados dedicado</td>
+            <td class="ok">Resultado em horas</td>
+            <td class="no">Semanas de setup e integração</td>
+          </tr>
+          <tr>
+            <td>Série temporal com sazonalidade multivariada</td>
+            <td class="ok">GA com suporte nativo</td>
+            <td class="ok">Sim, com mais configuração manual</td>
+          </tr>
+          <tr>
+            <td>Deploy em múltiplos ambientes (dev, staging, prod)</td>
+            <td class="warn">Dentro do Qlik Cloud</td>
+            <td class="ok">Controle total de infraestrutura</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-title">Regra prática</div>
+      Se o dado já está no Qlik, o problema é classificação ou regressão padrão e o resultado
+      precisa aparecer no app para o usuário de negócio, o Predict Agent chega lá mais rápido.
+      Se o problema exige feature engineering pesada, integração com dados fora do Qlik, ou
+      controle granular do artefato de modelo, Python externo ainda é a escolha certa.
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SEÇÃO 4 -->
+  <section>
+    <h2>Como funciona na prática: de pergunta a previsão no app</h2>
+
+    <p>
+      Um exemplo concreto com dados de varejo. Você tem <code>CustomersFact</code> e
+      <code>OrdersFact</code> no seu Data Product no Qlik Cloud. Abre o Predict Agent e
+      descreve o que precisa:
+    </p>
+
+    <pre><code><span class="comment">-- Prompt para o Predict Agent</span>
+<span class="str">"Usando os dados de CustomersFact e OrdersFact, quero prever
+ quais clientes têm mais de 70% de probabilidade de não fazer
+ nenhuma compra nos próximos 60 dias.
+
+ Inclua uma explicação de por que cada cliente está em risco,
+ usando as variáveis disponíveis nos dados."</span></code></pre>
+
+    <p>O agente executa a sequência completa de forma autônoma:</p>
+
+    <p>
+      <strong>1. Entendimento do problema:</strong> classifica como problema de classificação
+      binária (churn nos próximos 60 dias: sim ou não). Define a variável-alvo e o horizonte
+      de previsão com base na descrição.
+    </p>
+    <p>
+      <strong>2. Seleção de features:</strong> analisa as colunas disponíveis e sugere as
+      mais relevantes: recência da última compra, frequência de pedidos nos últimos 90 dias,
+      variação do ticket médio, número de categorias compradas, tempo como cliente ativo.
+    </p>
+    <p>
+      <strong>3. Treinamento e validação:</strong> treina múltiplos algoritmos, compara
+      AUC-ROC e F1-score entre eles, seleciona o modelo com melhor desempenho de validação
+      e apresenta as métricas para revisão.
+    </p>
+    <p>
+      <strong>4. Geração de previsões:</strong> aplica o modelo a todos os clientes ativos
+      e gera um score de probabilidade de churn por registro.
+    </p>
+    <p>
+      <strong>5. Explicação individual com SHAP:</strong> para cada cliente acima do limiar
+      de 70% de probabilidade, gera SHAP values individuais com a contribuição positiva ou
+      negativa de cada feature no score daquele registro específico.
+    </p>
+
+    <p>
+      O resultado final aparece como uma tabela no seu app Qlik com o score por cliente,
+      acompanhada de um gráfico de SHAP que o gerente de conta consegue interpretar sem
+      precisar de treinamento em machine learning.
+    </p>
+
+    <div class="callout">
+      <div class="callout-title">O que antes levava semanas</div>
+      Esse fluxo, feito com Python externo e integração manual no Qlik, levava entre duas e
+      quatro semanas de engenharia: coleta de dados, pipeline de feature engineering,
+      treinamento, versionamento do modelo, API de inferência, conector no Qlik e agendamento
+      de atualização. Com o Predict Agent, a entrega vai para a tarde do mesmo dia, desde que
+      os dados já estejam no Data Product com a qualidade necessária.
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SEÇÃO 5 -->
+  <section>
+    <h2>O combo que ninguém está falando: Predict + Automate Agent</h2>
+
+    <p>
+      O Qlik lançou o Automate Agent na mesma janela de junho de 2026. Quando combinado com o
+      Predict Agent, ele fecha um loop que antes exigia múltiplos sistemas externos e integração
+      manual entre eles.
+    </p>
+
+    <div class="agent-grid">
+      <div class="agent-card">
+        <h4>Predict Agent</h4>
+        <p>Detecta e prevê: identifica clientes em risco, prevê queda de margem, antecipa
+        gargalo de supply chain. Retorna score com explicação individual por registro.</p>
+        <span class="status-badge">GA Jun 2026</span>
+      </div>
+      <div class="agent-card">
+        <h4>Automate Agent</h4>
+        <p>Age sobre a previsão: usa o resultado do Predict Agent para disparar ações em
+        sistemas externos via linguagem natural. CRM, ERP, sistemas de procurement, plataformas
+        de comunicação.</p>
+        <span class="status-badge">GA Jun 2026</span>
+      </div>
+      <div class="agent-card">
+        <h4>Analytics Agent</h4>
+        <p>Investiga causas: responde perguntas analíticas sobre os dados, explora variações
+        e apoia tanto a geração de insights quanto o desenvolvimento de analytics no Qlik Cloud.</p>
+        <span class="status-badge soon">Previsto Q3 2026</span>
+      </div>
+    </div>
+
+    <p>
+      O exemplo que o próprio Qlik usa é de supply chain: o Predict Agent identifica 82% de
+      probabilidade de ruptura de estoque em uma SKU crítica nos próximos 14 dias. O Automate
+      Agent, sem intervenção humana, abre automaticamente um workflow de procurement no sistema
+      de compras para identificar fornecedor alternativo.
+    </p>
+
+    <p>
+      Para times de BI que hoje entregam dashboards de monitoramento, isso representa uma
+      mudança de paradigma: de "o dashboard avisa que há um problema" para "o sistema age
+      sobre o problema antes que ele apareça no relatório de manhã".
+    </p>
+
+    <div class="callout yellow">
+      <div class="callout-title">Para o dev sênior: o que isso muda no design do sistema</div>
+      Se você está construindo um app Qlik que serve como painel de monitoramento de KPIs,
+      vale mapear quais KPIs têm uma ação associada quando ficam fora do threshold esperado.
+      Esses são os candidatos naturais ao loop Predict + Automate. A lógica da ação sai do
+      seu pipeline manual e vai para o agente, mas o contrato de dados que alimenta o modelo
+      continua sendo responsabilidade do engenheiro.
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SEÇÃO 6 -->
+  <section>
+    <h2>O que fica na mão do dev sênior</h2>
+
+    <p>
+      O Predict Agent não elimina a responsabilidade técnica do engenheiro. Ele a desloca.
+      Entender exatamente o que migra para o agente e o que permanece com você é o que
+      separa a adoção bem-sucedida do retrabalho.
+    </p>
+
+    <div class="bottom-line">
+      <div class="bl-col yes">
+        <h4>O agente assume</h4>
+        <ul>
+          <li>Seleção automática de algoritmos</li>
+          <li>Tuning de hiperparâmetros</li>
+          <li>Validação cruzada e seleção do melhor modelo</li>
+          <li>SHAP values e narrativa de explicação</li>
+          <li>Atualização automática do modelo com novos dados</li>
+          <li>Documentação e log de auditoria do experimento</li>
+          <li>Integração do resultado no app Qlik</li>
+        </ul>
+      </div>
+      <div class="bl-col no">
+        <h4>Você continua responsável</h4>
+        <ul>
+          <li>Qualidade e granularidade dos dados no Data Product</li>
+          <li>Feature engineering específica de domínio</li>
+          <li>Definição correta do problema e da variável-alvo</li>
+          <li>Modelos com requisitos regulatórios rígidos</li>
+          <li>Arquiteturas de ML além de classificação e regressão</li>
+          <li>Integração com fontes de dados fora do Qlik</li>
+          <li>Governança de acesso aos resultados via Section Access</li>
+        </ul>
+      </div>
+    </div>
+
+    <p>
+      O ponto crítico que o marketing não menciona: o Predict Agent é tão bom quanto os dados
+      que chegam até ele. Se o Data Product de entrada tem problemas de qualidade, latência alta
+      ou granularidade insuficiente, o agente vai gerar um modelo tecnicamente válido mas
+      praticamente inútil para o negócio. A responsabilidade sobre a camada de dados continua
+      sendo do engenheiro, e as semanas economizadas na parte de ML podem ser consumidas
+      inteiramente por dívida técnica na camada de ingestão e transformação.
+    </p>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SEÇÃO 7 -->
+  <section>
+    <h2>Status dos agentes analíticos no Qlik Cloud</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Capacidade</th>
+            <th>Status</th>
+            <th>Disponível em</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Predict Agent (AutoML com agente de IA)</td>
+            <td class="ok">GA</td>
+            <td>Qlik Cloud Analytics</td>
+          </tr>
+          <tr>
+            <td>Previsão de série temporal multivariada</td>
+            <td class="ok">GA</td>
+            <td>Qlik Cloud Analytics</td>
+          </tr>
+          <tr>
+            <td>SHAP values a nível de registro individual</td>
+            <td class="ok">GA</td>
+            <td>Qlik Cloud Analytics</td>
+          </tr>
+          <tr>
+            <td>Aprendizado contínuo do modelo</td>
+            <td class="ok">GA</td>
+            <td>Qlik Cloud Analytics</td>
+          </tr>
+          <tr>
+            <td>Governança: documentação e logs de auditoria</td>
+            <td class="ok">GA</td>
+            <td>Qlik Cloud Analytics</td>
+          </tr>
+          <tr>
+            <td>Automate Agent (ações em sistemas externos)</td>
+            <td class="ok">GA</td>
+            <td>Qlik Cloud Analytics</td>
+          </tr>
+          <tr>
+            <td>Loop completo Predict + Automate</td>
+            <td class="ok">GA</td>
+            <td>Qlik Cloud Analytics</td>
+          </tr>
+          <tr>
+            <td>Answers Review Portal (auditoria de conversas)</td>
+            <td class="ok">GA</td>
+            <td>Qlik Cloud Analytics</td>
+          </tr>
+          <tr>
+            <td>Analytics Agent (insights e desenvolvimento de analytics)</td>
+            <td class="warn">Previsto Q3 2026</td>
+            <td>A confirmar</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- CTA -->
+  <div class="cta">
+    <p>
+      Você já usou o Qlik Predict (AutoML) no ambiente atual? Tem algum pipeline Python que
+      seria candidato natural para migrar para o Predict Agent? <strong>Comenta aqui</strong>
+      com o cenário e discute a viabilidade.
+    </p>
+  </div>
+
+  <div class="hashtags">
+    #QlikCloud #MachineLearning #AgenticAI #AutoML #DataScience #QlikPredict #BI
+    #DataEngineering #QlikSense #IA #Explainability #SHAP #EngenhariaDeDados
+  </div>
+
+  <footer>
+    Rafael Veloso · Semana 7 · Qlik Cloud para Devs Sênior
+    <br>
+    <a href="qlik-predict-agent-en.html">Read in English</a>
+  </footer>
+
+</div>
+</body>
+</html>
