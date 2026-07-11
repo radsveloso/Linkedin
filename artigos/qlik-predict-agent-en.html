@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qlik Predict Agent: What AutoML with AI Actually Means for Senior Devs Who Already Use Python and Qlik</title>
+  <meta name="description" content="Qlik launched the Predict Agent in June 2026: an AI agent that runs the full ML lifecycle inside Qlik Cloud. Per-record SHAP, continuous learning, and Predict + Automate combo. When to replace your Python pipeline and when not to.">
+
+  <meta property="og:title" content="Qlik Predict Agent: What AutoML with AI Actually Means for Senior Devs Who Already Use Python and Qlik">
+  <meta property="og:description" content="Qlik launched the Predict Agent in June 2026: an AI agent that runs the full ML lifecycle inside Qlik Cloud. Per-record SHAP, continuous learning, and the Predict + Automate loop nobody is talking about.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://radsveloso.github.io/Linkedin/artigos/qlik-predict-agent-en.html">
+  <meta property="og:image" content="https://radsveloso.github.io/Linkedin/artigos/covers/qlik-predict-agent-en.png">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <style>
+    :root {
+      --bg: #07080e;
+      --surface: #0f1117;
+      --border: #1e2030;
+      --accent: #7c3aed;
+      --accent2: #a855f7;
+      --accent3: #c084fc;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --green: #10b981;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --blue: #3b82f6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.75;
+      padding: 0 1rem;
+    }
+    .container { max-width: 760px; margin: 0 auto; padding: 3rem 0 5rem; }
+
+    .badges { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .badge {
+      font-size: .7rem; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; padding: .25rem .75rem; border-radius: 999px;
+    }
+    .badge-week  { background: #1e1b4b; color: var(--accent3); border: 1px solid var(--accent); }
+    .badge-series{ background: #1a0533; color: var(--accent2); border: 1px solid #6d28d9; }
+    .badge-new   { background: #14532d; color: #6ee7b7;       border: 1px solid var(--green); }
+    .badge-ga    { background: #1c1917; color: var(--yellow);  border: 1px solid var(--yellow); }
+
+    h1 {
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 800; line-height: 1.25; letter-spacing: -.02em;
+      margin-bottom: 1.25rem;
+      background: linear-gradient(135deg, #fff 60%, var(--accent3));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .lead {
+      font-size: 1.1rem; color: var(--muted);
+      border-left: 3px solid var(--accent); padding-left: 1rem;
+      margin-bottom: 2.5rem;
+    }
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+      margin: 2.5rem 0;
+    }
+    h2 {
+      font-size: 1.3rem; font-weight: 700; color: var(--accent3);
+      margin-bottom: 1rem; padding-bottom: .5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    h3 { font-size: 1rem; font-weight: 700; color: var(--accent2); margin: 1.5rem 0 .5rem; }
+    p  { margin-bottom: 1rem; }
+
+    .callout {
+      background: #130d2b; border: 1px solid var(--accent); border-left: 4px solid var(--accent);
+      border-radius: .5rem; padding: 1rem 1.25rem; margin: 1.5rem 0; font-size: .95rem;
+    }
+    .callout.yellow { border-color: var(--yellow); border-left-color: var(--yellow); background: #1c1400; }
+    .callout.green  { border-color: var(--green);  border-left-color: var(--green);  background: #001a0f; }
+    .callout.red    { border-color: var(--red);    border-left-color: var(--red);    background: #1a0000; }
+    .callout-title {
+      font-weight: 700; font-size: .8rem; text-transform: uppercase;
+      letter-spacing: .08em; margin-bottom: .5rem; color: var(--accent3);
+    }
+    .callout.yellow .callout-title { color: var(--yellow); }
+    .callout.green  .callout-title { color: #6ee7b7; }
+    .callout.red    .callout-title { color: #fca5a5; }
+
+    code {
+      font-family: 'SF Mono','Fira Code','Consolas',monospace;
+      background: #0d0f1a; border: 1px solid var(--border);
+      border-radius: .3rem; padding: .1em .4em; font-size: .85em; color: var(--accent3);
+    }
+    pre {
+      background: #0a0c14; border: 1px solid var(--border);
+      border-radius: .5rem; padding: 1.25rem;
+      overflow-x: auto; margin: 1.25rem 0; font-size: .85rem; line-height: 1.6;
+    }
+    pre code { background: none; border: none; padding: 0; color: #e2e8f0; }
+    .comment { color: #64748b; }
+    .str { color: #6ee7b7; }
+    .kw  { color: #a78bfa; }
+
+    .table-wrap { overflow-x: auto; margin: 1.5rem 0; }
+    table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+    th {
+      background: #1a1235; color: var(--accent3); font-weight: 700;
+      padding: .75rem 1rem; text-align: left; border-bottom: 2px solid var(--accent);
+    }
+    td { padding: .65rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:hover td { background: #0d0f1a; }
+    .ok   { color: var(--green);  font-weight: 700; }
+    .no   { color: var(--red);    font-weight: 700; }
+    .warn { color: var(--yellow); font-weight: 600; }
+
+    .cycle { display: flex; gap: 0; margin: 1.5rem 0; flex-wrap: wrap; }
+    .cycle-step {
+      background: #0f0a1f; border: 1px solid var(--border); border-right: none;
+      padding: .75rem 1rem; font-size: .82rem; flex: 1; min-width: 120px;
+    }
+    .cycle-step:first-child { border-radius: .4rem 0 0 .4rem; }
+    .cycle-step:last-child  { border-right: 1px solid var(--border); border-radius: 0 .4rem .4rem 0; }
+    .cycle-step .step-num  { font-size: .65rem; color: var(--accent3); font-weight: 700; display: block; margin-bottom: .2rem; }
+    .cycle-step .step-name { font-weight: 600; color: var(--text); font-size: .8rem; }
+
+    .agent-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem; margin: 1.5rem 0;
+    }
+    .agent-card {
+      background: #0f0a1f; border: 1px solid var(--border);
+      border-top: 3px solid var(--accent); border-radius: .5rem; padding: 1.25rem;
+    }
+    .agent-card h4 { font-size: .95rem; color: var(--accent2); margin-bottom: .5rem; }
+    .agent-card p  { font-size: .85rem; color: var(--muted); margin: 0; }
+    .agent-card .status-badge {
+      display: inline-block; font-size: .65rem; font-weight: 700;
+      padding: .2rem .5rem; border-radius: 999px; margin-top: .75rem;
+      background: #14532d; color: #6ee7b7;
+    }
+    .agent-card .status-badge.soon {
+      background: #1c1400; color: var(--yellow);
+    }
+
+    .bottom-line {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1rem; margin: 1.5rem 0;
+    }
+    .bl-col {
+      background: #0f0a1f; border: 1px solid var(--border);
+      border-radius: .5rem; padding: 1.25rem;
+    }
+    .bl-col h4 {
+      font-size: .85rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .07em; margin-bottom: .75rem;
+    }
+    .bl-col.yes { border-top: 3px solid var(--green); }
+    .bl-col.no  { border-top: 3px solid var(--red);   }
+    .bl-col.yes h4 { color: #6ee7b7;  }
+    .bl-col.no  h4 { color: #fca5a5; }
+    .bl-col ul { list-style: none; }
+    .bl-col ul li { font-size: .875rem; color: var(--muted); padding: .3rem 0; }
+    .bl-col.yes ul li::before { content: "✓ "; color: var(--green); font-weight: 700; }
+    .bl-col.no  ul li::before { content: "✗ "; color: var(--red);   font-weight: 700; }
+
+    .cta {
+      background: linear-gradient(135deg, #130d2b, #1a0533);
+      border: 1px solid var(--accent); border-radius: .75rem;
+      padding: 1.75rem; margin-top: 3rem; text-align: center;
+    }
+    .cta p { color: var(--muted); font-size: .95rem; margin-bottom: 0; }
+    .cta strong { color: var(--accent3); }
+
+    .hashtags { margin-top: 2rem; font-size: .85rem; color: var(--accent2); line-height: 2; }
+    footer {
+      border-top: 1px solid var(--border); margin-top: 3rem;
+      padding-top: 1.5rem; font-size: .8rem; color: #475569; text-align: center;
+    }
+    footer a { color: var(--accent2); }
+
+    @media (max-width: 600px) {
+      .bottom-line { grid-template-columns: 1fr; }
+      .cycle-step  { min-width: 45%; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="badges">
+      <span class="badge badge-week">Week 7</span>
+      <span class="badge badge-series">Qlik Cloud for Senior Devs</span>
+      <span class="badge badge-new">New</span>
+      <span class="badge badge-ga">GA: Jun 2026</span>
+    </div>
+
+    <h1>Qlik Predict Agent: What AutoML with AI Actually Means for Senior Devs Who Already Use Python and Qlik</h1>
+
+    <p class="lead">
+      In June 2026, Qlik launched the Predict Agent: an AI agent that runs the full machine
+      learning lifecycle inside Qlik Cloud, with per-record SHAP explainability and continuous
+      model learning. The question no article has answered yet: when does this replace your
+      external Python pipeline, and when should you keep it exactly where it is.
+    </p>
+  </header>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 1 -->
+  <section>
+    <h2>This Is Not Just Rebranded AutoML</h2>
+
+    <p>
+      Qlik Predict has existed since the Qlik AutoML era. What changed in June 2026 was the
+      addition of an AI agent layer on top of that engine. The practical difference matters for
+      anyone who has used the previous AutoML product.
+    </p>
+
+    <p>
+      With plain AutoML, you configured an experiment manually: chose the target variable,
+      selected features, kicked off training, and interpreted the output charts. It was faster
+      than writing code, but it still required you to know what you were asking and understand
+      what came back.
+    </p>
+
+    <p>
+      With the Predict Agent, you ask a question in natural language:
+      <em>"Which customers are most likely to churn in the next 30 days?"</em>
+      The agent understands the problem, identifies relevant features, trains multiple models,
+      compares accuracy across them, generates predictions, and explains the results with SHAP
+      visualizations. The complete cycle happens inside a conversation.
+    </p>
+
+    <div class="callout">
+      <div class="callout-title">Technical note</div>
+      The underlying ML engine has not changed. What the agent adds is: (1) translation of
+      natural language questions into experiment configurations, (2) automatic decisions on
+      feature selection and problem type classification, (3) a result interpretation narrative
+      that does not require the user to read a SHAP chart on their own.
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 2 -->
+  <section>
+    <h2>The ML Lifecycle the Agent Runs</h2>
+
+    <p>
+      The Predict Agent covers six steps of the data science lifecycle without requiring manual
+      configuration at each stage. For the senior dev, this means the ML boilerplate that was
+      yours before now belongs to the agent.
+    </p>
+
+    <div class="cycle">
+      <div class="cycle-step">
+        <span class="step-num">01</span>
+        <span class="step-name">Understand the problem</span>
+      </div>
+      <div class="cycle-step">
+        <span class="step-num">02</span>
+        <span class="step-name">Prepare the data</span>
+      </div>
+      <div class="cycle-step">
+        <span class="step-num">03</span>
+        <span class="step-name">Build models</span>
+      </div>
+      <div class="cycle-step">
+        <span class="step-num">04</span>
+        <span class="step-name">Validate results</span>
+      </div>
+      <div class="cycle-step">
+        <span class="step-num">05</span>
+        <span class="step-name">Generate predictions</span>
+      </div>
+      <div class="cycle-step">
+        <span class="step-num">06</span>
+        <span class="step-name">Interpret with AI</span>
+      </div>
+    </div>
+
+    <h3>What is available in GA</h3>
+
+    <p>
+      Multivariate time series forecasting with support for seasonality and complex
+      inter-variable dependencies. SHAP values at individual record level: not just "which
+      features matter for the model overall," but "why this specific customer received this
+      score." Continuous learning, where models automatically update as new data arrives.
+      Governance with built-in documentation, audit logs, and model lifecycle tracking.
+    </p>
+
+    <div class="callout yellow">
+      <div class="callout-title">Per-record SHAP: what changes in practice</div>
+      Most AutoML tools show global feature importance, something like "purchase recency
+      contributes 28% to the model." The Predict Agent shows why that specific record received
+      that specific score. For an analyst presenting a churn prediction to an account manager,
+      this changes the entire conversation: from "the model says the probability is 87%" to
+      "this customer is at risk because order volume dropped 40% over the last 60 days and
+      average ticket is 35% below their historical baseline." The stakeholder understands
+      without needing ML training.
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 3 -->
+  <section>
+    <h2>Predict Agent vs. External Python: When to Use Each</h2>
+
+    <p>
+      This is the decision that will have the most impact on senior devs who already have ML
+      pipelines running outside Qlik. The honest answer: it depends on the scenario. The two
+      approaches coexist, and there is no reason to migrate everything to the agent just
+      because it exists.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Scenario</th>
+            <th>Predict Agent</th>
+            <th>External Python</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Churn prediction with data already in Qlik</td>
+            <td class="ok">Ideal</td>
+            <td class="warn">Unnecessary complexity</td>
+          </tr>
+          <tr>
+            <td>Model requiring complex feature engineering and custom preprocessing</td>
+            <td class="warn">Limited</td>
+            <td class="ok">Ideal</td>
+          </tr>
+          <tr>
+            <td>Explaining results to a non-technical stakeholder</td>
+            <td class="ok">Native SHAP with natural language narrative</td>
+            <td class="warn">Depends on your framework</td>
+          </tr>
+          <tr>
+            <td>Direct integration in a Qlik app without data leaving the platform</td>
+            <td class="ok">Native</td>
+            <td class="warn">Requires additional API and connector</td>
+          </tr>
+          <tr>
+            <td>Feature engineering with domain-specific transformations</td>
+            <td class="no">Out of scope</td>
+            <td class="ok">Full control</td>
+          </tr>
+          <tr>
+            <td>Model with strict regulatory audit requirements (SOX, FINRA, HIPAA)</td>
+            <td class="warn">Basic governance included</td>
+            <td class="ok">Full control over model artifact</td>
+          </tr>
+          <tr>
+            <td>Deep learning or custom ensemble</td>
+            <td class="no">Out of scope</td>
+            <td class="ok">Ideal</td>
+          </tr>
+          <tr>
+            <td>Fast ROI without a dedicated data science team</td>
+            <td class="ok">Results in hours</td>
+            <td class="no">Weeks of setup and integration</td>
+          </tr>
+          <tr>
+            <td>Multivariate time series with seasonal patterns</td>
+            <td class="ok">GA with native support</td>
+            <td class="ok">Yes, with more manual configuration</td>
+          </tr>
+          <tr>
+            <td>Deploy across multiple environments (dev, staging, prod)</td>
+            <td class="warn">Within Qlik Cloud</td>
+            <td class="ok">Full infrastructure control</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-title">Practical rule</div>
+      If the data is already in Qlik, the problem is standard classification or regression,
+      and the result needs to surface in the app for a business user, the Predict Agent gets
+      you there faster. If the problem requires heavy feature engineering, integration with
+      data outside Qlik, or granular control over the model artifact, external Python is still
+      the right choice.
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 4 -->
+  <section>
+    <h2>How It Works in Practice: From Question to Prediction in Your App</h2>
+
+    <p>
+      A concrete example using retail data. You have <code>CustomersFact</code> and
+      <code>OrdersFact</code> in your Data Product in Qlik Cloud. You open the Predict Agent
+      and describe what you need:
+    </p>
+
+    <pre><code><span class="comment">-- Predict Agent prompt</span>
+<span class="str">"Using CustomersFact and OrdersFact, I want to predict which
+ customers have more than a 70% probability of making no purchases
+ in the next 60 days.
+
+ Include an explanation of why each customer is at risk,
+ using the variables available in the data."</span></code></pre>
+
+    <p>The agent runs the complete sequence autonomously:</p>
+
+    <p>
+      <strong>1. Problem understanding:</strong> classifies this as a binary classification
+      problem (churned in the next 60 days: yes or no). Defines the target variable and the
+      prediction horizon based on the description.
+    </p>
+    <p>
+      <strong>2. Feature selection:</strong> analyzes available columns and suggests the most
+      relevant ones: days since last purchase, order frequency over the last 90 days, change
+      in average order value, number of distinct categories purchased, customer tenure.
+    </p>
+    <p>
+      <strong>3. Training and validation:</strong> trains multiple algorithms, compares AUC-ROC
+      and F1-score across them, selects the best-performing model on the validation set, and
+      surfaces the metrics for your review.
+    </p>
+    <p>
+      <strong>4. Prediction generation:</strong> applies the model to all active customers and
+      generates a churn probability score per record.
+    </p>
+    <p>
+      <strong>5. Individual SHAP explanation:</strong> for each customer above the 70%
+      probability threshold, generates individual SHAP values with the positive or negative
+      contribution of each feature to that specific record's score.
+    </p>
+
+    <p>
+      The final output appears as a table in your Qlik app with a score per customer,
+      accompanied by a SHAP chart that the account manager can interpret without any
+      machine learning training.
+    </p>
+
+    <div class="callout">
+      <div class="callout-title">What used to take weeks</div>
+      This workflow, built with external Python and manually integrated into Qlik, used to
+      take two to four weeks of engineering: data collection, feature engineering pipeline,
+      training, model versioning, inference API, Qlik connector, and refresh scheduling. With
+      the Predict Agent, the delivery moves to the same afternoon, as long as the data is
+      already in the Data Product with the necessary quality.
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 5 -->
+  <section>
+    <h2>The Combination Nobody Is Talking About: Predict + Automate Agent</h2>
+
+    <p>
+      Qlik launched the Automate Agent in the same June 2026 window. When combined with the
+      Predict Agent, it closes a loop that previously required multiple external systems and
+      manual integration between them.
+    </p>
+
+    <div class="agent-grid">
+      <div class="agent-card">
+        <h4>Predict Agent</h4>
+        <p>Detects and predicts: identifies at-risk customers, forecasts margin compression,
+        anticipates supply chain bottlenecks. Returns a score with individual explanation per
+        record.</p>
+        <span class="status-badge">GA Jun 2026</span>
+      </div>
+      <div class="agent-card">
+        <h4>Automate Agent</h4>
+        <p>Acts on the prediction: uses the Predict Agent result to trigger actions in external
+        systems via natural language. CRM, ERP, procurement systems, communication platforms.</p>
+        <span class="status-badge">GA Jun 2026</span>
+      </div>
+      <div class="agent-card">
+        <h4>Analytics Agent</h4>
+        <p>Investigates causes: answers analytical questions about the data, explores variations,
+        and supports both insight generation and analytics development tasks inside Qlik Cloud.</p>
+        <span class="status-badge soon">Expected Q3 2026</span>
+      </div>
+    </div>
+
+    <p>
+      The example Qlik itself uses is supply chain: the Predict Agent identifies an 82%
+      probability of a stockout on a critical SKU in the next 14 days. The Automate Agent,
+      without human intervention, automatically opens a procurement workflow in the purchasing
+      system to identify an alternative supplier.
+    </p>
+
+    <p>
+      For BI teams that today deliver monitoring dashboards, this represents a paradigm shift:
+      from "the dashboard alerts that there is a problem" to "the system acts on the problem
+      before it shows up in the morning report."
+    </p>
+
+    <div class="callout yellow">
+      <div class="callout-title">For the senior dev: what this changes in system design</div>
+      If you are building a Qlik app that serves as a KPI monitoring panel, it is worth mapping
+      which KPIs have an associated action when they fall outside the expected threshold. Those
+      are the natural candidates for the Predict + Automate loop. The action logic moves out of
+      your manual pipeline and into the agent, but the data contract feeding the model remains
+      the engineer's responsibility.
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 6 -->
+  <section>
+    <h2>What Stays in the Senior Dev's Hands</h2>
+
+    <p>
+      The Predict Agent does not eliminate the engineer's technical responsibility. It shifts it.
+      Understanding exactly what migrates to the agent and what remains with you is what
+      separates successful adoption from rework.
+    </p>
+
+    <div class="bottom-line">
+      <div class="bl-col yes">
+        <h4>Agent handles</h4>
+        <ul>
+          <li>Automatic algorithm selection</li>
+          <li>Hyperparameter tuning</li>
+          <li>Cross-validation and best-model selection</li>
+          <li>SHAP values and explanation narrative</li>
+          <li>Automatic model updates as new data arrives</li>
+          <li>Experiment documentation and audit logging</li>
+          <li>Result integration into the Qlik app</li>
+        </ul>
+      </div>
+      <div class="bl-col no">
+        <h4>You remain responsible for</h4>
+        <ul>
+          <li>Data quality and granularity in the Data Product</li>
+          <li>Domain-specific feature engineering</li>
+          <li>Correctly defining the problem and target variable</li>
+          <li>Models with strict regulatory requirements</li>
+          <li>ML architectures beyond classification and regression</li>
+          <li>Integration with data sources outside Qlik</li>
+          <li>Access governance on results via Section Access</li>
+        </ul>
+      </div>
+    </div>
+
+    <p>
+      The critical point that marketing glosses over: the Predict Agent is only as good as the
+      data flowing into it. If the input Data Product has quality issues, high latency, or
+      insufficient granularity, the agent will generate a technically valid model that is
+      practically useless to the business. Responsibility for the data layer stays with the
+      engineer, and the weeks saved on the ML side can be consumed entirely by technical debt
+      in the ingestion and transformation layer.
+    </p>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 7 -->
+  <section>
+    <h2>Status of Analytical Agents in Qlik Cloud</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th>Status</th>
+            <th>Available in</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Predict Agent (AutoML with AI agent layer)</td>
+            <td class="ok">GA</td>
+            <td>Qlik Cloud Analytics</td>
+          </tr>
+          <tr>
+            <td>Multivariate time series forecasting</td>
+            <td class="ok">GA</td>
+            <td>Qlik Cloud Analytics</td>
+          </tr>
+          <tr>
+            <td>SHAP values at individual record level</td>
+            <td class="ok">GA</td>
+            <td>Qlik Cloud Analytics</td>
+          </tr>
+          <tr>
+            <td>Continuous model learning</td>
+            <td class="ok">GA</td>
+            <td>Qlik Cloud Analytics</td>
+          </tr>
+          <tr>
+            <td>Governance: documentation and audit logs</td>
+            <td class="ok">GA</td>
+            <td>Qlik Cloud Analytics</td>
+          </tr>
+          <tr>
+            <td>Automate Agent (actions in external systems)</td>
+            <td class="ok">GA</td>
+            <td>Qlik Cloud Analytics</td>
+          </tr>
+          <tr>
+            <td>Full Predict + Automate loop</td>
+            <td class="ok">GA</td>
+            <td>Qlik Cloud Analytics</td>
+          </tr>
+          <tr>
+            <td>Answers Review Portal (conversation audit)</td>
+            <td class="ok">GA</td>
+            <td>Qlik Cloud Analytics</td>
+          </tr>
+          <tr>
+            <td>Analytics Agent (insights and analytics development)</td>
+            <td class="warn">Expected Q3 2026</td>
+            <td>To be confirmed</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- CTA -->
+  <div class="cta">
+    <p>
+      Have you used Qlik Predict (AutoML) in your current environment? Do you have a Python
+      pipeline that is a natural candidate for migration to the Predict Agent?
+      <strong>Drop a comment</strong> with the scenario and let's talk through the feasibility.
+    </p>
+  </div>
+
+  <div class="hashtags">
+    #QlikCloud #MachineLearning #AgenticAI #AutoML #DataScience #QlikPredict #BusinessIntelligence
+    #DataEngineering #QlikSense #Explainability #SHAP #MLOps #DataProducts
+  </div>
+
+  <footer>
+    Rafael Veloso · Week 7 · Qlik Cloud for Senior Devs
+    <br>
+    <a href="qlik-predict-agent.html">Ler em Portugues</a>
+  </footer>
+
+</div>
+</body>
+</html>
