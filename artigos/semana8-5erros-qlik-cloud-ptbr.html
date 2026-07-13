@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Os 5 Erros Mais Comuns na Migração para Qlik Cloud (e Como Evitar)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.75;
+    padding: 40px 20px;
+  }
+  .container { max-width: 780px; margin: 0 auto; }
+
+  .article-header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 100%);
+    border: 1px solid #1e4080;
+    border-radius: 12px;
+    padding: 48px 40px;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+  .week-badge {
+    display: inline-block;
+    background: #1d4ed8;
+    color: #bfdbfe;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .article-header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #f1f5f9;
+    line-height: 1.3;
+    margin-bottom: 16px;
+  }
+  .article-header h1 span { color: #60a5fa; }
+  .subtitle {
+    font-size: 15px;
+    color: #94a3b8;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  .section {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 32px 36px;
+    margin-bottom: 24px;
+  }
+  .section-lead {
+    border-left: 4px solid #3b82f6;
+    background: #172033;
+    padding: 24px 28px;
+    border-radius: 0 10px 10px 0;
+  }
+  .section-lead p {
+    font-size: 17px;
+    color: #cbd5e1;
+    font-style: italic;
+  }
+  .section-lead p strong { color: #93c5fd; font-style: normal; }
+
+  h2 {
+    font-size: 19px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #334155;
+  }
+  p { font-size: 14.5px; color: #94a3b8; margin-bottom: 14px; }
+  p:last-child { margin-bottom: 0; }
+  p strong { color: #e2e8f0; }
+
+  .erro-card {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .erro-card:last-child { margin-bottom: 0; }
+  .erro-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #1d4ed8;
+    color: #bfdbfe;
+    font-size: 13px;
+    font-weight: 800;
+    border-radius: 50%;
+    margin-bottom: 12px;
+  }
+  .erro-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #f87171;
+    margin-bottom: 10px;
+  }
+  .erro-solucao {
+    background: #0d2137;
+    border-left: 3px solid #22c55e;
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin-top: 12px;
+  }
+  .erro-solucao span {
+    font-size: 11px;
+    font-weight: 700;
+    color: #4ade80;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .erro-solucao p { font-size: 13px; color: #86efac; margin: 0; }
+
+  .code-block {
+    background: #020817;
+    border: 1px solid #1e3a5f;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 14px 0;
+    overflow-x: auto;
+  }
+  .code-block pre {
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 12px;
+    color: #7dd3fc;
+    line-height: 1.6;
+    white-space: pre;
+  }
+  .code-label {
+    font-size: 10px;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .warning-box {
+    background: #1c1008;
+    border: 1px solid #92400e;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .warning-box .icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .warning-box p { color: #fcd34d; font-size: 13px; margin: 0; }
+
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+  }
+  .stat-card {
+    flex: 1;
+    min-width: 120px;
+    background: #0f172a;
+    border: 1px solid #1e3a5f;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-card .number {
+    font-size: 26px;
+    font-weight: 800;
+    color: #60a5fa;
+    display: block;
+  }
+  .stat-card .label {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 4px;
+    line-height: 1.3;
+  }
+
+  .cta-section {
+    background: linear-gradient(135deg, #1d3461 0%, #1a2744 100%);
+    border: 1px solid #2563eb;
+    border-radius: 10px;
+    padding: 32px;
+    text-align: center;
+  }
+  .cta-section h2 { border: none; padding: 0; margin-bottom: 12px; font-size: 18px; }
+  .cta-section p { font-size: 14px; color: #94a3b8; margin-bottom: 0; }
+
+  .hashtags {
+    margin-top: 24px;
+    text-align: center;
+  }
+  .hashtag {
+    display: inline-block;
+    background: #1e293b;
+    color: #60a5fa;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin: 3px;
+    border: 1px solid #1e3a5f;
+  }
+
+  .author-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 24px;
+  }
+  .author-avatar {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: white;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .author-info .name { font-size: 14px; font-weight: 700; color: #e2e8f0; }
+  .author-info .role { font-size: 12px; color: #64748b; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="article-header">
+    <div class="week-badge">Semana 8 · Qlik Cloud Migration</div>
+    <h1>Os <span>5 Erros Mais Comuns</span> na Migração para Qlik Cloud<br>(e Como Evitar Cada Um)</h1>
+    <p class="subtitle">O que ninguém te conta antes de apertar o botão de migrar</p>
+  </div>
+
+  <div class="section section-lead">
+    <p>
+      Já acompanhei dezenas de projetos de migração para o Qlik Cloud. Os bem-sucedidos não foram os que tinham mais orçamento. Foram os que <strong>conheciam as armadilhas antes de cair nelas.</strong> Aqui estão os cinco erros que aparecem em praticamente todo projeto, com o que fazer para não cometê-los.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="number">67%</span>
+        <span class="label">dos projetos excedem o prazo original</span>
+      </div>
+      <div class="stat-card">
+        <span class="number">3x</span>
+        <span class="label">mais chamados de suporte no primeiro mês pós-migração</span>
+      </div>
+      <div class="stat-card">
+        <span class="number">40%</span>
+        <span class="label">dos retrabalhos causados por modelo de dados não auditado</span>
+      </div>
+    </div>
+    <p style="font-size:12px; color:#475569; text-align:center;">Estimativas baseadas em projetos acompanhados em campo 2023-2024</p>
+  </div>
+
+  <div class="section">
+    <h2>Os 5 Erros</h2>
+
+    <div class="erro-card">
+      <div class="erro-number">1</div>
+      <div class="erro-title">Migrar sem auditar o modelo de dados primeiro</div>
+      <p>
+        O QlikView acumula anos de patches, campos duplicados, QVDs obsoletos e joins que "ninguém sabe por que existem, mas ninguém remove". Levar essa dívida técnica para o Qlik Cloud não limpa o problema, multiplica ele. Você gasta o mesmo esforço de migração e chega do outro lado com as mesmas anomalias, agora em uma plataforma nova.
+      </p>
+      <div class="warning-box">
+        <span class="icon">⚠️</span>
+        <p>Campos sem uso consomem memória e aumentam o custo da licença no modelo SaaS do Qlik Cloud. Cada campo desnecessário tem preço.</p>
+      </div>
+      <div class="erro-solucao">
+        <span>Como evitar</span>
+        <p>Faça um QlikView Audit antes de iniciar a migração. Liste todas as tabelas, campos e QVDs. Documente quem usa o quê. Elimine o que não tem dono. Chegue no Qlik Cloud com um modelo 30% mais enxuto do que o original.</p>
+      </div>
+    </div>
+
+    <div class="erro-card">
+      <div class="erro-number">2</div>
+      <div class="erro-title">Fazer Big Bang: migrar tudo de uma vez</div>
+      <p>
+        A pressão do projeto leva muitas equipes a tentar mover todos os apps de uma só vez. Parece eficiente no papel. Na prática, quando algo quebra, você não sabe o que causou o problema porque mudou tudo ao mesmo tempo. O rollback vira um pesadelo.
+      </p>
+      <div class="code-block">
+        <div class="code-label">Abordagem recomendada: migração em waves</div>
+        <pre>Wave 1 (Semanas 1-4):
+  - Apps de menor criticidade
+  - Valida ambiente, permissões, conectores
+  - Treina a equipe técnica no novo ambiente
+
+Wave 2 (Semanas 5-10):
+  - Apps operacionais de média criticidade
+  - Ajusta padrões de load script para Qlik Cloud
+  - Valida performance das queries
+
+Wave 3 (Semanas 11-16):
+  - Apps críticos de produção (BI financeiro, dashboards executivos)
+  - Parallel run: QlikView e Qlik Cloud lado a lado
+  - Validação de KPIs antes do switch definitivo</pre>
+      </div>
+      <div class="erro-solucao">
+        <span>Como evitar</span>
+        <p>Segmente a migração em waves por criticidade. Comece sempre pelo que dói menos se quebrar. Use o parallel run para validar KPIs críticos antes de desligar o QlikView.</p>
+      </div>
+    </div>
+
+    <div class="erro-card">
+      <div class="erro-number">3</div>
+      <div class="erro-title">Ignorar as diferenças de Set Analysis entre QlikView e Qlik Cloud</div>
+      <p>
+        Esse é o erro mais técnico e um dos mais perigosos. Algumas expressões de Set Analysis se comportam de forma diferente no Qlik Sense e no Qlik Cloud, especialmente quando envolvem flags calculados, alternate states e expressões dentro de sets. KPIs críticos podem trazer números errados sem dar nenhum erro visível.
+      </p>
+      <div class="code-block">
+        <div class="code-label">Exemplo de expressão que pode variar</div>
+        <pre>// QlikView: funciona como esperado em muitos contextos
+Sum({&lt;Ano={$(=Max(Ano))}&gt;} Receita)
+
+// Qlik Cloud / Qlik Sense: mesma expressão, mesma intenção,
+// mas o comportamento de Dollar Sign Expansion dentro
+// do Set pode divergir dependendo do contexto do objeto.
+// Sempre valide com dados reais antes de ir para produção.</pre>
+      </div>
+      <div class="erro-solucao">
+        <span>Como evitar</span>
+        <p>Crie um catálogo de expressões críticas antes de migrar. Para cada KPI importante, documente o valor esperado com dados de teste. Depois da migração, rode uma bateria de validação comparando QlikView vs. Qlik Cloud com o mesmo conjunto de dados.</p>
+      </div>
+    </div>
+
+    <div class="erro-card">
+      <div class="erro-number">4</div>
+      <div class="erro-title">Esquecer o change management dos usuários finais</div>
+      <p>
+        A equipe técnica migra os apps. Os usuários abrem o Qlik Cloud pela primeira vez e não reconhecem nada. A interface mudou, o menu sumiu, o botão que sempre usavam para exportar agora fica em outro lugar. O resultado previsível: resistência, chamados de suporte e pedidos para "voltar para o antigo".
+      </p>
+      <p>
+        Migração de ferramenta sem migração de cultura é meio projeto. A segunda metade será a mais cara.
+      </p>
+      <div class="erro-solucao">
+        <span>Como evitar</span>
+        <p>Planeje pelo menos quatro semanas de comunicação antes do switch. Faça sessões de treinamento segmentadas por perfil de usuário (consumidor, autor, administrador). Crie um guia rápido de "o que mudou e onde encontrar". Designe champions dentro de cada área de negócio.</p>
+      </div>
+    </div>
+
+    <div class="erro-card">
+      <div class="erro-number">5</div>
+      <div class="erro-title">Subestimar o impacto das extensões customizadas</div>
+      <p>
+        Extensões desenvolvidas para QlikView ou Qlik Sense on-premise frequentemente não funcionam no Qlik Cloud. As restrições de segurança do ambiente SaaS são mais rígidas, a API mudou em várias versões, e algumas extensões dependem de recursos que simplesmente não existem mais.
+      </p>
+      <p>
+        Descobrir isso na semana do go-live é a receita para atrasar o projeto em pelo menos um mês.
+      </p>
+      <div class="erro-solucao">
+        <span>Como evitar</span>
+        <p>Inventarie todas as extensões customizadas no início do projeto. Para cada uma: teste no ambiente Qlik Cloud, documente o que funciona e o que quebra. Avalie se substitui por um visual nativo equivalente, reescreve a extensão para o novo padrão ou elimina. Reserve pelo menos quatro semanas para isso no cronograma.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section">
+    <h2>O padrão que une todos os cinco erros</h2>
+    <p>
+      Olhando os cinco juntos, o padrão é o mesmo: todos são problemas de <strong>planejamento insuficiente, não de capacidade técnica</strong>. A equipe sabe migrar. O que falta é descobrir as armadilhas antes de tropeçar nelas.
+    </p>
+    <p>
+      Projetos de migração bem-sucedidos investem de 30% a 40% do cronograma total em preparação antes de mover o primeiro app. Parece muito. Mas é menos do que o retrabalho que vem depois quando você pula essa etapa.
+    </p>
+    <p>
+      <strong>A migração para o Qlik Cloud é inevitável.</strong> O QlikView está em fim de vida. O NPrinting SaaS já tem data de obrigatoriedade. O caminho não é se você vai migrar, é como você vai fazer isso sem transformar o projeto em uma crise.
+    </p>
+  </div>
+
+  <div class="cta-section">
+    <h2>Você já passou por algum desses erros?</h2>
+    <p>
+      Me conta nos comentários qual deles mais pegou no seu projeto.<br>
+      E se você está planejando uma migração agora, me chama no privado. Tenho algumas referências que podem ajudar a estruturar o cronograma.
+    </p>
+  </div>
+
+  <div class="hashtags">
+    <span class="hashtag">#QlikCloud</span>
+    <span class="hashtag">#QlikSense</span>
+    <span class="hashtag">#QlikView</span>
+    <span class="hashtag">#Migração</span>
+    <span class="hashtag">#BusinessIntelligence</span>
+    <span class="hashtag">#BI</span>
+    <span class="hashtag">#DataAnalytics</span>
+    <span class="hashtag">#GestãoDeProjetos</span>
+    <span class="hashtag">#CloudMigration</span>
+    <span class="hashtag">#RafaelVeloso</span>
+  </div>
+
+  <div class="author-bar">
+    <div class="author-avatar">RV</div>
+    <div class="author-info">
+      <div class="name">Rafael Veloso</div>
+      <div class="role">BI Specialist · Qlik Cloud · Data Engineering · Embraer</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
