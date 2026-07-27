@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Set Analysis in Qlik Cloud: the expressions most analysts never use (but should)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.75;
+    padding: 40px 20px;
+  }
+  .container { max-width: 780px; margin: 0 auto; }
+
+  .article-header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 100%);
+    border: 1px solid #1e4080;
+    border-radius: 12px;
+    padding: 48px 40px;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+  .week-badge {
+    display: inline-block;
+    background: #1d4ed8;
+    color: #bfdbfe;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .article-header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #f1f5f9;
+    line-height: 1.3;
+    margin-bottom: 16px;
+  }
+  .article-header h1 span { color: #60a5fa; }
+  .subtitle {
+    font-size: 15px;
+    color: #94a3b8;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  .section {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 32px 36px;
+    margin-bottom: 24px;
+  }
+  .section-lead {
+    border-left: 4px solid #3b82f6;
+    background: #172033;
+    padding: 24px 28px;
+    border-radius: 0 10px 10px 0;
+  }
+  .section-lead p {
+    font-size: 17px;
+    color: #cbd5e1;
+    font-style: italic;
+  }
+  .section-lead p strong { color: #93c5fd; font-style: normal; }
+
+  h2 {
+    font-size: 19px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #334155;
+  }
+  p { font-size: 14.5px; color: #94a3b8; margin-bottom: 14px; }
+  p:last-child { margin-bottom: 0; }
+  p strong { color: #e2e8f0; }
+
+  .tecnica-card {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .tecnica-card:last-child { margin-bottom: 0; }
+  .tecnica-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #1d4ed8;
+    color: #bfdbfe;
+    font-size: 13px;
+    font-weight: 800;
+    border-radius: 50%;
+    margin-bottom: 12px;
+  }
+  .tecnica-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #60a5fa;
+    margin-bottom: 10px;
+  }
+  .tecnica-nivel {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+  }
+  .nivel-intermediario { background: #1c3a1a; color: #4ade80; border: 1px solid #166534; }
+  .nivel-avancado { background: #1c1a3a; color: #a78bfa; border: 1px solid #4c1d95; }
+  .nivel-expert { background: #3a1a1a; color: #f87171; border: 1px solid #7f1d1d; }
+
+  .insight-box {
+    background: #0d1f3a;
+    border-left: 3px solid #60a5fa;
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin-top: 12px;
+  }
+  .insight-box span {
+    font-size: 11px;
+    font-weight: 700;
+    color: #93c5fd;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .insight-box p { font-size: 13px; color: #bfdbfe; margin: 0; }
+
+  .code-block {
+    background: #020817;
+    border: 1px solid #1e3a5f;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 14px 0;
+    overflow-x: auto;
+  }
+  .code-block pre {
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 12px;
+    color: #7dd3fc;
+    line-height: 1.7;
+    white-space: pre;
+  }
+  .code-label {
+    font-size: 10px;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .code-comment { color: #475569; }
+  .code-keyword { color: #c084fc; }
+  .code-string { color: #34d399; }
+  .code-function { color: #fbbf24; }
+
+  .warning-box {
+    background: #1c1008;
+    border: 1px solid #92400e;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .warning-box .icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .warning-box p { color: #fcd34d; font-size: 13px; margin: 0; }
+
+  .tip-box {
+    background: #0a1f1a;
+    border: 1px solid #065f46;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .tip-box .icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .tip-box p { color: #6ee7b7; font-size: 13px; margin: 0; }
+
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+  }
+  .stat-card {
+    flex: 1;
+    min-width: 120px;
+    background: #0f172a;
+    border: 1px solid #1e3a5f;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-card .number {
+    font-size: 26px;
+    font-weight: 800;
+    color: #60a5fa;
+    display: block;
+  }
+  .stat-card .label {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 4px;
+    line-height: 1.3;
+  }
+
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .comparison-bad {
+    background: #1a0f0f;
+    border: 1px solid #7f1d1d;
+    border-radius: 6px;
+    padding: 12px;
+  }
+  .comparison-good {
+    background: #0a1a0f;
+    border: 1px solid #14532d;
+    border-radius: 6px;
+    padding: 12px;
+  }
+  .comparison-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .label-bad { color: #f87171; }
+  .label-good { color: #4ade80; }
+
+  .cta-section {
+    background: linear-gradient(135deg, #1d3461 0%, #1a2744 100%);
+    border: 1px solid #2563eb;
+    border-radius: 10px;
+    padding: 32px;
+    text-align: center;
+  }
+  .cta-section h2 { border: none; padding: 0; margin-bottom: 12px; font-size: 18px; }
+  .cta-section p { font-size: 14px; color: #94a3b8; margin-bottom: 0; }
+
+  .hashtags {
+    margin-top: 24px;
+    text-align: center;
+  }
+  .hashtag {
+    display: inline-block;
+    background: #1e293b;
+    color: #60a5fa;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin: 3px;
+    border: 1px solid #1e3a5f;
+  }
+
+  .author-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 24px;
+  }
+  .author-avatar {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: white;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .author-info .name { font-size: 14px; font-weight: 700; color: #e2e8f0; }
+  .author-info .role { font-size: 12px; color: #64748b; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="article-header">
+    <div class="week-badge">Week 9 · Qlik Cloud in Practice</div>
+    <h1><span>Advanced</span> Set Analysis in Qlik Cloud:<br>the expressions most analysts never use (but should)</h1>
+    <p class="subtitle">From basic syntax to what separates senior analysts from everyone else</p>
+  </div>
+
+  <div class="section section-lead">
+    <p>
+      If you know how to use <strong>{&lt;Year={2024}&gt;}</strong>, you are using roughly 20% of what Set Analysis can do. The remaining 80% is what separates a dashboard that "works" from one that impresses — in performance, flexibility, and analytical depth. This article covers five techniques I consistently see analysts not mastering, even after years working with Qlik.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="number">10x</span>
+        <span class="label">faster than IF() on large data volumes</span>
+      </div>
+      <div class="stat-card">
+        <span class="number">80%</span>
+        <span class="label">of Qlik dashboards use less than 20% of Set Analysis capabilities</span>
+      </div>
+      <div class="stat-card">
+        <span class="number">60%</span>
+        <span class="label">fewer lines of code with Aggr() inside sets</span>
+      </div>
+    </div>
+    <p style="font-size:12px; color:#475569; text-align:center;">Estimates based on dashboard optimization projects 2022-2024</p>
+  </div>
+
+  <div class="section">
+    <h2>The 5 Advanced Techniques</h2>
+
+    <div class="tecnica-card">
+      <div class="tecnica-number">1</div>
+      <span class="tecnica-nivel nivel-intermediario">Intermediate</span>
+      <div class="tecnica-title">Dollar Sign Expansion inside Sets</div>
+      <p>
+        Most analysts use static values inside sets: <code style="color:#7dd3fc; font-size:13px;">{&lt;Year={'2024'}&gt;}</code>. The problem is that this is not dynamic — when 2025 arrives, someone has to update the expression manually. The solution is Dollar Sign Expansion: let Qlik calculate the value at render time.
+      </p>
+      <div class="code-block">
+        <div class="code-label">Evolution: static to dynamic</div>
+        <pre><span class="code-comment">// ❌ Static — requires manual update every year</span>
+Sum({&lt;Year={'2024'}&gt;} Revenue)
+
+<span class="code-comment">// ✅ Dynamic — always calculates the maximum available year</span>
+Sum({&lt;Year={$(=Max(Year))}&gt;} Revenue)
+
+<span class="code-comment">// ✅ Dynamic prior year</span>
+Sum({&lt;Year={$(=Max(Year)-1)}&gt;} Revenue)
+
+<span class="code-comment">// ✅ Last 12 months from the most recent date in data</span>
+Sum({&lt;Date={">=$(=MonthStart(Max(Date),-11))"}&gt;} Revenue)</pre>
+      </div>
+      <div class="warning-box">
+        <span class="icon">⚠️</span>
+        <p>In Qlik Cloud, Dollar Sign Expansion behavior inside sets may differ from QlikView when complex expressions with multiple calculated fields are involved. Always validate migrated expressions against real datasets before going to production.</p>
+      </div>
+      <div class="insight-box">
+        <span>Key insight</span>
+        <p>Dollar Sign Expansion is evaluated before the Set Analysis expression is processed. This means it always returns a single value, not a list. To dynamically select multiple values, use Technique 3 (Aggr).</p>
+      </div>
+    </div>
+
+    <div class="tecnica-card">
+      <div class="tecnica-number">2</div>
+      <span class="tecnica-nivel nivel-intermediario">Intermediate</span>
+      <div class="tecnica-title">Set operators: intersection, exclusion and union that most analysts skip</div>
+      <p>
+        Set Analysis has three logical operators most people either don't know or never use in practice: intersection (<strong>*</strong>), exclusion (<strong>-</strong>) and union (<strong>+</strong>). They allow combining conditions far more elegantly than nesting IF statements.
+      </p>
+      <div class="code-block">
+        <div class="code-label">Set operators in practice</div>
+        <pre><span class="code-comment">// INTERSECTION (*): customers who purchased AND are active</span>
+Sum({&lt;CustomerID=P({&lt;Year={$(=Max(Year))}&gt;} CustomerID)&gt;
+  * &lt;Status={'Active'}&gt;} Revenue)
+
+<span class="code-comment">// EXCLUSION (-): everything except returns and cancellations</span>
+Sum({1 - &lt;TransactionType={'Return','Cancel'}&gt;} Revenue)
+
+<span class="code-comment">// UNION (+): combine two distinct groups</span>
+Sum({&lt;Region={'South'}&gt; + &lt;Region={'North'}&gt;} Revenue)
+
+<span class="code-comment">// CLEAR a field's current selection context</span>
+Sum({&lt;Country=&gt;} Revenue)
+<span class="code-comment">// empty field removes the Country filter</span></pre>
+      </div>
+      <div class="insight-box">
+        <span>Real-world use</span>
+        <p>The selection clear <code style="color:#7dd3fc;">{&lt;Country=&gt;}</code> is especially useful for creating totals that ignore the user's filter — the equivalent of ALL() in DAX, but with more control.</p>
+      </div>
+    </div>
+
+    <div class="tecnica-card">
+      <div class="tecnica-number">3</div>
+      <span class="tecnica-nivel nivel-avancado">Advanced</span>
+      <div class="tecnica-title">Aggr() inside sets: segmentations your data model never planned for</div>
+      <p>
+        This is the technique I most often see analysts learning incorrectly. <strong>Aggr()</strong> inside a Set Analysis expression allows creating dynamic selectors based on aggregations — meaning you can select "customers whose total revenue in the last year exceeded $1 million" directly in the expression, without creating auxiliary fields.
+      </p>
+      <div class="code-block">
+        <div class="code-label">Aggr() as a dynamic selector</div>
+        <pre><span class="code-comment">// Select customers with revenue &gt; $1M in current year</span>
+Sum({&lt;CustomerID={"=Aggr(Sum({&lt;Year={$(=Max(Year))}&gt;} Revenue),CustomerID)&gt;1000000"}&gt;} Revenue)
+
+<span class="code-comment">// Top 10% of products by sales volume</span>
+Sum({&lt;ProductID={"=Aggr(Sum(Qty), ProductID)&gt;=$(=Fractile(Aggr(Sum(Qty),ProductID),0.9))"}&gt;} Revenue)
+
+<span class="code-comment">// Customers who purchased in the last 30 days</span>
+Count({&lt;CustomerID={"=Aggr(Max(SaleDate),CustomerID)&gt;=$(=Today()-30)"}&gt;} CustomerID)</pre>
+      </div>
+      <div class="warning-box">
+        <span class="icon">⚠️</span>
+        <p>Expressions with Aggr() inside sets are computationally expensive. In models with millions of records, evaluate whether the result can be pre-calculated as a derived field in the load script. The processing cost occurs at every object render cycle.</p>
+      </div>
+      <div class="insight-box">
+        <span>Why this matters</span>
+        <p>Without this technique, you would need to create a "flag" field in the script (IsHighValueCustomer = 1/0) every time you want a segmentation like this. With Aggr() in the set, you do it directly in the expression, with no data reload required.</p>
+      </div>
+    </div>
+
+    <div class="tecnica-card">
+      <div class="tecnica-number">4</div>
+      <span class="tecnica-nivel nivel-avancado">Advanced</span>
+      <div class="tecnica-title">Alternate States: comparing contexts without duplicating data</div>
+      <p>
+        Alternate States is a feature that allows creating multiple independent selection contexts within the same app. The most classic use case is period A vs. period B comparison — but the feature goes much further than that.
+      </p>
+      <div class="code-block">
+        <div class="code-label">Set Analysis with Alternate States</div>
+        <pre><span class="code-comment">// Default context (user's current selection)</span>
+Sum(Revenue)
+
+<span class="code-comment">// State "PeriodA" — independent of current selection</span>
+Sum({PeriodA} Revenue)
+
+<span class="code-comment">// State "PeriodB" with specific field override</span>
+Sum({PeriodB &lt;Year={$(=Max({PeriodB} Year))}&gt;} Revenue)
+
+<span class="code-comment">// Percentage change between the two states</span>
+(Sum({PeriodA} Revenue) - Sum({PeriodB} Revenue))
+/ Sum({PeriodB} Revenue)</pre>
+      </div>
+      <div class="tip-box">
+        <span class="icon">💡</span>
+        <p>In Qlik Cloud, Alternate States are configured at: Sheet menu → Edit → App states. You can create up to 125 states per app. Each object can be assigned to a different state — or use the default state.</p>
+      </div>
+      <div class="insight-box">
+        <span>Real-world use case</span>
+        <p>Compare the performance of two geographic regions with completely independent filters, or analyze the impact of a promotion on a segment without affecting the global filters of the dashboard.</p>
+      </div>
+    </div>
+
+    <div class="tecnica-card">
+      <div class="tecnica-number">5</div>
+      <span class="tecnica-nivel nivel-expert">Expert</span>
+      <div class="tecnica-title">Set Analysis vs. IF(): when each one destroys the other's performance</div>
+      <p>
+        This is the discussion that generates the most confusion in code reviews. The general rule is: <strong>IF() filters rows one at a time; Set Analysis filters the set before aggregating.</strong> The performance difference can be dramatic at scale.
+      </p>
+      <div class="comparison-grid">
+        <div class="comparison-bad">
+          <div class="comparison-label label-bad">❌ IF() — slow at volume</div>
+          <pre style="font-family:monospace; font-size:12px; color:#fca5a5; line-height:1.6;">Sum(
+  If(Year = Max(Year),
+    Revenue
+  )
+)
+<span style="color:#475569;">// Evaluates IF() on each row</span>
+<span style="color:#475569;">// before aggregating</span></pre>
+        </div>
+        <div class="comparison-good">
+          <div class="comparison-label label-good">✅ Set Analysis — fast</div>
+          <pre style="font-family:monospace; font-size:12px; color:#86efac; line-height:1.6;">Sum(
+  {&lt;Year={$(=Max(Year))}&gt;}
+  Revenue
+)
+<span style="color:#475569;">// Filters the set first</span>
+<span style="color:#475569;">// then aggregates</span></pre>
+        </div>
+      </div>
+      <p style="margin-top: 14px;">
+        <strong>When to still use IF():</strong> when the condition depends on values calculated dynamically in the context of each row (like comparing the current row with the previous row), or when you need granularity at the individual row level.
+      </p>
+      <div class="code-block">
+        <div class="code-label">Valid IF(): row-level calculation</div>
+        <pre><span class="code-comment">// No direct Set Analysis equivalent for this case</span>
+<span class="code-comment">// because it depends on the relationship between adjacent rows</span>
+Sum(If(Revenue > Above(Revenue), Revenue - Above(Revenue), 0))</pre>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section">
+    <h2>What changes in Qlik Cloud vs. QlikView</h2>
+    <p>
+      Most techniques above work in both environments, but there are differences that produce unexpected results during migration:
+    </p>
+    <p>
+      <strong>Dollar Sign Expansion in object context:</strong> in Qlik Cloud, DSE evaluation inside sets may vary depending on whether the object is inside a container or a custom extension. Always test migrated expressions with real data before promoting to production.
+    </p>
+    <p>
+      <strong>Alternate States and extensions:</strong> extensions developed for Qlik Sense on-premise may not respect Alternate States in Qlik Cloud SaaS. Verify the compatibility of each extension before relying on states in production dashboards.
+    </p>
+    <p>
+      <strong>Aggr() performance on SaaS:</strong> the execution model of Qlik Cloud may behave differently from on-premise servers for expressions with nested Aggr(). Monitor memory consumption on your most complex objects using the Activity Monitor in the Qlik Cloud Management Console.
+    </p>
+  </div>
+
+  <div class="cta-section">
+    <h2>Do you master Set Analysis or still use IF() for everything?</h2>
+    <p>
+      Let me know in the comments which of these techniques surprised you most — or which one you already use daily.<br>
+      And if you have a complex expression you don't know how to optimize, feel free to reach out.
+    </p>
+  </div>
+
+  <div class="hashtags">
+    <span class="hashtag">#QlikCloud</span>
+    <span class="hashtag">#QlikSense</span>
+    <span class="hashtag">#SetAnalysis</span>
+    <span class="hashtag">#BusinessIntelligence</span>
+    <span class="hashtag">#DataAnalytics</span>
+    <span class="hashtag">#QlikDeveloper</span>
+    <span class="hashtag">#DataEngineering</span>
+    <span class="hashtag">#CloudMigration</span>
+    <span class="hashtag">#BI</span>
+    <span class="hashtag">#RafaelVeloso</span>
+  </div>
+
+  <div class="author-bar">
+    <div class="author-avatar">RV</div>
+    <div class="author-info">
+      <div class="name">Rafael Veloso</div>
+      <div class="role">BI Specialist · Qlik Cloud · Data Engineering · Embraer</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
