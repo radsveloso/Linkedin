@@ -326,7 +326,7 @@
 
   <div class="section section-lead">
     <p>
-      A maioria das migrações para Qlik Cloud começa pelo dado e esquece da estrutura. Seis meses depois, o ambiente está cheio de espaços criados sem critério, usuários com permissões excessivas e ninguém sabendo quem é responsável por quê. <strong>Governance não é burocracia</strong> — é o que separa um ambiente escalável de uma dívida técnica que cresce junto com a adoção.
+      A maioria das migrações para Qlik Cloud começa pelo dado e esquece da estrutura. Seis meses depois, o ambiente está cheio de espaços criados sem critério, usuários com permissões excessivas e ninguém sabendo quem é responsável por quê. <strong>Governance não é burocracia</strong>: é o que separa um ambiente escalável de uma dívida técnica que cresce junto com a adoção.
     </p>
   </div>
 
@@ -387,7 +387,7 @@
       </div>
       <div class="warning-box">
         <span class="icon">⚠️</span>
-        <p>Erro mais comum: usar apenas Espaços Compartilhados para tudo. Sem Espaços Gerenciados, não há controle sobre o que vai para produção — qualquer desenvolvedor pode sobrescrever um app em uso pelos usuários finais.</p>
+        <p>Erro mais comum: usar apenas Espaços Compartilhados para tudo. Sem Espaços Gerenciados, não há controle sobre o que vai para produção. Qualquer desenvolvedor pode sobrescrever um app em uso pelos usuários finais.</p>
       </div>
     </div>
 
@@ -418,11 +418,11 @@
       </div>
       <p style="margin-top:14px;"><strong>Papéis no nível do espaço:</strong></p>
       <ul class="checklist">
-        <li><span class="check">✓</span><span><strong style="color:#e2e8f0;">Owner</strong> — criador do espaço. Controle total sobre o espaço.</span></li>
-        <li><span class="check">✓</span><span><strong style="color:#e2e8f0;">Admin</strong> — gerencia membros e conteúdo do espaço. Pode publicar em Espaços Gerenciados.</span></li>
-        <li><span class="check">✓</span><span><strong style="color:#e2e8f0;">Contributor</strong> — cria e edita conteúdo (apenas em Espaços Compartilhados).</span></li>
-        <li><span class="check">✓</span><span><strong style="color:#e2e8f0;">Consumer</strong> — visualiza e interage com apps. Não edita.</span></li>
-        <li><span class="check">✓</span><span><strong style="color:#e2e8f0;">Data Consumer</strong> — acessa dados e conexões sem ver os apps analíticos.</span></li>
+        <li><span class="check">✓</span><span><strong style="color:#e2e8f0;">Owner:</strong> criador do espaço. Controle total sobre o espaço.</span></li>
+        <li><span class="check">✓</span><span><strong style="color:#e2e8f0;">Admin:</strong> gerencia membros e conteúdo do espaço. Pode publicar em Espaços Gerenciados.</span></li>
+        <li><span class="check">✓</span><span><strong style="color:#e2e8f0;">Contributor:</strong> cria e edita conteúdo (apenas em Espaços Compartilhados).</span></li>
+        <li><span class="check">✓</span><span><strong style="color:#e2e8f0;">Consumer:</strong> visualiza e interage com apps. Não edita.</span></li>
+        <li><span class="check">✓</span><span><strong style="color:#e2e8f0;">Data Consumer:</strong> acessa dados e conexões sem ver os apps analíticos.</span></li>
       </ul>
       <div class="insight-box">
         <span>Regra de ouro</span>
@@ -467,7 +467,7 @@
         <li><span class="check">✓</span><span>Alterações de permissões no nível do tenant</span></li>
         <li><span class="check">✓</span><span>Execuções de cargas de dados (reloads) e falhas</span></li>
         <li><span class="check">✓</span><span>Acessos a aplicações (quem abriu, quando)</span></li>
-        <li><span class="cross">✗</span><span>Interações granulares dentro de um app (cliques, seleções) — requer extensão customizada</span></li>
+        <li><span class="cross">✗</span><span>Interações granulares dentro de um app (cliques, seleções): requer extensão customizada</span></li>
       </ul>
       <div class="insight-box">
         <span>Para compliance LGPD/GDPR</span>
@@ -480,11 +480,11 @@
   <div class="section">
     <h2>Os erros mais comuns e como evitá-los</h2>
     <ul class="checklist">
-      <li><span class="cross">✗</span><span><strong>Dar papel de Tenant Admin para vários usuários</strong> — crie um grupo de Admin restrito e documente quem tem acesso e por quê.</span></li>
-      <li><span class="cross">✗</span><span><strong>Criar um espaço por projeto ou por pessoa</strong> — organize por domínio de negócio, não por iniciativa. Espaços demais viram pesadelo de governança.</span></li>
-      <li><span class="cross">✗</span><span><strong>Não ter Espaços Gerenciados</strong> — sem eles, não há separação real entre desenvolvimento e produção.</span></li>
-      <li><span class="cross">✗</span><span><strong>Adicionar usuários diretamente nos espaços sem política de onboarding</strong> — use grupos de usuários (integração com IdP) em vez de gerenciar permissões individualmente.</span></li>
-      <li><span class="cross">✗</span><span><strong>Ignorar os Espaços de Dados</strong> — misturar conexões de dados com apps analíticos dificulta o controle de quem acessa quais fontes.</span></li>
+      <li><span class="cross">✗</span><span><strong>Dar papel de Tenant Admin para vários usuários:</strong> crie um grupo de Admin restrito e documente quem tem acesso e por quê.</span></li>
+      <li><span class="cross">✗</span><span><strong>Criar um espaço por projeto ou por pessoa:</strong> organize por domínio de negócio, não por iniciativa. Espaços demais viram pesadelo de governança.</span></li>
+      <li><span class="cross">✗</span><span><strong>Não ter Espaços Gerenciados:</strong> sem eles, não há separação real entre desenvolvimento e produção.</span></li>
+      <li><span class="cross">✗</span><span><strong>Adicionar usuários diretamente nos espaços sem política de onboarding:</strong> use grupos de usuários (integração com IdP) em vez de gerenciar permissões individualmente.</span></li>
+      <li><span class="cross">✗</span><span><strong>Ignorar os Espaços de Dados:</strong> misturar conexões de dados com apps analíticos dificulta o controle de quem acessa quais fontes.</span></li>
     </ul>
   </div>
 
