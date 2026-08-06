@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Governance no Qlik Cloud: como estruturar usuários, espaços e permissões sem criar caos</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.75;
+    padding: 40px 20px;
+  }
+  .container { max-width: 780px; margin: 0 auto; }
+
+  .article-header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 100%);
+    border: 1px solid #1e4080;
+    border-radius: 12px;
+    padding: 48px 40px;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+  .week-badge {
+    display: inline-block;
+    background: #1d4ed8;
+    color: #bfdbfe;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .article-header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #f1f5f9;
+    line-height: 1.3;
+    margin-bottom: 16px;
+  }
+  .article-header h1 span { color: #60a5fa; }
+  .subtitle {
+    font-size: 15px;
+    color: #94a3b8;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  .section {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 32px 36px;
+    margin-bottom: 24px;
+  }
+  .section-lead {
+    border-left: 4px solid #3b82f6;
+    background: #172033;
+    padding: 24px 28px;
+    border-radius: 0 10px 10px 0;
+  }
+  .section-lead p {
+    font-size: 17px;
+    color: #cbd5e1;
+    font-style: italic;
+  }
+  .section-lead p strong { color: #93c5fd; font-style: normal; }
+
+  h2 {
+    font-size: 19px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #334155;
+  }
+  p { font-size: 14.5px; color: #94a3b8; margin-bottom: 14px; }
+  p:last-child { margin-bottom: 0; }
+  p strong { color: #e2e8f0; }
+
+  .pilar-card {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .pilar-card:last-child { margin-bottom: 0; }
+  .pilar-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #1d4ed8;
+    color: #bfdbfe;
+    font-size: 13px;
+    font-weight: 800;
+    border-radius: 50%;
+    margin-bottom: 12px;
+  }
+  .pilar-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #60a5fa;
+    margin-bottom: 10px;
+  }
+
+  .role-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .role-card {
+    background: #0f172a;
+    border: 1px solid #1e3a5f;
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .role-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #93c5fd;
+    margin-bottom: 4px;
+  }
+  .role-desc {
+    font-size: 11.5px;
+    color: #64748b;
+    line-height: 1.5;
+  }
+
+  .space-type {
+    display: flex;
+    gap: 10px;
+    margin: 12px 0;
+    align-items: flex-start;
+  }
+  .space-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .space-personal { background: #1e293b; border: 1px solid #334155; }
+  .space-shared { background: #0d1f3a; border: 1px solid #1e3a5f; }
+  .space-managed { background: #1a0d3a; border: 1px solid #4c1d95; }
+  .space-data { background: #0a1f1a; border: 1px solid #065f46; }
+  .space-info .space-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 3px;
+  }
+  .space-info .space-detail { font-size: 12px; color: #64748b; }
+
+  .warning-box {
+    background: #1c1008;
+    border: 1px solid #92400e;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .warning-box .icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .warning-box p { color: #fcd34d; font-size: 13px; margin: 0; }
+
+  .tip-box {
+    background: #0a1f1a;
+    border: 1px solid #065f46;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .tip-box .icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .tip-box p { color: #6ee7b7; font-size: 13px; margin: 0; }
+
+  .insight-box {
+    background: #0d1f3a;
+    border-left: 3px solid #60a5fa;
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin-top: 12px;
+  }
+  .insight-box span {
+    font-size: 11px;
+    font-weight: 700;
+    color: #93c5fd;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .insight-box p { font-size: 13px; color: #bfdbfe; margin: 0; }
+
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+  }
+  .stat-card {
+    flex: 1;
+    min-width: 120px;
+    background: #0f172a;
+    border: 1px solid #1e3a5f;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-card .number {
+    font-size: 26px;
+    font-weight: 800;
+    color: #60a5fa;
+    display: block;
+  }
+  .stat-card .label {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 4px;
+    line-height: 1.3;
+  }
+
+  .checklist {
+    list-style: none;
+    margin: 12px 0;
+  }
+  .checklist li {
+    font-size: 13.5px;
+    color: #94a3b8;
+    padding: 6px 0;
+    border-bottom: 1px solid #1e293b;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li .check { color: #4ade80; flex-shrink: 0; margin-top: 2px; }
+  .checklist li .cross { color: #f87171; flex-shrink: 0; margin-top: 2px; }
+
+  .flow-diagram {
+    background: #020817;
+    border: 1px solid #1e3a5f;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 16px 0;
+    font-family: monospace;
+    font-size: 12px;
+    color: #7dd3fc;
+    line-height: 2;
+  }
+
+  .cta-section {
+    background: linear-gradient(135deg, #1d3461 0%, #1a2744 100%);
+    border: 1px solid #2563eb;
+    border-radius: 10px;
+    padding: 32px;
+    text-align: center;
+  }
+  .cta-section h2 { border: none; padding: 0; margin-bottom: 12px; font-size: 18px; }
+  .cta-section p { font-size: 14px; color: #94a3b8; margin-bottom: 0; }
+
+  .hashtags {
+    margin-top: 24px;
+    text-align: center;
+  }
+  .hashtag {
+    display: inline-block;
+    background: #1e293b;
+    color: #60a5fa;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin: 3px;
+    border: 1px solid #1e3a5f;
+  }
+
+  .author-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 24px;
+  }
+  .author-avatar {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: white;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .author-info .name { font-size: 14px; font-weight: 700; color: #e2e8f0; }
+  .author-info .role { font-size: 12px; color: #64748b; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="article-header">
+    <div class="week-badge">Semana 10 · Qlik Cloud na Prática</div>
+    <h1>Governance no <span>Qlik Cloud</span>:<br>como estruturar usuários, espaços e permissões sem criar caos</h1>
+    <p class="subtitle">O guia que todo administrador deveria ter antes de iniciar a migração enterprise</p>
+  </div>
+
+  <div class="section section-lead">
+    <p>
+      A maioria das migrações para Qlik Cloud começa pelo dado e esquece da estrutura. Seis meses depois, o ambiente está cheio de espaços criados sem critério, usuários com permissões excessivas e ninguém sabendo quem é responsável por quê. <strong>Governance não é burocracia</strong> — é o que separa um ambiente escalável de uma dívida técnica que cresce junto com a adoção.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="number">73%</span>
+        <span class="label">das organizações relatam problemas de acesso não autorizado a dados em ambientes BI mal governados</span>
+      </div>
+      <div class="stat-card">
+        <span class="number">4x</span>
+        <span class="label">mais tempo gasto em suporte e retrabalho sem uma estrutura de espaços bem definida</span>
+      </div>
+      <div class="stat-card">
+        <span class="number">60%</span>
+        <span class="label">dos projetos de migração enfrentam revisão de permissões em menos de 12 meses</span>
+      </div>
+    </div>
+    <p style="font-size:12px; color:#475569; text-align:center;">Estimativas baseadas em projetos de migração e adoção Qlik Cloud 2022-2024</p>
+  </div>
+
+  <div class="section">
+    <h2>Os 4 Pilares do Governance no Qlik Cloud</h2>
+
+    <div class="pilar-card">
+      <div class="pilar-number">1</div>
+      <div class="pilar-title">Estrutura de Espaços: a fundação de tudo</div>
+      <p>
+        No Qlik Cloud, os <strong>espaços</strong> são a unidade fundamental de organização. Diferente do QlikView (onde pastas e seções de acesso controlavam tudo no servidor), aqui a lógica é baseada em quatro tipos de espaço com propósitos distintos.
+      </p>
+      <div class="space-type">
+        <div class="space-icon space-personal">👤</div>
+        <div class="space-info">
+          <div class="space-name">Espaço Pessoal</div>
+          <div class="space-detail">Cada usuário tem um. Uso para desenvolvimento individual e testes. Conteúdo não é compartilhado por padrão e não deve ir para produção.</div>
+        </div>
+      </div>
+      <div class="space-type">
+        <div class="space-icon space-shared">🤝</div>
+        <div class="space-info">
+          <div class="space-name">Espaço Compartilhado</div>
+          <div class="space-detail">Colaboração entre equipes. Qualquer membro com permissão pode publicar e editar. Ideal para desenvolvimento colaborativo antes da publicação gerenciada.</div>
+        </div>
+      </div>
+      <div class="space-type">
+        <div class="space-icon space-managed">🔒</div>
+        <div class="space-info">
+          <div class="space-name">Espaço Gerenciado</div>
+          <div class="space-detail">Produção. Apenas administradores do espaço publicam. Usuários comuns só consomem. Este é o destino final de todo conteúdo validado.</div>
+        </div>
+      </div>
+      <div class="space-type">
+        <div class="space-icon space-data">💾</div>
+        <div class="space-info">
+          <div class="space-name">Espaço de Dados</div>
+          <div class="space-detail">Para conexões de dados e pipelines. Separa a camada de dados das aplicações analíticas. Permite controle granular sobre quem cria e edita fontes de dados.</div>
+        </div>
+      </div>
+      <div class="warning-box">
+        <span class="icon">⚠️</span>
+        <p>Erro mais comum: usar apenas Espaços Compartilhados para tudo. Sem Espaços Gerenciados, não há controle sobre o que vai para produção — qualquer desenvolvedor pode sobrescrever um app em uso pelos usuários finais.</p>
+      </div>
+    </div>
+
+    <div class="pilar-card">
+      <div class="pilar-number">2</div>
+      <div class="pilar-title">Papéis e Permissões: quem pode fazer o quê</div>
+      <p>
+        O Qlik Cloud opera com dois níveis de permissão: <strong>tenant-level</strong> (toda a plataforma) e <strong>space-level</strong> (dentro de cada espaço). Confundir esses dois níveis é a causa mais comum de problemas de acesso.
+      </p>
+      <p><strong>Papéis no nível do tenant (Management Console):</strong></p>
+      <div class="role-grid">
+        <div class="role-card">
+          <div class="role-name">Tenant Admin</div>
+          <div class="role-desc">Controle total. Gerencia usuários, licenças, configurações e todos os espaços. Use com parcimônia.</div>
+        </div>
+        <div class="role-card">
+          <div class="role-name">Analytics Admin</div>
+          <div class="role-desc">Gerencia conteúdo analítico. Não acessa configurações de plataforma. Adequado para líderes técnicos de BI.</div>
+        </div>
+        <div class="role-card">
+          <div class="role-name">Developer</div>
+          <div class="role-desc">Cria apps e scripts. Pode criar espaços. Perfil padrão para analistas e desenvolvedores Qlik.</div>
+        </div>
+        <div class="role-card">
+          <div class="role-name">Analyzer</div>
+          <div class="role-desc">Consome dashboards. Não cria apps nem scripts. Ideal para usuários de negócio.</div>
+        </div>
+      </div>
+      <p style="margin-top:14px;"><strong>Papéis no nível do espaço:</strong></p>
+      <ul class="checklist">
+        <li><span class="check">✓</span><span><strong style="color:#e2e8f0;">Owner</strong> — criador do espaço. Controle total sobre o espaço.</span></li>
+        <li><span class="check">✓</span><span><strong style="color:#e2e8f0;">Admin</strong> — gerencia membros e conteúdo do espaço. Pode publicar em Espaços Gerenciados.</span></li>
+        <li><span class="check">✓</span><span><strong style="color:#e2e8f0;">Contributor</strong> — cria e edita conteúdo (apenas em Espaços Compartilhados).</span></li>
+        <li><span class="check">✓</span><span><strong style="color:#e2e8f0;">Consumer</strong> — visualiza e interage com apps. Não edita.</span></li>
+        <li><span class="check">✓</span><span><strong style="color:#e2e8f0;">Data Consumer</strong> — acessa dados e conexões sem ver os apps analíticos.</span></li>
+      </ul>
+      <div class="insight-box">
+        <span>Regra de ouro</span>
+        <p>Um usuário pode ser Developer no nível do tenant mas Consumer em um espaço específico. O nível do espaço sempre prevalece para aquele contexto. Isso permite controle granular sem criar perfis complexos no tenant.</p>
+      </div>
+    </div>
+
+    <div class="pilar-card">
+      <div class="pilar-number">3</div>
+      <div class="pilar-title">Fluxo de Publicação: do desenvolvimento à produção</div>
+      <p>
+        Um dos maiores erros em ambientes Qlik Cloud é não ter um fluxo claro de promoção de conteúdo. O resultado são apps de desenvolvimento acessíveis por usuários finais e apps de produção sendo editados diretamente.
+      </p>
+      <div class="flow-diagram">
+        👤 Espaço Pessoal (dev individual)
+             ↓  revisão e aprovação
+        🤝 Espaço Compartilhado (homologação)
+             ↓  validação técnica e de negócio
+        🔒 Espaço Gerenciado (produção)
+             ↓  publicação controlada
+        👥 Usuários Finais (Consumers)
+      </div>
+      <p>
+        Nesse modelo, os usuários finais <strong>nunca</strong> têm acesso aos espaços de desenvolvimento. O conteúdo só chega a eles através do Espaço Gerenciado, garantindo que apenas versões validadas estejam disponíveis.
+      </p>
+      <div class="tip-box">
+        <span class="icon">💡</span>
+        <p>Para ambientes com equipes maiores, considere criar Espaços Compartilhados por domínio de negócio (Financeiro, Comercial, Operações) e um único Espaço Gerenciado por domínio para produção. Evita o crescimento descontrolado de espaços.</p>
+      </div>
+    </div>
+
+    <div class="pilar-card">
+      <div class="pilar-number">4</div>
+      <div class="pilar-title">Auditoria e Monitoramento: quem fez o quê e quando</div>
+      <p>
+        O Qlik Cloud mantém logs de auditoria acessíveis pelo Management Console. Para ambientes enterprise, esses logs são fundamentais para compliance, rastreabilidade e resolução de incidentes.
+      </p>
+      <p><strong>O que o Activity Center registra:</strong></p>
+      <ul class="checklist">
+        <li><span class="check">✓</span><span>Criação, edição e exclusão de apps e fontes de dados</span></li>
+        <li><span class="check">✓</span><span>Adição e remoção de membros de espaços</span></li>
+        <li><span class="check">✓</span><span>Alterações de permissões no nível do tenant</span></li>
+        <li><span class="check">✓</span><span>Execuções de cargas de dados (reloads) e falhas</span></li>
+        <li><span class="check">✓</span><span>Acessos a aplicações (quem abriu, quando)</span></li>
+        <li><span class="cross">✗</span><span>Interações granulares dentro de um app (cliques, seleções) — requer extensão customizada</span></li>
+      </ul>
+      <div class="insight-box">
+        <span>Para compliance LGPD/GDPR</span>
+        <p>Os logs de auditoria do Qlik Cloud podem ser exportados via API para seu SIEM ou data lake. Estabeleça uma política de retenção e garanta que o time de segurança tenha acesso de leitura ao Management Console sem papel de Admin.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section">
+    <h2>Os erros mais comuns e como evitá-los</h2>
+    <ul class="checklist">
+      <li><span class="cross">✗</span><span><strong>Dar papel de Tenant Admin para vários usuários</strong> — crie um grupo de Admin restrito e documente quem tem acesso e por quê.</span></li>
+      <li><span class="cross">✗</span><span><strong>Criar um espaço por projeto ou por pessoa</strong> — organize por domínio de negócio, não por iniciativa. Espaços demais viram pesadelo de governança.</span></li>
+      <li><span class="cross">✗</span><span><strong>Não ter Espaços Gerenciados</strong> — sem eles, não há separação real entre desenvolvimento e produção.</span></li>
+      <li><span class="cross">✗</span><span><strong>Adicionar usuários diretamente nos espaços sem política de onboarding</strong> — use grupos de usuários (integração com IdP) em vez de gerenciar permissões individualmente.</span></li>
+      <li><span class="cross">✗</span><span><strong>Ignorar os Espaços de Dados</strong> — misturar conexões de dados com apps analíticos dificulta o controle de quem acessa quais fontes.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>Por onde começar: checklist de governance para novos tenants</h2>
+    <ul class="checklist">
+      <li><span class="check">✓</span><span>Definir os domínios de negócio que terão espaços (Financeiro, Comercial, RH, Operações)</span></li>
+      <li><span class="check">✓</span><span>Criar pelo menos um Espaço Compartilhado e um Gerenciado por domínio</span></li>
+      <li><span class="check">✓</span><span>Integrar o IdP corporativo (AD, Okta, Azure AD) para gestão de grupos</span></li>
+      <li><span class="check">✓</span><span>Documentar a política de promoção de conteúdo (quem aprova a publicação em produção)</span></li>
+      <li><span class="check">✓</span><span>Configurar alertas de auditoria para ações críticas (criação de Tenant Admin, remoção de espaços)</span></li>
+      <li><span class="check">✓</span><span>Revisão trimestral de permissões e espaços órfãos</span></li>
+    </ul>
+  </div>
+
+  <div class="cta-section">
+    <h2>Como está o governance do seu tenant Qlik Cloud hoje?</h2>
+    <p>
+      Me conta nos comentários qual desses pontos é o maior desafio na sua organização.<br>
+      Se quiser uma revisão do seu modelo de espaços, chama no privado.
+    </p>
+  </div>
+
+  <div class="hashtags">
+    <span class="hashtag">#QlikCloud</span>
+    <span class="hashtag">#DataGovernance</span>
+    <span class="hashtag">#QlikSense</span>
+    <span class="hashtag">#BusinessIntelligence</span>
+    <span class="hashtag">#BI</span>
+    <span class="hashtag">#DataAnalytics</span>
+    <span class="hashtag">#CloudMigration</span>
+    <span class="hashtag">#DataManagement</span>
+    <span class="hashtag">#QlikDeveloper</span>
+    <span class="hashtag">#RafaelVeloso</span>
+  </div>
+
+  <div class="author-bar">
+    <div class="author-avatar">RV</div>
+    <div class="author-info">
+      <div class="name">Rafael Veloso</div>
+      <div class="role">BI Specialist · Qlik Cloud · Data Engineering · Embraer</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
