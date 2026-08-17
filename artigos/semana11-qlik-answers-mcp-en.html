@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qlik Answers vs. Qlik MCP Server: Two AIs, One Goal, Different Paths</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #0a0f1e;
+    color: #e2e8f0;
+    line-height: 1.7;
+  }
+
+  .hero {
+    background: linear-gradient(135deg, #0d1b3e 0%, #1a2d5a 50%, #0f2447 100%);
+    padding: 80px 40px 60px;
+    text-align: center;
+    border-bottom: 2px solid #1e40af;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(59,130,246,0.08) 0%, transparent 60%);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(59,130,246,0.15);
+    border: 1px solid rgba(59,130,246,0.4);
+    color: #93c5fd;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 18px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 800;
+    color: #f0f9ff;
+    max-width: 860px;
+    margin: 0 auto 20px;
+    line-height: 1.2;
+  }
+  .hero h1 span {
+    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-size: 18px;
+    color: #94a3b8;
+    max-width: 680px;
+    margin: 0 auto 32px;
+  }
+  .hero-meta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 60px 24px;
+  }
+
+  .lead-box {
+    background: linear-gradient(135deg, rgba(30,64,175,0.2), rgba(109,40,217,0.1));
+    border: 1px solid rgba(59,130,246,0.3);
+    border-left: 4px solid #3b82f6;
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 48px;
+    font-size: 17px;
+    color: #cbd5e1;
+    line-height: 1.8;
+  }
+  .lead-box strong { color: #93c5fd; }
+
+  h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #f0f9ff;
+    margin: 52px 0 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(59,130,246,0.2);
+  }
+  h2 .accent { color: #60a5fa; }
+  h3 { font-size: 19px; font-weight: 600; color: #bfdbfe; margin: 28px 0 12px; }
+  p { color: #94a3b8; margin-bottom: 16px; font-size: 16px; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 32px 0;
+  }
+  @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+  .card {
+    background: rgba(15,36,71,0.6);
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .card.blue { border-top: 3px solid #3b82f6; }
+  .card.purple { border-top: 3px solid #a78bfa; }
+  .card-icon { font-size: 32px; margin-bottom: 12px; display: block; }
+  .card h3 { font-size: 17px; margin: 0 0 10px; color: #e2e8f0; }
+  .card p { font-size: 14px; color: #64748b; margin: 0; }
+
+  .feature-list { list-style: none; margin: 16px 0 24px; }
+  .feature-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(30,41,59,0.8);
+    font-size: 15px;
+    color: #94a3b8;
+  }
+  .feature-list li:last-child { border-bottom: none; }
+  .feature-list li .icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+  .feature-list li strong { color: #cbd5e1; }
+
+  .arch-box {
+    background: rgba(2,6,23,0.8);
+    border: 1px solid rgba(30,41,59,0.9);
+    border-radius: 10px;
+    padding: 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #7dd3fc;
+    margin: 20px 0 32px;
+    overflow-x: auto;
+    line-height: 1.9;
+  }
+  .arch-box .comment { color: #475569; }
+  .arch-box .highlight { color: #34d399; }
+  .arch-box .warning { color: #fbbf24; }
+  .arch-box .purple { color: #c084fc; }
+
+  .comp-table-wrapper {
+    overflow-x: auto;
+    margin: 32px 0;
+    border-radius: 12px;
+    border: 1px solid rgba(59,130,246,0.2);
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead { background: linear-gradient(90deg, rgba(30,64,175,0.5), rgba(109,40,217,0.3)); }
+  th { padding: 14px 18px; text-align: left; font-weight: 600; color: #e2e8f0; font-size: 13px; }
+  th:first-child { color: #94a3b8; }
+  th.blue-header { color: #93c5fd; }
+  th.purple-header { color: #c084fc; }
+  td {
+    padding: 12px 18px;
+    border-top: 1px solid rgba(30,41,59,0.8);
+    color: #94a3b8;
+    vertical-align: top;
+  }
+  td:first-child { font-weight: 600; color: #cbd5e1; white-space: nowrap; }
+  tr:nth-child(even) td { background: rgba(15,23,42,0.4); }
+  .yes { color: #34d399; }
+  .no { color: #f87171; }
+  .partial { color: #fbbf24; }
+
+  .use-case-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 24px 0;
+  }
+  @media (max-width: 640px) { .use-case-grid { grid-template-columns: 1fr; } }
+  .use-case {
+    background: rgba(15,23,42,0.7);
+    border: 1px solid rgba(30,41,59,0.9);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .use-case.blue-uc { border-left: 3px solid #3b82f6; }
+  .use-case.purple-uc { border-left: 3px solid #a78bfa; }
+  .use-case h4 { font-size: 14px; font-weight: 600; color: #e2e8f0; margin-bottom: 8px; }
+  .use-case p { font-size: 13px; color: #64748b; margin: 0; }
+
+  .steps { counter-reset: step; list-style: none; margin: 20px 0; }
+  .steps li {
+    counter-increment: step;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(30,41,59,0.6);
+    font-size: 15px;
+    color: #94a3b8;
+  }
+  .steps li:last-child { border-bottom: none; }
+  .steps li::before {
+    content: counter(step);
+    background: rgba(59,130,246,0.2);
+    border: 1px solid rgba(59,130,246,0.4);
+    color: #60a5fa;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .steps li strong { color: #cbd5e1; }
+
+  .insight-box {
+    background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(59,130,246,0.06));
+    border: 1px solid rgba(16,185,129,0.25);
+    border-left: 4px solid #10b981;
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin: 40px 0;
+  }
+  .insight-box .insight-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #34d399;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .insight-box p { font-size: 16px; color: #a7f3d0; margin: 0; line-height: 1.8; }
+
+  .warning-box {
+    background: rgba(234,179,8,0.06);
+    border: 1px solid rgba(234,179,8,0.2);
+    border-left: 4px solid #eab308;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 28px 0;
+  }
+  .warning-box p { color: #fde68a; margin: 0; font-size: 15px; }
+  .warning-box strong { color: #fef08a; }
+
+  .cta-section {
+    background: linear-gradient(135deg, #0d1b3e, #1a0a2e);
+    border: 1px solid rgba(59,130,246,0.3);
+    border-radius: 16px;
+    padding: 48px 40px;
+    text-align: center;
+    margin: 60px 0 0;
+  }
+  .cta-section h2 { font-size: 26px; color: #f0f9ff; border: none; padding: 0; margin: 0 0 16px; }
+  .cta-section p { font-size: 16px; color: #94a3b8; max-width: 560px; margin: 0 auto 28px; }
+  .cta-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; font-size: 13px; color: #60a5fa; }
+  .cta-tags span {
+    background: rgba(59,130,246,0.1);
+    border: 1px solid rgba(59,130,246,0.25);
+    padding: 4px 12px;
+    border-radius: 12px;
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.3), transparent);
+    margin: 48px 0;
+  }
+
+  .author-bar {
+    background: rgba(15,23,42,0.5);
+    border-top: 1px solid rgba(30,41,59,0.8);
+    padding: 24px 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+    color: #475569;
+  }
+  .author-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    color: white;
+    font-weight: 700;
+  }
+  .author-name { color: #94a3b8; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">Qlik Cloud · AI · Week 11</div>
+  <h1>Qlik Answers vs. Qlik MCP Server:<br><span>Two AIs, One Goal, Different Paths</span></h1>
+  <p class="hero-sub">Qlik Cloud now has two AI capabilities with similar names and completely different purposes. Understanding the difference can change how you use the platform.</p>
+  <div class="hero-meta">
+    <span>✍️ Rafael Veloso</span>
+    <span>📅 August 2026</span>
+    <span>⏱ 8 min read</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="lead-box">
+    In 2026, Qlik Cloud offers <strong>two distinct paths for using AI with your data</strong>: <strong>Qlik Answers</strong> and the <strong>Qlik MCP Server</strong>. Many practitioners treat them as the same thing. They are not. One was built for the business analyst who lives inside Qlik. The other was built for the developer or power user who prefers to work from the outside, using tools like Claude, ChatGPT, or Cursor. In this article, you will understand both, see where each one shines, and learn when to combine them.
+  </div>
+
+  <h2>Why now? <span class="accent">The AI movement in data platforms</span></h2>
+  <p>For years, AI integration with BI tools followed the same playbook: a chatbot inside the interface that answered simple questions with pre-defined visualizations. Functional, but limited.</p>
+  <p>In 2026, two trends changed the game simultaneously:</p>
+  <ul class="feature-list">
+    <li><span class="icon">🔵</span><div><strong>Native AI inside platforms</strong> - tools like Qlik Answers moved to autonomous agents that execute multi-step analyses, not just answer isolated questions.</div></li>
+    <li><span class="icon">🟣</span><div><strong>Model Context Protocol (MCP)</strong> - created by Anthropic, MCP allows any external AI assistant (Claude, ChatGPT, Cursor) to connect directly to data sources via a standardized protocol.</div></li>
+  </ul>
+  <p>Qlik implemented both. The result is two products with similar names, distinct architectures, and different target audiences.</p>
+
+  <h2>Both products <span class="accent">in one sentence each</span></h2>
+  <div class="two-col">
+    <div class="card blue">
+      <span class="card-icon">🔵</span>
+      <h3>Qlik Answers</h3>
+      <p>Native AI inside the Qlik Cloud Hub. The analyst asks questions in natural language and an autonomous agent navigates apps, executes analyses, and returns answers with visual context.</p>
+    </div>
+    <div class="card purple">
+      <span class="card-icon">🟣</span>
+      <h3>Qlik MCP Server</h3>
+      <p>An MCP server published by Qlik. Allows external AI tools (Claude, ChatGPT, Cursor) to connect to Qlik Cloud via standardized protocol and query data directly.</p>
+    </div>
+  </div>
+
+  <h2>Qlik Answers: <span class="accent">the analyst that lives inside Qlik</span></h2>
+  <p>Qlik Answers is not a typical chatbot. In 2026, the product was rewritten with an agentic architecture that changed how the core works. The central component is now the <strong>Data Analyst Agent</strong>, which operates in cycles of autonomous reasoning.</p>
+
+  <h3>How the Data Analyst Agent works</h3>
+  <p>When you ask Qlik Answers a question, the agent does not simply retrieve an answer. It runs a complete cycle:</p>
+  <ol class="steps">
+    <li><strong>Intent interpretation</strong> - understands what you actually want, even with vague questions like "what looks unusual this month".</li>
+    <li><strong>Semantic layer navigation</strong> - accesses the measures, dimensions, and associations already defined in your Qlik Sense apps, without requiring manual SQL.</li>
+    <li><strong>Chained analysis execution</strong> - can run multiple queries in sequence: "get total sales, break down by region, compare to last month, flag anomalies".</li>
+    <li><strong>Synthesis and visual response</strong> - returns the answer with charts, tables, and natural language explanations.</li>
+  </ol>
+
+  <div class="arch-box">
+<span class="comment">// Qlik Answers architecture - internal flow</span>
+
+<span class="highlight">User</span> → natural language question
+    ↓
+<span class="highlight">Qlik Answers UI</span> (Qlik Cloud Hub)
+    ↓
+<span class="purple">Data Analyst Agent</span>
+    ├── Interprets intent (LLM)
+    ├── Navigates Semantic Layer (Qlik models)
+    ├── Executes set analysis / aggregations
+    └── Generates response with visual context
+    ↓
+<span class="highlight">User</span> ← receives insights + charts
+  </div>
+
+  <h3>What Qlik Answers does well</h3>
+  <ul class="feature-list">
+    <li><span class="icon">✅</span><div><strong>Zero extra configuration</strong> - already available in Qlik Cloud, uses your existing apps.</div></li>
+    <li><span class="icon">✅</span><div><strong>Full semantic layer access</strong> - dimensions, measures, and associations from your data model are available to the agent.</div></li>
+    <li><span class="icon">✅</span><div><strong>Visual context preserved</strong> - answers come with charts, not just text.</div></li>
+    <li><span class="icon">✅</span><div><strong>Ideal for non-technical users</strong> - the interface is familiar to anyone already using the Qlik Hub.</div></li>
+  </ul>
+
+  <h3>Real limitations</h3>
+  <ul class="feature-list">
+    <li><span class="icon">⚠️</span><div><strong>Only works inside Qlik Cloud</strong> - you need to be in the Hub to use it.</div></li>
+    <li><span class="icon">⚠️</span><div><strong>Depends on data model quality</strong> - a poorly structured model produces inaccurate responses.</div></li>
+    <li><span class="icon">⚠️</span><div><strong>Limited customization</strong> - you cannot define the agent's behavior; it follows Qlik's native logic.</div></li>
+  </ul>
+
+  <div class="divider"></div>
+
+  <h2>Qlik MCP Server: <span class="accent">Qlik from inside your AI assistant</span></h2>
+  <p>The Qlik MCP Server starts from a different premise: instead of bringing AI into Qlik, what if you could bring Qlik into your AI assistant?</p>
+  <p>The <strong>Model Context Protocol (MCP)</strong> is an open protocol created by Anthropic that standardizes how AI assistants connect to external data sources. It works like a universal connector: any MCP-compatible tool can communicate with any MCP server, including Qlik.</p>
+
+  <h3>How the Qlik MCP Server works</h3>
+  <div class="arch-box">
+<span class="comment">// Qlik MCP Server architecture</span>
+
+<span class="highlight">AI Tool</span> (Claude, ChatGPT, Cursor, etc.)
+    ↓
+<span class="purple">MCP Protocol</span> (Model Context Protocol - open standard)
+    ↓
+<span class="highlight">Qlik MCP Server</span>
+    ├── Authenticates via OAuth / Qlik Cloud API Key
+    ├── Exposes apps, spaces, and datasets as "tools"
+    └── Executes queries via Qlik Engine API
+    ↓
+<span class="highlight">AI Tool</span> ← receives structured data from Qlik
+
+<span class="comment">// Example prompt in Claude with Qlik MCP configured:</span>
+<span class="warning">"Show me the 5 regions with the largest sales decline in July"</span>
+<span class="comment">// Claude accesses Qlik directly - no spreadsheet exports needed</span>
+  </div>
+
+  <h3>What the Qlik MCP Server does well</h3>
+  <ul class="feature-list">
+    <li><span class="icon">✅</span><div><strong>Work in your preferred environment</strong> - if you use Claude or ChatGPT as your primary tool, Qlik data comes to you.</div></li>
+    <li><span class="icon">✅</span><div><strong>Cross-source analysis</strong> - the AI assistant can combine Qlik data with other MCP sources (Salesforce, databases, APIs) in the same conversation.</div></li>
+    <li><span class="icon">✅</span><div><strong>Automation and pipelines</strong> - developers can integrate Qlik into automated workflows without opening the interface.</div></li>
+    <li><span class="icon">✅</span><div><strong>Open protocol</strong> - MCP is a standard, not a proprietary product. Any compatible tool works.</div></li>
+  </ul>
+
+  <h3>Real limitations</h3>
+  <ul class="feature-list">
+    <li><span class="icon">⚠️</span><div><strong>Technical setup required</strong> - requires OAuth authentication, MCP server configuration, and Qlik Cloud permissions.</div></li>
+    <li><span class="icon">⚠️</span><div><strong>No native visual interface</strong> - responses come as text and data; charts depend on the external tool.</div></li>
+    <li><span class="icon">⚠️</span><div><strong>Requires knowledge of app structure</strong> - the external AI does not automatically know your data model; you need to guide it.</div></li>
+  </ul>
+
+  <div class="divider"></div>
+
+  <h2>Side-by-side <span class="accent">comparison</span></h2>
+  <div class="comp-table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Aspect</th>
+          <th class="blue-header">🔵 Qlik Answers</th>
+          <th class="purple-header">🟣 Qlik MCP Server</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Where it runs</td>
+          <td>Inside Qlik Cloud Hub</td>
+          <td>In external AI tools</td>
+        </tr>
+        <tr>
+          <td>Target user</td>
+          <td>Business analysts</td>
+          <td>Developers / Power users</td>
+        </tr>
+        <tr>
+          <td>Setup complexity</td>
+          <td><span class="yes">Minimal (already integrated)</span></td>
+          <td><span class="partial">Technical (OAuth + MCP)</span></td>
+        </tr>
+        <tr>
+          <td>Semantic layer access</td>
+          <td><span class="yes">Native and complete</span></td>
+          <td><span class="partial">Partial (via Engine API)</span></td>
+        </tr>
+        <tr>
+          <td>Visual interface</td>
+          <td><span class="yes">Native Qlik charts</span></td>
+          <td><span class="no">Depends on external tool</span></td>
+        </tr>
+        <tr>
+          <td>Cross-AI integration</td>
+          <td><span class="no">No (closed ecosystem)</span></td>
+          <td><span class="yes">Yes (Claude, ChatGPT, etc.)</span></td>
+        </tr>
+        <tr>
+          <td>Automation / pipelines</td>
+          <td><span class="partial">Limited</span></td>
+          <td><span class="yes">High (code-oriented)</span></td>
+        </tr>
+        <tr>
+          <td>Agent customization</td>
+          <td><span class="no">No control</span></td>
+          <td><span class="yes">Full (you define the prompt)</span></td>
+        </tr>
+        <tr>
+          <td>Availability</td>
+          <td>Qlik Cloud Business/Enterprise</td>
+          <td>Any tenant with API enabled</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>When to use <span class="accent">each one</span></h2>
+
+  <h3>Use Qlik Answers when:</h3>
+  <div class="use-case-grid">
+    <div class="use-case blue-uc">
+      <h4>📊 Fast ad hoc analysis</h4>
+      <p>A manager needs an immediate answer about sales without depending on the BI team.</p>
+    </div>
+    <div class="use-case blue-uc">
+      <h4>👥 Data democratization</h4>
+      <p>Non-technical users need to explore data without knowing how to write Set Analysis.</p>
+    </div>
+    <div class="use-case blue-uc">
+      <h4>🔍 Visual exploration</h4>
+      <p>The answer needs a chart or table, not just a number.</p>
+    </div>
+    <div class="use-case blue-uc">
+      <h4>⚡ Fast adoption</h4>
+      <p>The team already uses Qlik Cloud and does not want to learn a new tool.</p>
+    </div>
+  </div>
+
+  <h3>Use the Qlik MCP Server when:</h3>
+  <div class="use-case-grid">
+    <div class="use-case purple-uc">
+      <h4>🤖 Custom AI assistant</h4>
+      <p>You want an assistant that combines Qlik data with other sources (Salesforce, SQL databases, APIs).</p>
+    </div>
+    <div class="use-case purple-uc">
+      <h4>⚙️ Report automation</h4>
+      <p>A pipeline needs to query Qlik automatically, without human intervention.</p>
+    </div>
+    <div class="use-case purple-uc">
+      <h4>💻 Development environment</h4>
+      <p>You develop in Cursor or Claude Code and want to validate Qlik data without leaving the IDE.</p>
+    </div>
+    <div class="use-case purple-uc">
+      <h4>🔧 Full control over behavior</h4>
+      <p>You want to define exactly how the agent reasons about your data.</p>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <span class="insight-label">Advanced insight</span>
+    <p>The most powerful combination is not choosing one over the other: it is using <strong>Qlik Answers for day-to-day analyst work</strong> and the <strong>Qlik MCP Server for engineering automation and integrations</strong>. Both coexist in the same tenant and serve different audiences. Many teams that try to use only Qlik Answers for automation hit a wall with its limitations, just as teams that try to teach the MCP Server to business analysts face adoption resistance. The key is mapping which audience uses which tool.</p>
+  </div>
+
+  <div class="warning-box">
+    <p><strong>Common pitfall:</strong> configuring the Qlik MCP Server with a service user that has access to all spaces. This creates a real security risk. Use a dedicated user with access only to the required spaces, and review permissions every quarter.</p>
+  </div>
+
+  <div class="cta-section">
+    <h2>Which one is your team already using?</h2>
+    <p>Qlik Answers for business users, Qlik MCP Server for developers and engineers: together they form a complete AI strategy for your data platform. Share in the comments which one you are already using and which one you still want to explore.</p>
+    <div class="cta-tags">
+      <span>#QlikCloud</span>
+      <span>#QlikAnswers</span>
+      <span>#MCP</span>
+      <span>#ArtificialIntelligence</span>
+      <span>#BusinessIntelligence</span>
+      <span>#DataAnalytics</span>
+      <span>#Qlik</span>
+      <span>#DataEngineering</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="author-bar">
+  <div class="author-avatar">R</div>
+  <div>
+    <div class="author-name">Rafael Veloso</div>
+    <div>BI Specialist · Qlik · Power BI · Data Engineering</div>
+  </div>
+</div>
+
+</body>
+</html>
