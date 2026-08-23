@@ -336,9 +336,9 @@
 
 <!-- HERO -->
 <div class="hero">
-  <div class="week-badge">Semana 12 - Serie BI &amp; IA 2026</div>
-  <h1>O BI que <span>age</span> e o BI que <span>explica</span>:<br>Agentic AI + XAI na pratica</h1>
-  <p class="subtitle">Como a combinacao de agentes autonomos e inteligencia explicavel esta redefinindo o trabalho do analista de dados em 2026</p>
+  <div class="week-badge">Semana 12 - Série BI &amp; IA 2026</div>
+  <h1>O BI que <span>age</span> e o BI que <span>explica</span>:<br>Agentic AI + XAI na prática</h1>
+  <p class="subtitle">Como a combinação de agentes autônomos e inteligência explicável está redefinindo o trabalho do analista de dados em 2026</p>
   <div class="hero-meta">
     <span>por Rafael Veloso</span>
     <span>Agosto 2026</span>
@@ -351,21 +351,21 @@
   <!-- INTRO -->
   <div class="section">
     <div class="highlight-box">
-      <p>"Um dashboard que voce precisa abrir para descobrir um problema ja esta atrasado. Um agente que te avisa - e explica por que - e o futuro do BI."</p>
+      <p>"Um dashboard que você precisa abrir para descobrir um problema já está atrasado. Um agente que te avisa - e explica por que - é o futuro do BI."</p>
     </div>
 
-    <p>Em 2026, duas tendencias dominam as conversas sobre inteligencia artificial aplicada a dados: <strong>Agentic AI</strong> (sistemas que agem de forma autonoma) e <strong>Explainable AI / XAI</strong> (sistemas que justificam suas decisoes). Separadas, cada uma ja tem valor. Juntas, elas resolvem o maior problema historico do BI corporativo: velocidade sem sacrificar confianca.</p>
+    <p>Em 2026, duas tendências dominam as conversas sobre inteligência artificial aplicada a dados: <strong>Agentic AI</strong> (sistemas que agem de forma autônoma) e <strong>Explainable AI / XAI</strong> (sistemas que justificam suas decisões). Separadas, cada uma já tem valor. Juntas, elas resolvem o maior problema histórico do BI corporativo: velocidade sem sacrificar confiança.</p>
 
-    <p>Neste artigo, vou mostrar o que cada abordagem significa na pratica, com exemplos reais de codigo, arquiteturas e casos de uso em ferramentas como Qlik, Power BI e Python.</p>
+    <p>Neste artigo, vou mostrar o que cada abordagem significa na prática, com exemplos reais de código, arquiteturas e casos de uso em ferramentas como Qlik, Power BI e Python.</p>
   </div>
 
   <!-- PARTE 1: AGENTIC AI -->
   <div class="section">
     <h2><span class="accent">Parte 1:</span> Agentic AI em BI</h2>
 
-    <p>Agentic AI nao e simplesmente um copilot que responde perguntas. E um sistema que <strong>percebe o ambiente, toma decisoes e executa acoes</strong> de forma autonoma - sem precisar que um humano formule cada consulta.</p>
+    <p>Agentic AI não é simplesmente um copilot que responde perguntas. É um sistema que <strong>percebe o ambiente, toma decisões e executa ações</strong> de forma autônoma - sem precisar que um humano formule cada consulta.</p>
 
-    <h3>O que muda na pratica?</h3>
+    <h3>O que muda na prática?</h3>
 
     <div class="comparison-grid">
       <div class="comp-card blue">
@@ -374,7 +374,7 @@
       </div>
       <div class="comp-card green">
         <h4>BI com Agentic AI</h4>
-        <p>Agente monitora KPIs continuamente, detecta queda de 12% em vendas as 02:17, identifica automaticamente a causa (falha logistica no regiao Sul), cria sumario e notifica o gestor antes das 07:00.</p>
+        <p>Agente monitora KPIs continuamente, detecta queda de 12% em vendas às 02:17, identifica automaticamente a causa (falha logística no região Sul), cria sumário e notifica o gestor antes dàs 07:00.</p>
       </div>
     </div>
 
@@ -389,18 +389,18 @@
         v
 [CAMADA DE PERCEPCAO]
   Agente monitora KPIs via API ou webhook
-  Threshold dinamico (media movel + desvio padrao)
+  Threshold dinâmico (media movel + desvio padrao)
         |
         v
 [MOTOR DE DECISAO]           [MEMORIA CONTEXTUAL]
-  Analisa anomalia     <---   Historico de incidentes
+  Analisa anomalia     <---   Histórico de incidentes
   Prioriza severidade         Sazonalidade conhecida
-  Seleciona acao              Regras de negocio
+  Seleciona ação              Regras de negócio
         |
         v
 [CAMADA DE EXECUCAO]
-  - Roda query de investigacao
-  - Correlaciona com outras metricas
+  - Roda query de investigação
+  - Correlaciona com outras métricas
   - Gera narrativa explicativa
         |
         v
@@ -408,8 +408,8 @@
   Alerta + Contexto + Acao Sugerida -&gt; Slack / Email / Teams
     </div>
 
-    <h3>Exemplo pratico: Agente de monitoramento com Python</h3>
-    <p>Abaixo, um exemplo funcional de como implementar um agente simples que monitora uma metrica via API do Qlik e dispara alertas com contexto:</p>
+    <h3>Exemplo prático: Agente de monitoramento com Python</h3>
+    <p>Abaixo, um exemplo funcional de como implementar um agente simples que monitora uma métrica via API do Qlik e dispara alertas com contexto:</p>
 
     <div class="code-label">Python - Agente de Monitoramento</div>
     <pre><code>import requests
@@ -421,10 +421,10 @@ class BIAgent:
         self.api_url = qlik_api_url
         self.headers = {"Authorization": f"Bearer {auth_token}"}
         self.slack_webhook = slack_webhook
-        self.memory = {}  # Historico de metricas
+        self.memory = {}  # Histórico de métricas
 
     def fetch_kpi(self, metric_name: str, days_back: int = 30) -> list:
-        """Busca historico de um KPI via Qlik REST API"""
+        """Busca histórico de um KPI via Qlik REST API"""
         end_date = datetime.now()
         start_date = end_date - timedelta(days=days_back)
 
@@ -439,12 +439,12 @@ class BIAgent:
         return response.json()["values"]
 
     def detect_anomaly(self, values: list, sensitivity: float = 2.0) -> dict:
-        """Detecta anomalias usando z-score dinamico"""
+        """Detecta anomalias usando z-score dinâmico"""
         if len(values) < 7:
             return {"is_anomaly": False}
 
         recent = values[-1]           # Valor atual
-        baseline = values[:-1]        # Historico
+        baseline = values[:-1]        # Histórico
 
         mean = statistics.mean(baseline)
         stdev = statistics.stdev(baseline)
@@ -465,10 +465,10 @@ class BIAgent:
         }
 
     def investigate(self, metric_name: str, anomaly: dict) -> str:
-        """Investiga causa raiz da anomalia correlacionando metricas"""
-        # Busca metricas correlacionadas
+        """Investiga causa raiz da anomalia correlacionando métricas"""
+        # Busca métricas correlacionadas
         correlations = []
-        related_metrics = ["conversao", "trafego", "estoque", "logistica"]
+        related_metrics = ["conversão", "tráfego", "estoque", "logística"]
 
         for related in related_metrics:
             values = self.fetch_kpi(related, days_back=7)
@@ -479,13 +479,13 @@ class BIAgent:
 
         context = f"""
 Anomalia detectada em {metric_name}:
-- Variacao: {anomaly['pct_change']:+.1f}% ({anomaly['direction']})
+- Variação: {anomaly['pct_change']:+.1f}% ({anomaly['direction']})
 - Z-score: {anomaly['z_score']} (sensibilidade: 2.0 sigma)
 - Valor atual: {anomaly['current_value']}
 - Valor esperado: {anomaly['expected_value']}
 
-Metricas correlacionadas com variacao significativa:
-{chr(10).join(correlations) if correlations else "Nenhuma correlacao significativa encontrada"}
+Métricas correlacionadas com variação significativa:
+{chr(10).join(correlations) if correlations else "Nenhuma correlação significativa encontrada"}
         """
         return context.strip()
 
@@ -522,33 +522,33 @@ Metricas correlacionadas com variacao significativa:
 #     auth_token="seu_token",
 #     slack_webhook="https://hooks.slack.com/services/..."
 # )
-# agent.run(["vendas_diarias", "conversao_site", "nps_score"])</code></pre>
+# agent.run(["vendas_diarias", "conversão_site", "nps_score"])</code></pre>
 
-    <h3>Integracao com Qlik via MCP Server</h3>
-    <p>Se voce ja configurou o Qlik MCP Server (veja o artigo da Semana 11), pode usar o Claude como motor de raciocinio do agente diretamente:</p>
+    <h3>Integração com Qlik via MCP Server</h3>
+    <p>Se você já configurou o Qlik MCP Server (veja o artigo da Semana 11), pode usar o Claude como motor de raciocínio do agente diretamente:</p>
 
     <div class="code-label">Exemplo - Qlik MCP + Claude como Agente</div>
     <pre><code># O agente usa o Qlik MCP para acessar dados do Qlik Cloud
-# e o Claude API para gerar o raciocinio e narrativa
+# e o Claude API para gerar o raciocínio e narrativa
 
 import anthropic
 
 client = anthropic.Anthropic()
 
 def analyze_with_claude(metric_data: dict) -> str:
-    """Usa Claude para analisar anomalia e gerar explicacao"""
+    """Usa Claude para analisar anomalia e gerar explicação"""
 
     prompt = f"""
-    Voce e um agente de BI. Analise os dados abaixo e:
+    Você e um agente de BI. Analise os dados abaixo e:
     1. Identifique se ha anomalia
     2. Sugira as 3 causas mais provaveis em ordem de probabilidade
-    3. Recomende uma acao imediata
-    4. Estime o impacto financeiro se nao tratado
+    3. Recomende uma ação imediata
+    4. Estime o impacto financeiro se não tratado
 
     Dados do Qlik Cloud:
     {metric_data}
 
-    Responda de forma direta e estruturada para um gestor de negocios.
+    Responda de forma direta e estruturada para um gestor de negócios.
     """
 
     response = client.messages.create(
@@ -566,18 +566,18 @@ def analyze_with_claude(metric_data: dict) -> str:
   <div class="section">
     <h2><span class="accent">Parte 2:</span> Explainable AI (XAI) - O BI que presta contas</h2>
 
-    <p>Agentic AI resolve a <strong>velocidade</strong>. XAI resolve a <strong>confianca</strong>. Sem explicabilidade, um agente autonomo e uma caixa preta - e nenhum gestor serio vai confiar em decisoes que nao consegue auditar.</p>
+    <p>Agentic AI resolve a <strong>velocidade</strong>. XAI resolve a <strong>confiança</strong>. Sem explicabilidade, um agente autônomo é uma caixa preta - e nenhum gestor sério vai confiar em decisões que não consegue auditar.</p>
 
     <div class="highlight-box">
-      <p>XAI nao e sobre mostrar codigo ou logs tecnico. E sobre responder: "Por que o sistema chegou nessa conclusao?" em linguagem que qualquer stakeholder entenda.</p>
+      <p>XAI não é sobre mostrar código ou logs técnico. É sobre responder: "Por que o sistema chegou nessa conclusão?" em linguagem que qualquer stakeholder entenda.</p>
     </div>
 
-    <h3>Os 3 niveis de explicabilidade em BI</h3>
+    <h3>Os 3 níveis de explicabilidade em BI</h3>
 
     <table class="matrix-table">
       <thead>
         <tr>
-          <th>Nivel</th>
+          <th>Nível</th>
           <th>O que explica</th>
           <th>Para quem</th>
           <th>Exemplo</th>
@@ -592,23 +592,23 @@ def analyze_with_claude(metric_data: dict) -> str:
         </tr>
         <tr>
           <td><strong>Local</strong></td>
-          <td>Por que esta predicao especifica foi feita</td>
+          <td>Por que esta predição específica foi feita</td>
           <td>Analista / Gestor</td>
           <td>"Esta venda foi classif. como churn porque NPS &lt; 6 e inatividade &gt; 45 dias"</td>
         </tr>
         <tr>
           <td><strong>Contrafactual</strong></td>
           <td>O que mudaria para um resultado diferente</td>
-          <td>Time de negocios</td>
+          <td>Time de negócios</td>
           <td>"Se o NPS fosse 7+, a probabilidade de churn cairia para 18%"</td>
         </tr>
       </tbody>
     </table>
 
-    <h3>XAI na pratica: SHAP com dados de BI</h3>
-    <p>SHAP (SHapley Additive exPlanations) e a tecnica mais adotada para explicabilidade em modelos de ML. Veja como usar com dados de BI:</p>
+    <h3>XAI na prática: SHAP com dados de BI</h3>
+    <p>SHAP (SHapley Additive exPlanations) é a técnica mais adotada para explicabilidade em modelos de ML. Veja como usar com dados de BI:</p>
 
-    <div class="code-label">Python - SHAP para explicar predicoes de Churn</div>
+    <div class="code-label">Python - SHAP para explicar predições de Churn</div>
     <pre><code>import shap
 import pandas as pd
 import numpy as np
@@ -628,7 +628,7 @@ df = pd.DataFrame({
 X = df.drop('churn', axis=1)
 y = df['churn']
 
-# Treina modelo (simplificado para demonstracao)
+# Treina modelo (simplificado para demonstração)
 model = GradientBoostingClassifier(n_estimators=100, random_state=42)
 model.fit(X, y)
 
@@ -637,7 +637,7 @@ explainer = shap.TreeExplainer(model)
 shap_values = explainer.shap_values(X)
 
 # --- EXPLICACAO GLOBAL (feature importance) ---
-print("=== Importancia Global das Variaveis ===")
+print("=== Importância Global das Variaveis ===")
 feature_importance = pd.DataFrame({
     'feature': X.columns,
     'importance': np.abs(shap_values).mean(axis=0)
@@ -652,10 +652,10 @@ print(feature_importance.to_string(index=False))
 #    tickets_abertos    0.1234
 #    valor_contrato     0.0177
 
-# --- EXPLICACAO LOCAL (por cliente especifico) ---
+# --- EXPLICACAO LOCAL (por cliente específico) ---
 def explain_prediction(client_idx: int, df: pd.DataFrame,
                         shap_values, threshold: float = 0.5) -> str:
-    """Gera explicacao legivel para um cliente especifico"""
+    """Gera explicação legivel para um cliente específico"""
     prediction_prob = model.predict_proba(X.iloc[[client_idx]])[0][1]
     prediction = "CHURN" if prediction_prob >= threshold else "ATIVO"
 
@@ -667,7 +667,7 @@ def explain_prediction(client_idx: int, df: pd.DataFrame,
     )
 
     explanation = f"""
-[Cliente #{client_idx}] Predicao: {prediction} ({prediction_prob:.0%} prob. churn)
+[Cliente #{client_idx}] Predição: {prediction} ({prediction_prob:.0%} prob. churn)
 
 Fatores determinantes:
 """
@@ -686,7 +686,7 @@ Fatores determinantes:
 print(explain_prediction(1, df, shap_values))
 
 # Output esperado:
-# [Cliente #1] Predicao: CHURN (89% prob. churn)
+# [Cliente #1] Predição: CHURN (89% prob. churn)
 # Fatores determinantes:
 #   - dias_inativo = 60 -> aumentou risco (+0.412)
 #   - nps_score = 3 -> aumentou risco (+0.318)
@@ -700,11 +700,11 @@ print(explain_prediction(1, df, shap_values))
     <div class="comparison-grid">
       <div class="comp-card purple">
         <h4>Qlik AutoML + XAI</h4>
-        <p>O Qlik AutoML (Qlik Cloud) ja inclui SHAP nativo nos modelos gerados. Voce ve feature importance e pode exportar as explicacoes como campos calculados para usar em visualizacoes.</p>
+        <p>O Qlik AutoML (Qlik Cloud) já inclui SHAP nativo nos modelos gerados. Você ve feature importance e pode exportar as explicações como campos calculados para usar em visualizações.</p>
       </div>
       <div class="comp-card orange">
         <h4>Power BI + Azure ML</h4>
-        <p>Integracao via Azure Machine Learning permite trazer explicacoes SHAP como colunas de uma tabela no Power BI. DAX pode entao formatar essas explicacoes em tooltips e narrativas.</p>
+        <p>Integração via Azure Machine Learning permite trazer explicações SHAP como colunas de uma tabela no Power BI. DAX pode entao formatar essas explicações em tooltips e narrativas.</p>
       </div>
     </div>
   </div>
@@ -713,44 +713,44 @@ print(explain_prediction(1, df, shap_values))
 
   <!-- COMBINACAO -->
   <div class="section">
-    <h2><span class="accent">A combinacao:</span> Agentic AI + XAI juntos</h2>
+    <h2><span class="accent">A combinação:</span> Agentic AI + XAI juntos</h2>
 
-    <p>O verdadeiro poder emerge quando o agente autonomo e obrigado a <strong>justificar cada acao que toma</strong>. Veja o fluxo completo:</p>
+    <p>O verdadeiro poder emerge quando o agente autônomo é obrigado a <strong>justificar cada ação que toma</strong>. Veja o fluxo completo:</p>
 
     <div class="flow-steps">
       <div class="flow-step">
         <div class="step-num">1</div>
         <div class="step-content">
-          <h4>Percepcao autonoma</h4>
-          <p>Agente detecta queda de 18% nas vendas da regiao Sul as 03:42</p>
+          <h4>Percepcao autônoma</h4>
+          <p>Agente detecta queda de 18% nas vendas da região Sul às 03:42</p>
         </div>
       </div>
       <div class="flow-step">
         <div class="step-num">2</div>
         <div class="step-content">
-          <h4>Investigacao correlacionada</h4>
-          <p>Cruza com logistica (-23%), clima (chuva intensa), historico de datas similares e NPS regional</p>
+          <h4>Investigação correlacionada</h4>
+          <p>Cruza com logística (-23%), clima (chuva intensa), histórico de datas similares e NPS regional</p>
         </div>
       </div>
       <div class="flow-step">
         <div class="step-num">3</div>
         <div class="step-content">
-          <h4>Explicacao gerada automaticamente</h4>
-          <p>XAI calcula contribuicao de cada fator: logistica (47%), clima (31%), sazonalidade (14%), outros (8%)</p>
+          <h4>Explicação gerada automaticamente</h4>
+          <p>XAI calcula contribuição de cada fator: logística (47%), clima (31%), sazonalidade (14%), outros (8%)</p>
         </div>
       </div>
       <div class="flow-step">
         <div class="step-num">4</div>
         <div class="step-content">
           <h4>Acao + Narrativa</h4>
-          <p>Agente notifica o gestor com: causa identificada, impacto estimado (R$ 42k), acao sugerida e confianca da analise (87%)</p>
+          <p>Agente notifica o gestor com: causa identificada, impacto estimado (R$ 42k), ação sugerida e confiança da análise (87%)</p>
         </div>
       </div>
       <div class="flow-step">
         <div class="step-num">5</div>
         <div class="step-content">
           <h4>Feedback loop</h4>
-          <p>Gestor confirma ou refuta a causa. Agente aprende e ajusta o modelo para a proxima vez.</p>
+          <p>Gestor confirma ou refuta a causa. Agente aprende e ajusta o modelo para a próxima vez.</p>
         </div>
       </div>
     </div>
@@ -779,22 +779,22 @@ print(explain_prediction(1, df, shap_values))
         <tr>
           <td>Interpretar SHAP / XAI outputs</td>
           <td><span class="badge badge-green">Alta</span></td>
-          <td>Validar se as explicacoes fazem sentido de negocio</td>
+          <td>Validar se as explicações fazem sentido de negócio</td>
         </tr>
         <tr>
-          <td>Auditar decisoes do agente</td>
+          <td>Auditar decisões do agente</td>
           <td><span class="badge badge-green">Alta</span></td>
           <td>Governanca e compliance exigem rastreabilidade</td>
         </tr>
         <tr>
-          <td>Python / SQL basico</td>
+          <td>Python / SQL básico</td>
           <td><span class="badge badge-blue">Critica</span></td>
           <td>Para customizar agentes e pipelines de dados</td>
         </tr>
         <tr>
           <td>Prompt engineering para BI</td>
           <td><span class="badge badge-blue">Critica</span></td>
-          <td>Instruir agentes (Claude, GPT) a agir como analistas de negocio</td>
+          <td>Instruir agentes (Claude, GPT) a agir como analistas de negócio</td>
         </tr>
       </tbody>
     </table>
@@ -803,22 +803,22 @@ print(explain_prediction(1, df, shap_values))
   <!-- CONCLUSAO -->
   <div class="section">
     <h2><span class="accent">Conclusao</span></h2>
-    <p>O BI de 2026 nao e sobre construir paineis mais bonitos. E sobre construir sistemas que <strong>percebem, agem e explicam</strong> - enquanto o analista foca em validar, refinar e decidir estrategicamente com base nisso.</p>
+    <p>O BI de 2026 não é sobre construir paineis mais bonitos. É sobre construir sistemas que <strong>percebem, agem e explicam</strong> - enquanto o analista foca em validar, refinar e decidir estrategicamente com base nisso.</p>
 
-    <p>Agentic AI sem XAI e perigoso: voce nao sabe por que o sistema fez o que fez. XAI sem Agentic AI e lento: voce tem as explicacoes mas precisa fazer as perguntas certas. Juntos, eles formam o stack de BI mais poderoso disponivel hoje.</p>
+    <p>Agentic AI sem XAI é perigoso: você não sabe por que o sistema fez o que fez. XAI sem Agentic AI é lento: você tem as explicações mas precisa fazer as perguntas certas. Juntos, eles formam o stack de BI mais poderoso disponível hoje.</p>
 
     <ul class="checklist">
-      <li>Comece configurando alertas inteligentes com z-score dinamico - nao thresholds fixos</li>
-      <li>Adicione SHAP ao seu modelo preditivo mais critico e mostre as explicacoes no dashboard</li>
-      <li>Experimente o Qlik MCP ou a API do Claude para adicionar raciocinio ao seu pipeline</li>
-      <li>Documente cada decisao autonoma do agente para auditoria - XAI torna isso viavel</li>
+      <li>Comece configurando alertas inteligentes com z-score dinâmico - não thresholds fixos</li>
+      <li>Adicione SHAP ao seu modelo preditivo mais crítico e mostre as explicações no dashboard</li>
+      <li>Experimente o Qlik MCP ou a API do Claude para adicionar raciocínio ao seu pipeline</li>
+      <li>Documente cada decisão autônoma do agente para auditoria - XAI torna isso viavel</li>
     </ul>
   </div>
 
   <!-- CTA -->
   <div class="cta-box">
-    <h3>Qual e o seu proximo passo?</h3>
-    <p>Qual ferramentas no seu stack ja caminham nessa direcao? Me conta nos comentarios no LinkedIn.</p>
+    <h3>Qual e o seu próximo passo?</h3>
+    <p>Qual ferramentas no seu stack já caminham nessa direção? Me conta nos comentarios no LinkedIn.</p>
     <a href="https://www.linkedin.com/in/rafaelveloso/" class="cta-btn">Conectar no LinkedIn</a>
   </div>
 
@@ -844,7 +844,7 @@ print(explain_prediction(1, df, shap_values))
   <div class="author-avatar">RV</div>
   <div>
     <strong>Rafael Veloso</strong> - Data &amp; BI Specialist<br>
-    Serie semanal: BI, Qlik, Power BI, IA e Dados em producao
+    Série semanal: BI, Qlik, Power BI, IA e Dados em produção
   </div>
 </div>
 
