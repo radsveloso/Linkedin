@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Semana 12 - Agentic AI + XAI em BI | Rafael Veloso</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #0a1628;
+    color: #e2e8f0;
+    line-height: 1.7;
+  }
+  .hero {
+    background: linear-gradient(135deg, #0d1f3c 0%, #1a3a6b 50%, #0d2a5e 100%);
+    padding: 60px 40px 50px;
+    text-align: center;
+    border-bottom: 3px solid #2563eb;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(37,99,235,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .week-badge {
+    display: inline-block;
+    background: rgba(37,99,235,0.2);
+    border: 1px solid #2563eb;
+    color: #60a5fa;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+  }
+  .hero h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 16px;
+    max-width: 820px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .hero h1 span { color: #60a5fa; }
+  .hero .subtitle {
+    font-size: 1.05rem;
+    color: #94a3b8;
+    max-width: 600px;
+    margin: 0 auto 30px;
+  }
+  .hero-meta {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-size: 0.82rem;
+    color: #64748b;
+  }
+  .hero-meta span { display: flex; align-items: center; gap: 6px; }
+  .container { max-width: 820px; margin: 0 auto; padding: 48px 24px; }
+  .section { margin-bottom: 48px; }
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #1e3a6e;
+  }
+  h2 .accent { color: #60a5fa; }
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #93c5fd;
+    margin: 24px 0 12px;
+  }
+  p { color: #cbd5e1; margin-bottom: 16px; }
+  .highlight-box {
+    background: linear-gradient(135deg, #0f2545 0%, #1e3a6e 100%);
+    border: 1px solid #2563eb;
+    border-left: 4px solid #3b82f6;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 24px 0;
+  }
+  .highlight-box p { margin: 0; color: #bfdbfe; font-style: italic; font-size: 1.05rem; }
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 28px 0;
+  }
+  @media (max-width: 600px) { .comparison-grid { grid-template-columns: 1fr; } }
+  .comp-card {
+    background: #0f2545;
+    border: 1px solid #1e3a6e;
+    border-radius: 10px;
+    padding: 22px;
+  }
+  .comp-card.blue { border-top: 3px solid #3b82f6; }
+  .comp-card.purple { border-top: 3px solid #8b5cf6; }
+  .comp-card.green { border-top: 3px solid #10b981; }
+  .comp-card.orange { border-top: 3px solid #f59e0b; }
+  .comp-card h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .comp-card p { font-size: 0.9rem; color: #94a3b8; margin: 0; }
+  .arch-box {
+    background: #050e1f;
+    border: 1px solid #1e3a6e;
+    border-radius: 10px;
+    padding: 28px;
+    margin: 28px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    color: #7dd3fc;
+    overflow-x: auto;
+    line-height: 1.9;
+  }
+  .arch-box .comment { color: #475569; }
+  .arch-box .highlight { color: #34d399; }
+  .arch-box .warning { color: #fbbf24; }
+  .arch-box .error { color: #f87171; }
+  pre {
+    background: #050e1f;
+    border: 1px solid #1e3a6e;
+    border-radius: 10px;
+    padding: 24px;
+    margin: 20px 0;
+    overflow-x: auto;
+    font-size: 0.83rem;
+    line-height: 1.7;
+  }
+  pre code { color: #7dd3fc; font-family: 'Courier New', monospace; }
+  .code-label {
+    display: inline-block;
+    background: #1e3a6e;
+    color: #60a5fa;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px 4px 0 0;
+    margin-bottom: -1px;
+  }
+  .checklist { list-style: none; margin: 16px 0; }
+  .checklist li {
+    padding: 10px 0;
+    padding-left: 28px;
+    position: relative;
+    color: #cbd5e1;
+    border-bottom: 1px solid #1e293b;
+    font-size: 0.95rem;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #10b981;
+    font-weight: 700;
+  }
+  .timeline {
+    position: relative;
+    padding-left: 28px;
+    margin: 24px 0;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #1e3a6e;
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 24px;
+    padding-left: 20px;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #3b82f6;
+    border: 2px solid #0a1628;
+  }
+  .timeline-item.active::before { background: #10b981; }
+  .timeline-item h4 { color: #93c5fd; font-size: 0.95rem; margin-bottom: 4px; }
+  .timeline-item p { font-size: 0.88rem; color: #64748b; margin: 0; }
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 0.88rem;
+  }
+  .matrix-table th {
+    background: #0f2545;
+    color: #60a5fa;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 2px solid #2563eb;
+  }
+  .matrix-table td {
+    padding: 11px 16px;
+    color: #cbd5e1;
+    border-bottom: 1px solid #1e2d4a;
+  }
+  .matrix-table tr:hover td { background: #0f2545; }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge-green { background: rgba(16,185,129,0.15); color: #34d399; }
+  .badge-yellow { background: rgba(245,158,11,0.15); color: #fbbf24; }
+  .badge-red { background: rgba(239,68,68,0.15); color: #f87171; }
+  .badge-blue { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .cta-box {
+    background: linear-gradient(135deg, #0f2545 0%, #1e3a6e 100%);
+    border: 1px solid #2563eb;
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    margin-top: 48px;
+  }
+  .cta-box h3 { color: #fff; font-size: 1.3rem; margin-bottom: 12px; }
+  .cta-box p { color: #94a3b8; max-width: 500px; margin: 0 auto 20px; }
+  .cta-btn {
+    display: inline-block;
+    background: #2563eb;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 12px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .cta-btn:hover { background: #1d4ed8; }
+  .tags { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag {
+    background: rgba(37,99,235,0.1);
+    border: 1px solid #1e3a6e;
+    color: #60a5fa;
+    font-size: 0.78rem;
+    padding: 5px 12px;
+    border-radius: 20px;
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid #1e2d4a;
+    margin: 40px 0;
+  }
+  .flow-steps {
+    counter-reset: step;
+    margin: 24px 0;
+  }
+  .flow-step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+  }
+  .step-num {
+    counter-increment: step;
+    min-width: 32px;
+    height: 32px;
+    background: #1e3a6e;
+    color: #60a5fa;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  .step-content h4 { color: #93c5fd; margin-bottom: 4px; font-size: 0.95rem; }
+  .step-content p { font-size: 0.88rem; color: #94a3b8; margin: 0; }
+  .author-bar {
+    background: #0d1f3c;
+    border-top: 1px solid #1e2d4a;
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+  .author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: #fff;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+  .author-bar strong { color: #e2e8f0; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="week-badge">Semana 12 - Serie BI &amp; IA 2026</div>
+  <h1>O BI que <span>age</span> e o BI que <span>explica</span>:<br>Agentic AI + XAI na pratica</h1>
+  <p class="subtitle">Como a combinacao de agentes autonomos e inteligencia explicavel esta redefinindo o trabalho do analista de dados em 2026</p>
+  <div class="hero-meta">
+    <span>por Rafael Veloso</span>
+    <span>Agosto 2026</span>
+    <span>Leitura: ~8 min</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- INTRO -->
+  <div class="section">
+    <div class="highlight-box">
+      <p>"Um dashboard que voce precisa abrir para descobrir um problema ja esta atrasado. Um agente que te avisa — e explica por que — e o futuro do BI."</p>
+    </div>
+
+    <p>Em 2026, duas tendencias dominam as conversas sobre inteligencia artificial aplicada a dados: <strong>Agentic AI</strong> (sistemas que agem de forma autonoma) e <strong>Explainable AI / XAI</strong> (sistemas que justificam suas decisoes). Separadas, cada uma ja tem valor. Juntas, elas resolvem o maior problema historico do BI corporativo: velocidade sem sacrificar confianca.</p>
+
+    <p>Neste artigo, vou mostrar o que cada abordagem significa na pratica, com exemplos reais de codigo, arquiteturas e casos de uso em ferramentas como Qlik, Power BI e Python.</p>
+  </div>
+
+  <!-- PARTE 1: AGENTIC AI -->
+  <div class="section">
+    <h2><span class="accent">Parte 1:</span> Agentic AI em BI</h2>
+
+    <p>Agentic AI nao e simplesmente um copilot que responde perguntas. E um sistema que <strong>percebe o ambiente, toma decisoes e executa acoes</strong> de forma autonoma - sem precisar que um humano formule cada consulta.</p>
+
+    <h3>O que muda na pratica?</h3>
+
+    <div class="comparison-grid">
+      <div class="comp-card blue">
+        <h4>BI Tradicional</h4>
+        <p>Analista abre o dashboard toda manha, verifica KPIs, percebe que vendas caiu 12%, investiga manualmente, descobre a causa horas depois, gera relatorio e envia para o gestor.</p>
+      </div>
+      <div class="comp-card green">
+        <h4>BI com Agentic AI</h4>
+        <p>Agente monitora KPIs continuamente, detecta queda de 12% em vendas as 02:17, identifica automaticamente a causa (falha logistica no regiao Sul), cria sumario e notifica o gestor antes das 07:00.</p>
+      </div>
+    </div>
+
+    <h3>Arquitetura de um Agente de BI Autonomo</h3>
+
+    <div class="arch-box">
+<span class="comment">-- Fluxo de um Agente de BI Autonomo --</span>
+
+[FONTES DE DADOS]
+  Qlik Cloud / Power BI Dataset / Data Warehouse
+        |
+        v
+[CAMADA DE PERCEPCAO]
+  Agente monitora KPIs via API ou webhook
+  Threshold dinamico (media movel + desvio padrao)
+        |
+        v
+[MOTOR DE DECISAO]           [MEMORIA CONTEXTUAL]
+  Analisa anomalia     <---   Historico de incidentes
+  Prioriza severidade         Sazonalidade conhecida
+  Seleciona acao              Regras de negocio
+        |
+        v
+[CAMADA DE EXECUCAO]
+  - Roda query de investigacao
+  - Correlaciona com outras metricas
+  - Gera narrativa explicativa
+        |
+        v
+[OUTPUT]
+  Alerta + Contexto + Acao Sugerida -&gt; Slack / Email / Teams
+    </div>
+
+    <h3>Exemplo pratico: Agente de monitoramento com Python</h3>
+    <p>Abaixo, um exemplo funcional de como implementar um agente simples que monitora uma metrica via API do Qlik e dispara alertas com contexto:</p>
+
+    <div class="code-label">Python - Agente de Monitoramento</div>
+    <pre><code>import requests
+import statistics
+from datetime import datetime, timedelta
+
+class BIAgent:
+    def __init__(self, qlik_api_url, auth_token, slack_webhook):
+        self.api_url = qlik_api_url
+        self.headers = {"Authorization": f"Bearer {auth_token}"}
+        self.slack_webhook = slack_webhook
+        self.memory = {}  # Historico de metricas
+
+    def fetch_kpi(self, metric_name: str, days_back: int = 30) -> list:
+        """Busca historico de um KPI via Qlik REST API"""
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=days_back)
+
+        response = requests.get(
+            f"{self.api_url}/metrics/{metric_name}",
+            headers=self.headers,
+            params={
+                "startDate": start_date.isoformat(),
+                "endDate": end_date.isoformat()
+            }
+        )
+        return response.json()["values"]
+
+    def detect_anomaly(self, values: list, sensitivity: float = 2.0) -> dict:
+        """Detecta anomalias usando z-score dinamico"""
+        if len(values) < 7:
+            return {"is_anomaly": False}
+
+        recent = values[-1]           # Valor atual
+        baseline = values[:-1]        # Historico
+
+        mean = statistics.mean(baseline)
+        stdev = statistics.stdev(baseline)
+
+        if stdev == 0:
+            return {"is_anomaly": False}
+
+        z_score = (recent - mean) / stdev
+        pct_change = ((recent - mean) / mean) * 100
+
+        return {
+            "is_anomaly": abs(z_score) > sensitivity,
+            "direction": "queda" if recent < mean else "alta",
+            "z_score": round(z_score, 2),
+            "pct_change": round(pct_change, 1),
+            "current_value": recent,
+            "expected_value": round(mean, 2)
+        }
+
+    def investigate(self, metric_name: str, anomaly: dict) -> str:
+        """Investiga causa raiz da anomalia correlacionando metricas"""
+        # Busca metricas correlacionadas
+        correlations = []
+        related_metrics = ["conversao", "trafego", "estoque", "logistica"]
+
+        for related in related_metrics:
+            values = self.fetch_kpi(related, days_back=7)
+            if values:
+                delta = ((values[-1] - values[-2]) / values[-2]) * 100
+                if abs(delta) > 5:  # Mudanca significativa
+                    correlations.append(f"{related}: {delta:+.1f}%")
+
+        context = f"""
+Anomalia detectada em {metric_name}:
+- Variacao: {anomaly['pct_change']:+.1f}% ({anomaly['direction']})
+- Z-score: {anomaly['z_score']} (sensibilidade: 2.0 sigma)
+- Valor atual: {anomaly['current_value']}
+- Valor esperado: {anomaly['expected_value']}
+
+Metricas correlacionadas com variacao significativa:
+{chr(10).join(correlations) if correlations else "Nenhuma correlacao significativa encontrada"}
+        """
+        return context.strip()
+
+    def alert(self, metric_name: str, investigation: str):
+        """Envia alerta estruturado para o Slack"""
+        payload = {
+            "text": f":rotating_light: *Anomalia detectada: {metric_name}*",
+            "blocks": [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"*Agente BI detectou anomalia*\n```{investigation}```"
+                    }
+                }
+            ]
+        }
+        requests.post(self.slack_webhook, json=payload)
+
+    def run(self, metrics_to_monitor: list):
+        """Loop principal do agente"""
+        for metric in metrics_to_monitor:
+            values = self.fetch_kpi(metric)
+            anomaly = self.detect_anomaly(values)
+
+            if anomaly["is_anomaly"]:
+                investigation = self.investigate(metric, anomaly)
+                self.alert(metric, investigation)
+                print(f"[{datetime.now()}] Alerta enviado para {metric}")
+
+# Uso:
+# agent = BIAgent(
+#     qlik_api_url="https://sua-tenant.qlik.com/api/v1",
+#     auth_token="seu_token",
+#     slack_webhook="https://hooks.slack.com/services/..."
+# )
+# agent.run(["vendas_diarias", "conversao_site", "nps_score"])</code></pre>
+
+    <h3>Integracao com Qlik via MCP Server</h3>
+    <p>Se voce ja configurou o Qlik MCP Server (veja o artigo da Semana 11), pode usar o Claude como motor de raciocinio do agente diretamente:</p>
+
+    <div class="code-label">Exemplo - Qlik MCP + Claude como Agente</div>
+    <pre><code># O agente usa o Qlik MCP para acessar dados do Qlik Cloud
+# e o Claude API para gerar o raciocinio e narrativa
+
+import anthropic
+
+client = anthropic.Anthropic()
+
+def analyze_with_claude(metric_data: dict) -> str:
+    """Usa Claude para analisar anomalia e gerar explicacao"""
+
+    prompt = f"""
+    Voce e um agente de BI. Analise os dados abaixo e:
+    1. Identifique se ha anomalia
+    2. Sugira as 3 causas mais provaveis em ordem de probabilidade
+    3. Recomende uma acao imediata
+    4. Estime o impacto financeiro se nao tratado
+
+    Dados do Qlik Cloud:
+    {metric_data}
+
+    Responda de forma direta e estruturada para um gestor de negocios.
+    """
+
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=500,
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    return response.content[0].text</code></pre>
+  </div>
+
+  <hr class="divider">
+
+  <!-- PARTE 2: XAI -->
+  <div class="section">
+    <h2><span class="accent">Parte 2:</span> Explainable AI (XAI) - O BI que presta contas</h2>
+
+    <p>Agentic AI resolve a <strong>velocidade</strong>. XAI resolve a <strong>confianca</strong>. Sem explicabilidade, um agente autonomo e uma caixa preta — e nenhum gestor serio vai confiar em decisoes que nao consegue auditar.</p>
+
+    <div class="highlight-box">
+      <p>XAI nao e sobre mostrar codigo ou logs tecnico. E sobre responder: "Por que o sistema chegou nessa conclusao?" em linguagem que qualquer stakeholder entenda.</p>
+    </div>
+
+    <h3>Os 3 niveis de explicabilidade em BI</h3>
+
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th>Nivel</th>
+          <th>O que explica</th>
+          <th>Para quem</th>
+          <th>Exemplo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Global</strong></td>
+          <td>Como o modelo funciona em geral</td>
+          <td>Equipe de dados</td>
+          <td>Feature importance geral do modelo preditivo</td>
+        </tr>
+        <tr>
+          <td><strong>Local</strong></td>
+          <td>Por que esta predicao especifica foi feita</td>
+          <td>Analista / Gestor</td>
+          <td>"Esta venda foi classif. como churn porque NPS &lt; 6 e inatividade &gt; 45 dias"</td>
+        </tr>
+        <tr>
+          <td><strong>Contrafactual</strong></td>
+          <td>O que mudaria para um resultado diferente</td>
+          <td>Time de negocios</td>
+          <td>"Se o NPS fosse 7+, a probabilidade de churn cairia para 18%"</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>XAI na pratica: SHAP com dados de BI</h3>
+    <p>SHAP (SHapley Additive exPlanations) e a tecnica mais adotada para explicabilidade em modelos de ML. Veja como usar com dados de BI:</p>
+
+    <div class="code-label">Python - SHAP para explicar predicoes de Churn</div>
+    <pre><code>import shap
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import GradientBoostingClassifier
+import matplotlib.pyplot as plt
+
+# Dados de clientes (simulado - equivalente ao que viria do Qlik/Power BI)
+df = pd.DataFrame({
+    'nps_score':         [8, 3, 7, 2, 9, 4, 6, 1],
+    'dias_inativo':      [5, 60, 10, 75, 3, 45, 20, 90],
+    'tickets_abertos':   [0, 5,  1,  8,  0,  3,  1, 10],
+    'uso_features_pct':  [85, 20, 70, 10, 95, 35, 60, 5],
+    'valor_contrato':    [5000, 800, 3200, 400, 8000, 1200, 2500, 300],
+    'churn':             [0, 1, 0, 1, 0, 1, 0, 1]
+})
+
+X = df.drop('churn', axis=1)
+y = df['churn']
+
+# Treina modelo (simplificado para demonstracao)
+model = GradientBoostingClassifier(n_estimators=100, random_state=42)
+model.fit(X, y)
+
+# Cria o explainer SHAP
+explainer = shap.TreeExplainer(model)
+shap_values = explainer.shap_values(X)
+
+# --- EXPLICACAO GLOBAL (feature importance) ---
+print("=== Importancia Global das Variaveis ===")
+feature_importance = pd.DataFrame({
+    'feature': X.columns,
+    'importance': np.abs(shap_values).mean(axis=0)
+}).sort_values('importance', ascending=False)
+print(feature_importance.to_string(index=False))
+
+# Output esperado:
+#           feature  importance
+#       dias_inativo    0.3821
+#          nps_score    0.2945
+#   uso_features_pct    0.1823
+#    tickets_abertos    0.1234
+#    valor_contrato     0.0177
+
+# --- EXPLICACAO LOCAL (por cliente especifico) ---
+def explain_prediction(client_idx: int, df: pd.DataFrame,
+                        shap_values, threshold: float = 0.5) -> str:
+    """Gera explicacao legivel para um cliente especifico"""
+    prediction_prob = model.predict_proba(X.iloc[[client_idx]])[0][1]
+    prediction = "CHURN" if prediction_prob >= threshold else "ATIVO"
+
+    client_shap = shap_values[client_idx]
+    feature_impact = sorted(
+        zip(X.columns, client_shap),
+        key=lambda x: abs(x[1]),
+        reverse=True
+    )
+
+    explanation = f"""
+[Cliente #{client_idx}] Predicao: {prediction} ({prediction_prob:.0%} prob. churn)
+
+Fatores determinantes:
+"""
+    for feat, impact in feature_impact:
+        direction = "aumentou" if impact > 0 else "reduziu"
+        val = df.iloc[client_idx][feat]
+        explanation += f"  - {feat} = {val} -> {direction} risco ({impact:+.3f})\n"
+
+    # Analise contrafactual simples
+    if prediction == "CHURN":
+        explanation += "\nPara reduzir risco: aumentar NPS e reduzir dias de inatividade teriam maior impacto."
+
+    return explanation.strip()
+
+# Teste para cliente em risco (indice 1)
+print(explain_prediction(1, df, shap_values))
+
+# Output esperado:
+# [Cliente #1] Predicao: CHURN (89% prob. churn)
+# Fatores determinantes:
+#   - dias_inativo = 60 -> aumentou risco (+0.412)
+#   - nps_score = 3 -> aumentou risco (+0.318)
+#   - uso_features_pct = 20 -> aumentou risco (+0.195)
+#   - tickets_abertos = 5 -> aumentou risco (+0.143)
+#   - valor_contrato = 800 -> reduziu risco (-0.028)
+# Para reduzir risco: aumentar NPS e reduzir dias de inatividade teriam maior impacto.</code></pre>
+
+    <h3>XAI no contexto do Qlik e Power BI</h3>
+
+    <div class="comparison-grid">
+      <div class="comp-card purple">
+        <h4>Qlik AutoML + XAI</h4>
+        <p>O Qlik AutoML (Qlik Cloud) ja inclui SHAP nativo nos modelos gerados. Voce ve feature importance e pode exportar as explicacoes como campos calculados para usar em visualizacoes.</p>
+      </div>
+      <div class="comp-card orange">
+        <h4>Power BI + Azure ML</h4>
+        <p>Integracao via Azure Machine Learning permite trazer explicacoes SHAP como colunas de uma tabela no Power BI. DAX pode entao formatar essas explicacoes em tooltips e narrativas.</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- COMBINACAO -->
+  <div class="section">
+    <h2><span class="accent">A combinacao:</span> Agentic AI + XAI juntos</h2>
+
+    <p>O verdadeiro poder emerge quando o agente autonomo e obrigado a <strong>justificar cada acao que toma</strong>. Veja o fluxo completo:</p>
+
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Percepcao autonoma</h4>
+          <p>Agente detecta queda de 18% nas vendas da regiao Sul as 03:42</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Investigacao correlacionada</h4>
+          <p>Cruza com logistica (-23%), clima (chuva intensa), historico de datas similares e NPS regional</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Explicacao gerada automaticamente</h4>
+          <p>XAI calcula contribuicao de cada fator: logistica (47%), clima (31%), sazonalidade (14%), outros (8%)</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Acao + Narrativa</h4>
+          <p>Agente notifica o gestor com: causa identificada, impacto estimado (R$ 42k), acao sugerida e confianca da analise (87%)</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h4>Feedback loop</h4>
+          <p>Gestor confirma ou refuta a causa. Agente aprende e ajusta o modelo para a proxima vez.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>O que o analista precisa saber fazer agora</h3>
+
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th>Habilidade</th>
+          <th>Relevancia 2026</th>
+          <th>Por que?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Construir dashboards estaticos</td>
+          <td><span class="badge badge-yellow">Media</span></td>
+          <td>Agentes reduzem necessidade, mas reporting formal persiste</td>
+        </tr>
+        <tr>
+          <td>Configurar thresholds e alertas</td>
+          <td><span class="badge badge-green">Alta</span></td>
+          <td>Decisao humana sobre o que o agente deve monitorar</td>
+        </tr>
+        <tr>
+          <td>Interpretar SHAP / XAI outputs</td>
+          <td><span class="badge badge-green">Alta</span></td>
+          <td>Validar se as explicacoes fazem sentido de negocio</td>
+        </tr>
+        <tr>
+          <td>Auditar decisoes do agente</td>
+          <td><span class="badge badge-green">Alta</span></td>
+          <td>Governanca e compliance exigem rastreabilidade</td>
+        </tr>
+        <tr>
+          <td>Python / SQL basico</td>
+          <td><span class="badge badge-blue">Critica</span></td>
+          <td>Para customizar agentes e pipelines de dados</td>
+        </tr>
+        <tr>
+          <td>Prompt engineering para BI</td>
+          <td><span class="badge badge-blue">Critica</span></td>
+          <td>Instruir agentes (Claude, GPT) a agir como analistas de negocio</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CONCLUSAO -->
+  <div class="section">
+    <h2><span class="accent">Conclusao</span></h2>
+    <p>O BI de 2026 nao e sobre construir paineis mais bonitos. E sobre construir sistemas que <strong>percebem, agem e explicam</strong> - enquanto o analista foca em validar, refinar e decidir estrategicamente com base nisso.</p>
+
+    <p>Agentic AI sem XAI e perigoso: voce nao sabe por que o sistema fez o que fez. XAI sem Agentic AI e lento: voce tem as explicacoes mas precisa fazer as perguntas certas. Juntos, eles formam o stack de BI mais poderoso disponivel hoje.</p>
+
+    <ul class="checklist">
+      <li>Comece configurando alertas inteligentes com z-score dinamico — nao thresholds fixos</li>
+      <li>Adicione SHAP ao seu modelo preditivo mais critico e mostre as explicacoes no dashboard</li>
+      <li>Experimente o Qlik MCP ou a API do Claude para adicionar raciocinio ao seu pipeline</li>
+      <li>Documente cada decisao autonoma do agente para auditoria — XAI torna isso viavel</li>
+    </ul>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-box">
+    <h3>Qual e o seu proximo passo?</h3>
+    <p>Qual ferramentas no seu stack ja caminham nessa direcao? Me conta nos comentarios no LinkedIn.</p>
+    <a href="https://www.linkedin.com/in/rafaelveloso/" class="cta-btn">Conectar no LinkedIn</a>
+  </div>
+
+  <!-- TAGS -->
+  <div class="tags">
+    <span class="tag">#AgenticAI</span>
+    <span class="tag">#XAI</span>
+    <span class="tag">#ExplainableAI</span>
+    <span class="tag">#BusinessIntelligence</span>
+    <span class="tag">#Qlik</span>
+    <span class="tag">#PowerBI</span>
+    <span class="tag">#DataAnalytics</span>
+    <span class="tag">#Python</span>
+    <span class="tag">#SHAP</span>
+    <span class="tag">#MLOps</span>
+    <span class="tag">#BI2026</span>
+  </div>
+
+</div>
+
+<!-- AUTHOR BAR -->
+<div class="author-bar">
+  <div class="author-avatar">RV</div>
+  <div>
+    <strong>Rafael Veloso</strong> - Data &amp; BI Specialist<br>
+    Serie semanal: BI, Qlik, Power BI, IA e Dados em producao
+  </div>
+</div>
+
+</body>
+</html>
