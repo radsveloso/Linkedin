@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Semana 13 - Migração QlikView para Qlik Cloud | Rafael Veloso</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #0a1628;
+    color: #e2e8f0;
+    line-height: 1.7;
+  }
+  .hero {
+    background: linear-gradient(135deg, #0d1f3c 0%, #1a3a6b 50%, #0d2a5e 100%);
+    padding: 60px 40px 50px;
+    text-align: center;
+    border-bottom: 3px solid #2563eb;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(37,99,235,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .week-badge {
+    display: inline-block;
+    background: rgba(37,99,235,0.2);
+    border: 1px solid #2563eb;
+    color: #60a5fa;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+  }
+  .hero h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 16px;
+    max-width: 820px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .hero h1 span { color: #60a5fa; }
+  .hero .subtitle {
+    font-size: 1.05rem;
+    color: #94a3b8;
+    max-width: 640px;
+    margin: 0 auto 30px;
+  }
+  .hero-meta {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-size: 0.82rem;
+    color: #64748b;
+  }
+  .hero-meta span { display: flex; align-items: center; gap: 6px; }
+  .container { max-width: 820px; margin: 0 auto; padding: 48px 24px; }
+  .section { margin-bottom: 48px; }
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #1e3a6e;
+  }
+  h2 .accent { color: #60a5fa; }
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #93c5fd;
+    margin: 28px 0 12px;
+  }
+  p { color: #cbd5e1; margin-bottom: 16px; }
+  .highlight-box {
+    background: linear-gradient(135deg, #0f2545 0%, #1e3a6e 100%);
+    border: 1px solid #2563eb;
+    border-left: 4px solid #3b82f6;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 24px 0;
+  }
+  .highlight-box p { margin: 0; color: #bfdbfe; font-style: italic; font-size: 1.05rem; }
+  .warning-box {
+    background: linear-gradient(135deg, #2d1a0a 0%, #3d2510 100%);
+    border: 1px solid #f59e0b;
+    border-left: 4px solid #f59e0b;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 24px 0;
+  }
+  .warning-box p { margin: 0; color: #fde68a; font-size: 0.95rem; }
+  .warning-box strong { color: #fbbf24; }
+  .danger-box {
+    background: linear-gradient(135deg, #2d0a0a 0%, #3d1010 100%);
+    border: 1px solid #ef4444;
+    border-left: 4px solid #ef4444;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 24px 0;
+  }
+  .danger-box p { margin: 0; color: #fca5a5; font-size: 0.95rem; }
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 28px 0;
+  }
+  @media (max-width: 600px) { .comparison-grid { grid-template-columns: 1fr; } }
+  .comp-card {
+    background: #0f2545;
+    border: 1px solid #1e3a6e;
+    border-radius: 10px;
+    padding: 22px;
+  }
+  .comp-card.blue { border-top: 3px solid #3b82f6; }
+  .comp-card.green { border-top: 3px solid #10b981; }
+  .comp-card.red { border-top: 3px solid #ef4444; }
+  .comp-card.yellow { border-top: 3px solid #f59e0b; }
+  .comp-card h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .comp-card p { font-size: 0.9rem; color: #94a3b8; margin: 0; }
+  pre {
+    background: #050e1f;
+    border: 1px solid #1e3a6e;
+    border-radius: 10px;
+    padding: 24px;
+    margin: 20px 0;
+    overflow-x: auto;
+    font-size: 0.83rem;
+    line-height: 1.7;
+  }
+  pre code { color: #7dd3fc; font-family: 'Courier New', monospace; }
+  .code-label {
+    display: inline-block;
+    background: #1e3a6e;
+    color: #60a5fa;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px 4px 0 0;
+    margin-bottom: -1px;
+  }
+  .trap-list { list-style: none; margin: 20px 0; counter-reset: trap; }
+  .trap-item {
+    counter-increment: trap;
+    background: #0f2545;
+    border: 1px solid #1e3a6e;
+    border-left: 4px solid #ef4444;
+    border-radius: 8px;
+    padding: 20px 20px 20px 60px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .trap-item::before {
+    content: counter(trap);
+    position: absolute;
+    left: 16px;
+    top: 18px;
+    width: 28px;
+    height: 28px;
+    background: #ef4444;
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.85rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 28px;
+  }
+  .trap-item h4 { color: #fca5a5; font-size: 1rem; margin-bottom: 6px; }
+  .trap-item p { font-size: 0.9rem; color: #94a3b8; margin-bottom: 8px; }
+  .trap-item .fix { color: #34d399; font-size: 0.88rem; }
+  .trap-item .fix::before { content: '✓ Fix: '; font-weight: 700; }
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 0.88rem;
+  }
+  .matrix-table th {
+    background: #0f2545;
+    color: #60a5fa;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 2px solid #2563eb;
+  }
+  .matrix-table td {
+    padding: 11px 16px;
+    color: #cbd5e1;
+    border-bottom: 1px solid #1e2d4a;
+    vertical-align: top;
+  }
+  .matrix-table tr:hover td { background: #0f2545; }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge-green { background: rgba(16,185,129,0.15); color: #34d399; }
+  .badge-yellow { background: rgba(245,158,11,0.15); color: #fbbf24; }
+  .badge-red { background: rgba(239,68,68,0.15); color: #f87171; }
+  .badge-blue { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .checklist { list-style: none; margin: 16px 0; }
+  .checklist li {
+    padding: 10px 0;
+    padding-left: 28px;
+    position: relative;
+    color: #cbd5e1;
+    border-bottom: 1px solid #1e293b;
+    font-size: 0.95rem;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #10b981;
+    font-weight: 700;
+  }
+  .persona-box {
+    background: #050e1f;
+    border: 1px solid #2563eb;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .persona-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .persona-box p { font-size: 0.9rem; color: #94a3b8; margin: 0; }
+  .persona-box strong { color: #60a5fa; display: block; margin-bottom: 4px; }
+  .cta-box {
+    background: linear-gradient(135deg, #0f2545 0%, #1e3a6e 100%);
+    border: 1px solid #2563eb;
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    margin-top: 48px;
+  }
+  .cta-box h3 { color: #fff; font-size: 1.3rem; margin-bottom: 12px; }
+  .cta-box p { color: #94a3b8; max-width: 500px; margin: 0 auto 20px; }
+  .cta-btn {
+    display: inline-block;
+    background: #2563eb;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 12px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+  }
+  .tags { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag {
+    background: rgba(37,99,235,0.1);
+    border: 1px solid #1e3a6e;
+    color: #60a5fa;
+    font-size: 0.78rem;
+    padding: 5px 12px;
+    border-radius: 20px;
+  }
+  .divider { border: none; border-top: 1px solid #1e2d4a; margin: 40px 0; }
+  .case-box {
+    background: #050e1f;
+    border: 1px solid #10b981;
+    border-radius: 10px;
+    padding: 24px;
+    margin: 28px 0;
+  }
+  .case-box .case-header {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #10b981;
+    margin-bottom: 12px;
+  }
+  .case-box p { font-size: 0.92rem; color: #94a3b8; margin-bottom: 10px; }
+  .case-box p:last-child { margin-bottom: 0; }
+  .author-bar {
+    background: #0d1f3c;
+    border-top: 1px solid #1e2d4a;
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+  .author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: #fff;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+  .author-bar strong { color: #e2e8f0; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="week-badge">Semana 13 - Série BI &amp; IA 2026</div>
+  <h1>Migração <span>QlikView</span> para <span>Qlik Cloud</span>:<br>as armadilhas que ninguém te conta</h1>
+  <p class="subtitle">O guia honesto para gestores e desenvolvedores sobre o que realmente falha e como evitar retrabalho de meses</p>
+  <div class="hero-meta">
+    <span>por Rafael Veloso</span>
+    <span>Setembro 2026</span>
+    <span>Leitura: ~9 min</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- INTRO -->
+  <div class="section">
+    <div class="highlight-box">
+      <p>"Migrar QlikView para Qlik Cloud não é upgrade: é uma mudança de paradigma. Quem trata como upgrade paga o preço meses depois."</p>
+    </div>
+
+    <p>Em 2026, a maioria das grandes empresas que ainda opera QlikView está em algum estágio de migração para o Qlik Cloud. Algumas já concluíram. Muitas estão no meio do caminho. E boa parte está descobrindo agora o que deveria ter planejado antes de começar.</p>
+
+    <p>Neste artigo, vou abordar as armadilhas mais comuns dessa jornada, com dois ângulos deliberadamente distintos: o do gestor que aprova o projeto e o do desenvolvedor que executa. Porque os dois sofrem por razões diferentes.</p>
+  </div>
+
+  <!-- CASO FICTÍCIO -->
+  <div class="section">
+    <h2><span class="accent">O cenário:</span> Uma migração que saiu do controle</h2>
+
+    <div class="case-box">
+      <div class="case-header">Caso referência (fictício, baseado em padrões reais)</div>
+      <p>Uma empresa de médio porte com 12 anos de QlikView decide migrar para o Qlik Cloud. O projeto é aprovado com estimativa de 4 meses e orçamento para 2 desenvolvedores em tempo parcial.</p>
+      <p>Seis meses depois: 40% dos relatórios estão migrados, os 60% restantes têm complexidade muito maior do que o previsto, o modelo de dados principal foi refeito duas vezes, e a área financeira ainda usa o QlikView porque "não está confiando nos números novos".</p>
+      <p><strong style="color:#34d399;">O que errou?</strong> Não foi falta de competência técnica. Foi falta de mapeamento das diferenças reais entre as duas plataformas, e das expectativas não alinhadas entre gestor e equipe técnica.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- VISÃO GESTOR -->
+  <div class="section">
+    <h2><span class="accent">Visão do Gestor:</span> O que o projeto não vai te contar</h2>
+
+    <p>Se você é o responsável pela aprovação e acompanhamento da migração, estas são as armadilhas que vão aparecer no seu radar, geralmente tarde demais.</p>
+
+    <ul class="trap-list">
+      <li class="trap-item">
+        <h4>Estimativa baseada em quantidade de relatórios, não em complexidade</h4>
+        <p>O time diz "temos 80 relatórios para migrar". Isso não significa absolutamente nada sem saber quantos usam scripts QVD complexos, loops aninhados, macros VBScript ou seções de acesso. Um relatório pode levar 2 horas ou 3 semanas.</p>
+        <span class="fix">Exija um inventário técnico antes da estimativa. Classifique os apps em baixa, média e alta complexidade com critérios objetivos.</span>
+      </li>
+      <li class="trap-item">
+        <h4>O modelo de dados não é portável como parece</h4>
+        <p>Gestores assumem que o modelo de dados do QlikView "vem junto". Na prática, a arquitetura de Spaces, Shared Data e Data Files do Qlik Cloud muda onde e como os dados são armazenados e acessados. Dados que antes ficavam em QVDs locais precisam ir para um storage centralizado, e isso tem impacto em governança e licença.</p>
+        <span class="fix">Inclua no escopo a redesign do modelo de dados, não apenas a migração de scripts. Reserve pelo menos 20% do orçamento total para isso.</span>
+      </li>
+      <li class="trap-item">
+        <h4>Seção de Acesso (Section Access) vira dor de cabeça de segurança</h4>
+        <p>O controle de acesso por dados que funcionava no QlikView precisa ser repensado no Qlik Cloud. As regras de Section Access continuam existindo, mas a integração com SSO, grupos do Azure AD e permissões de Space adiciona camadas que o projeto original raramente contempla.</p>
+        <span class="fix">Mapeie todos os grupos de acesso e regras existentes antes de iniciar. Envolva o time de segurança/TI desde o dia 1, não na semana de go-live.</span>
+      </li>
+      <li class="trap-item">
+        <h4>O usuário final vai rejeitar a interface nova</h4>
+        <p>O Qlik Sense (base do Qlik Cloud) tem uma experiência visual diferente do QlikView. Usuários acostumados há anos com o layout antigo vão reclamar, independentemente de a nova versão ser melhor. Sem gestão de mudança, a adoção falha mesmo com a migração técnica concluída.</p>
+        <span class="fix">Conduza sessões de validação com usuários-chave durante o desenvolvimento. Não apresente só no go-live. Invista em treinamento e comunicação.</span>
+      </li>
+      <li class="trap-item">
+        <h4>Licença e custo de consumo no Qlik Cloud surpreendem</h4>
+        <p>O modelo de licenciamento do Qlik Cloud é diferente do QlikView. Capacidade de reload, armazenamento de dados e número de apps podem gerar custos não previstos no orçamento inicial, especialmente em ambientes com muitos reloads agendados ou grandes volumes de dados.</p>
+        <span class="fix">Solicite uma análise de consumo estimado antes de fechar o contrato. Use o ambiente de trial para medir uso real com os apps mais pesados.</span>
+      </li>
+    </ul>
+  </div>
+
+  <hr class="divider">
+
+  <!-- VISÃO DESENVOLVEDOR -->
+  <div class="section">
+    <h2><span class="accent">Visão do Desenvolvedor:</span> Onde o script QlikView para de funcionar</h2>
+
+    <p>Se você é quem vai colocar a mão no código, aqui estão as diferenças técnicas que mais geram retrabalho, com exemplos práticos de como contornar cada uma.</p>
+
+    <h3>Armadilha 1: Macros VBScript não existem no Qlik Cloud</h3>
+    <p>No QlikView, macros VBScript eram amplamente usadas para automação: abrir/fechar apps, navegar entre sheets, manipular seleções programaticamente. No Qlik Cloud, <strong>VBScript não existe</strong>. Ponto.</p>
+
+    <div class="warning-box">
+      <p><strong>Impacto real:</strong> Apps com muitas macros precisam ter toda a lógica de automação reescrita usando Application Automation (ferramenta nativa do Qlik Cloud) ou APIs REST. Isso não é refatoração: é uma reconstrução completa.</p>
+    </div>
+
+    <div class="code-label">QlikView - Macro VBScript (não funciona no Cloud)</div>
+    <pre><code>' Exemplo de macro QlikView que NÃO migra
+Sub AbrirApp()
+    Set oApp = ActiveDocument
+    oApp.GetField("Ano").Select("2024")
+    oApp.Reload
+    MsgBox "Reload concluído!"
+End Sub</code></pre>
+
+    <div class="code-label">Qlik Cloud - Alternativa via Application Automation</div>
+    <pre><code>// No Qlik Cloud, use Application Automation (sem código)
+// ou a API REST para automações equivalentes
+
+// Exemplo via API REST - selecionar valor e recarregar
+POST /v1/apps/{appId}/actions/apply-bookmark
+{
+  "bookmarkId": "seu-bookmark-id"
+}
+
+// Para reload via API:
+POST /v1/reloads
+{
+  "appId": "seu-app-id",
+  "partial": false
+}</code></pre>
+
+    <h3>Armadilha 2: Loops e Sub-rotinas no Load Script têm comportamento diferente</h3>
+    <p>Scripts com <code>For Each</code>, <code>Do While</code> e chamadas a <code>Sub</code> dentro do Load Script funcionam no QlikView mas podem se comportar de forma inesperada no Qlik Cloud, especialmente quando dependem de variáveis de ambiente ou caminhos de arquivo locais.</p>
+
+    <div class="code-label">QlikView - Loop com caminho local (quebra no Cloud)</div>
+    <pre><code>// Padrão QlikView que FALHA no Qlik Cloud
+For Each vFile in FileList('C:\Dados\Vendas\*.qvd')
+    LOAD * FROM [$(vFile)] (qvd);
+Next vFile</code></pre>
+
+    <div class="code-label">Qlik Cloud - Padrão correto com Data Files</div>
+    <pre><code>// No Qlik Cloud, arquivos ficam em Data Files ou conexão
+// Use a lib de conexão configurada no Space
+
+For Each vFile in FileList('lib://DataFiles/Vendas/*.qvd')
+    LOAD * FROM [$(vFile)] (qvd);
+Next vFile
+
+// Ou use uma conexão de dados configurada:
+LOAD * FROM [lib://MinhaConexao:DataFiles/Vendas/vendas_2024.qvd] (qvd);</code></pre>
+
+    <h3>Armadilha 3: Section Access com grupos do AD quebra silenciosamente</h3>
+    <p>A integração de Section Access com grupos do Azure Active Directory no Qlik Cloud exige configuração específica no tenant. Se não estiver configurada corretamente, a tabela de segurança simplesmente não filtra, e o usuário vê tudo, sem erro visível.</p>
+
+    <div class="danger-box">
+      <p><strong>Cuidado crítico:</strong> Nunca publique um app com Section Access em produção sem validar com usuários de diferentes perfis de acesso. O comportamento silencioso (sem erro) é a armadilha mais perigosa desta migração.</p>
+    </div>
+
+    <div class="code-label">Qlik Cloud - Section Access com grupo AD</div>
+    <pre><code>Section Access;
+LOAD * INLINE [
+    ACCESS,  USERID,           REGION
+    ADMIN,   DOMAIN\adm_bi,    *
+    USER,    %grp_vendas_sul,  Sul
+    USER,    %grp_vendas_norte,Norte
+];
+// Prefixo % identifica grupos AD (não usuários individuais)
+// Requer configuração do IdP no Qlik Cloud Management Console
+
+Section Application;
+LOAD
+    Data,
+    Vendas,
+    Region,
+    // ... demais campos
+FROM [lib://DataFiles/vendas.qvd] (qvd)
+WHERE EXISTS(REGION, Region);</code></pre>
+
+    <h3>Armadilha 4: Agendamento de reload muda completamente</h3>
+    <p>No QlikView, os reloads eram agendados pelo QlikView Server (QVS) com tarefas no Publisher. No Qlik Cloud, o agendamento é por app, dentro da plataforma, e tem limitações de horário e frequência dependendo da licença contratada.</p>
+
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th>Funcionalidade</th>
+          <th>QlikView Publisher</th>
+          <th>Qlik Cloud</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Agendamento</td>
+          <td>Por tarefa, com dependências</td>
+          <td>Por app, cron ou trigger de evento</td>
+        </tr>
+        <tr>
+          <td>Reload encadeado</td>
+          <td>Nativo (tarefa A dispara tarefa B)</td>
+          <td>Requer Application Automation</td>
+        </tr>
+        <tr>
+          <td>Reload condicional</td>
+          <td>Via script ou trigger customizado</td>
+          <td>Application Automation com condições</td>
+        </tr>
+        <tr>
+          <td>Notificação de falha</td>
+          <td>Email via Publisher</td>
+          <td>Automation + webhook/email</td>
+        </tr>
+        <tr>
+          <td>Log de execução</td>
+          <td>Arquivo de log local</td>
+          <td>Console de monitoramento centralizado</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Armadilha 5: Set Analysis com variáveis de sessão</h3>
+    <p>Set Analysis que usa variáveis calculadas em tempo de sessão pode se comportar de forma diferente no Qlik Cloud, especialmente quando as variáveis são definidas via macro ou carregadas de forma dinâmica.</p>
+
+    <div class="code-label">Padrão que pode falhar - variável calculada em Set Analysis</div>
+    <pre><code>// No QlikView, variáveis definidas por macro eram usadas assim:
+Sum({$&lt;Ano={$(=vAnoAtual)}&gt;} Vendas)
+
+// No Qlik Cloud, sem macros, vAnoAtual precisa ser
+// carregada via Load Script ou definida na UI:
+Let vAnoAtual = Year(Today());
+
+// Ou use expressões diretas no Set Analysis:
+Sum({$&lt;Ano={$(=Year(Today()))}&gt;} Vendas)
+
+// Mais robusto ainda - use campos de flag no modelo:
+// Crie FlagAnoAtual=1 no QVD e filtre por ele</code></pre>
+  </div>
+
+  <hr class="divider">
+
+  <!-- CHECKLIST DE MIGRAÇÃO -->
+  <div class="section">
+    <h2><span class="accent">Checklist:</span> Antes de iniciar a migração</h2>
+
+    <div class="comparison-grid">
+      <div class="comp-card blue">
+        <h4>Para o Gestor</h4>
+        <p>
+          ☐ Inventário técnico com classificação de complexidade<br>
+          ☐ Mapeamento de usuários e perfis de acesso<br>
+          ☐ Plano de gestão de mudança e treinamento<br>
+          ☐ Análise de licença e estimativa de consumo<br>
+          ☐ Critérios claros de aceite por relatório<br>
+          ☐ Período de coexistência QlikView + Cloud definido<br>
+          ☐ Comunicação com as áreas usuárias antes do go-live
+        </p>
+      </div>
+      <div class="comp-card green">
+        <h4>Para o Desenvolvedor</h4>
+        <p>
+          ☐ Mapeamento de todas as macros VBScript existentes<br>
+          ☐ Auditoria de Section Access e grupos de acesso<br>
+          ☐ Revisão de todos os caminhos de arquivo (FileList, QVDs)<br>
+          ☐ Teste de Set Analysis com variáveis dinâmicas<br>
+          ☐ Validação de reloads agendados e dependências<br>
+          ☐ Ambiente de dev/test separado do produção no Cloud<br>
+          ☐ Teste de Section Access com usuários reais antes do go-live
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONCLUSÃO -->
+  <div class="section">
+    <h2><span class="accent">Conclusão</span></h2>
+    <p>A migração de QlikView para Qlik Cloud vale a pena. A plataforma nova é genuinamente mais poderosa, colaborativa e escalável. Mas o caminho até lá tem armadilhas reais que não aparecem nos materiais de marketing..</p>
+
+    <p>O gestor que entende onde estão os riscos técnicos consegue planejar o projeto com realismo. O desenvolvedor que conhece as diferenças de plataforma evita retrabalho de semanas. Juntos, eles fazem uma migração que chega ao go-live sem surpresas desagradáveis.</p>
+
+    <ul class="checklist">
+      <li>Trate a migração como um projeto de redesign, não apenas de portabilidade</li>
+      <li>Mapeie macros, Section Access e loops antes de qualquer estimativa</li>
+      <li>Envolva usuários-chave desde o início, não só no go-live</li>
+      <li>Valide o Section Access com usuários reais antes de desligar o QlikView</li>
+      <li>Planeje um período de coexistência das duas plataformas</li>
+    </ul>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-box">
+    <h3>Você está em algum estágio dessa jornada?</h3>
+    <p>Migração concluída, em andamento ou ainda no planejamento? Me conta nos comentários: qual foi a maior surpresa que você encontrou.</p>
+    <a href="https://www.linkedin.com/in/rafaelveloso/" class="cta-btn">Conectar no LinkedIn</a>
+  </div>
+
+  <!-- TAGS -->
+  <div class="tags">
+    <span class="tag">#QlikView</span>
+    <span class="tag">#QlikCloud</span>
+    <span class="tag">#QlikSense</span>
+    <span class="tag">#Migração</span>
+    <span class="tag">#BusinessIntelligence</span>
+    <span class="tag">#Qlik</span>
+    <span class="tag">#DataAnalytics</span>
+    <span class="tag">#BI2026</span>
+    <span class="tag">#DataEngineering</span>
+    <span class="tag">#GestãoDados</span>
+  </div>
+
+</div>
+
+<!-- AUTHOR BAR -->
+<div class="author-bar">
+  <div class="author-avatar">RV</div>
+  <div>
+    <strong>Rafael Veloso</strong> - Data &amp; BI Specialist<br>
+    Série semanal: BI, Qlik, Power BI, IA e Dados em produção
+  </div>
+</div>
+
+</body>
+</html>
