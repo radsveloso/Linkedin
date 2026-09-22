@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qlik Answers na prática: o que realmente funciona (e o que o marketing não conta)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background-color: #0a1628;
+    color: #e0e6f0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.75;
+  }
+  .container { max-width: 860px; margin: 0 auto; padding: 48px 24px; }
+
+  /* Header */
+  .article-header {
+    border-left: 5px solid #4fc3f7;
+    padding-left: 24px;
+    margin-bottom: 48px;
+  }
+  .week-tag {
+    display: inline-block;
+    background: #4fc3f7;
+    color: #0a1628;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 3px;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.25;
+    margin-bottom: 16px;
+  }
+  .subtitle {
+    font-size: 1.1rem;
+    color: #90caf9;
+    font-style: italic;
+  }
+
+  /* Lead */
+  .lead {
+    background: linear-gradient(135deg, #0d1f3a 0%, #112240 100%);
+    border: 1px solid #1e3a5f;
+    border-radius: 10px;
+    padding: 32px;
+    margin-bottom: 40px;
+    font-size: 1.05rem;
+  }
+  .lead p { margin-bottom: 12px; }
+  .lead p:last-child { margin-bottom: 0; }
+
+  /* Section headers */
+  h2 {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #4fc3f7;
+    margin: 48px 0 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #1e3a5f;
+  }
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #90caf9;
+    margin: 28px 0 12px;
+  }
+
+  /* Audience badges */
+  .badge-gestor {
+    display: inline-block;
+    background: rgba(79, 195, 247, 0.15);
+    border: 1px solid #4fc3f7;
+    color: #4fc3f7;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 3px;
+    margin-bottom: 8px;
+  }
+  .badge-dev {
+    display: inline-block;
+    background: rgba(129, 212, 250, 0.12);
+    border: 1px solid #81d4fa;
+    color: #81d4fa;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 3px;
+    margin-bottom: 8px;
+  }
+
+  /* Cards de pontos */
+  .card {
+    background: #0d1f3a;
+    border: 1px solid #1e3a5f;
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .card-number {
+    position: absolute;
+    top: -14px;
+    left: 20px;
+    background: #4fc3f7;
+    color: #0a1628;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 3px 12px;
+    border-radius: 3px;
+  }
+  .card-number.dev { background: #81d4fa; }
+  .card h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 8px;
+    margin-top: 4px;
+  }
+  .card p { color: #b0c4de; font-size: 0.95rem; }
+
+  /* Warning/insight */
+  .insight {
+    background: rgba(255, 183, 77, 0.08);
+    border-left: 4px solid #ffb74d;
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    margin: 20px 0;
+    color: #ffe0b2;
+    font-size: 0.95rem;
+  }
+  .insight strong { color: #ffcc80; }
+
+  .tip {
+    background: rgba(79, 195, 247, 0.08);
+    border-left: 4px solid #4fc3f7;
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    margin: 20px 0;
+    color: #b3e5fc;
+    font-size: 0.95rem;
+  }
+
+  /* Code blocks */
+  .code-wrapper { margin: 20px 0; }
+  .code-label {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 4px 4px 0 0;
+  }
+  .code-label.before { background: #b71c1c; color: #ffcdd2; }
+  .code-label.after { background: #1b5e20; color: #c8e6c9; }
+  .code-label.neutral { background: #1a3a5c; color: #90caf9; }
+  pre {
+    background: #060e1c;
+    border: 1px solid #1e3a5f;
+    border-radius: 0 8px 8px 8px;
+    padding: 20px;
+    overflow-x: auto;
+    font-family: 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: #cdd6f4;
+    margin: 0;
+  }
+  .code-wrapper.single pre { border-radius: 8px; }
+  .kw { color: #89b4fa; }
+  .fn { color: #cba6f7; }
+  .str { color: #a6e3a1; }
+  .cmt { color: #6c7086; font-style: italic; }
+  .num { color: #fab387; }
+  .var { color: #89dceb; }
+  .op { color: #f38ba8; }
+
+  /* Diagrama de fluxo */
+  .flow {
+    background: #060e1c;
+    border: 1px solid #1e3a5f;
+    border-radius: 10px;
+    padding: 28px;
+    margin: 24px 0;
+    text-align: center;
+  }
+  .flow-step {
+    display: inline-block;
+    background: #112240;
+    border: 1px solid #4fc3f7;
+    color: #4fc3f7;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 6px;
+    margin: 4px;
+  }
+  .flow-arrow {
+    color: #4fc3f7;
+    font-size: 1.2rem;
+    margin: 0 4px;
+    vertical-align: middle;
+  }
+  .flow-label {
+    font-size: 0.75rem;
+    color: #546e7a;
+    text-align: center;
+    margin-top: 12px;
+    font-style: italic;
+  }
+
+  /* Caso fictício */
+  .case-study {
+    background: linear-gradient(135deg, #0d1f3a 0%, #0a1a30 100%);
+    border: 1px solid #1e3a5f;
+    border-top: 4px solid #4fc3f7;
+    border-radius: 10px;
+    padding: 32px;
+    margin: 36px 0;
+  }
+  .case-tag {
+    display: inline-block;
+    background: rgba(79, 195, 247, 0.12);
+    border: 1px solid #4fc3f7;
+    color: #4fc3f7;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 3px;
+    margin-bottom: 16px;
+  }
+  .case-study h3 { color: #ffffff; margin-top: 0; }
+  .case-study p { color: #b0c4de; margin-bottom: 12px; }
+  .case-metric {
+    display: inline-block;
+    background: #112240;
+    border: 1px solid #4fc3f7;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin: 8px 8px 8px 0;
+    text-align: center;
+  }
+  .case-metric .value { font-size: 1.4rem; font-weight: 800; color: #4fc3f7; }
+  .case-metric .label { font-size: 0.75rem; color: #546e7a; margin-top: 2px; }
+
+  /* Checklist */
+  .checklist {
+    background: #0d1f3a;
+    border: 1px solid #1e3a5f;
+    border-radius: 10px;
+    padding: 28px;
+    margin: 32px 0;
+  }
+  .checklist h3 { margin-top: 0; margin-bottom: 16px; }
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #1e3a5f;
+    font-size: 0.9rem;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #4fc3f7;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .check-text { color: #b0c4de; }
+
+  /* Architecture box */
+  .arch-box {
+    background: #060e1c;
+    border: 1px solid #1e3a5f;
+    border-radius: 10px;
+    padding: 24px;
+    margin: 20px 0;
+    font-size: 0.85rem;
+  }
+  .arch-layer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+  }
+  .arch-layer:last-child { margin-bottom: 0; }
+  .arch-layer.l1 { background: rgba(79, 195, 247, 0.1); border: 1px solid #4fc3f7; }
+  .arch-layer.l2 { background: rgba(129, 212, 250, 0.08); border: 1px solid #81d4fa; }
+  .arch-layer.l3 { background: rgba(100, 181, 246, 0.06); border: 1px solid #64b5f6; }
+  .arch-layer.l4 { background: rgba(77, 208, 225, 0.06); border: 1px solid #4dd0e1; }
+  .arch-layer.l5 { background: rgba(77, 182, 172, 0.06); border: 1px solid #4db6ac; }
+  .arch-icon { font-size: 1.2rem; }
+  .arch-name { font-weight: 700; color: #ffffff; }
+  .arch-desc { color: #546e7a; font-size: 0.8rem; }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid #1e3a5f;
+    margin: 40px 0;
+  }
+
+  /* CTA */
+  .cta {
+    background: linear-gradient(135deg, #112240 0%, #0d1f3a 100%);
+    border: 1px solid #4fc3f7;
+    border-radius: 10px;
+    padding: 32px;
+    text-align: center;
+    margin-top: 48px;
+  }
+  .cta h3 { color: #ffffff; font-size: 1.2rem; margin-bottom: 12px; }
+  .cta p { color: #90caf9; font-size: 0.95rem; }
+
+  /* Footer */
+  .article-footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid #1e3a5f;
+    font-size: 0.8rem;
+    color: #546e7a;
+    text-align: center;
+  }
+  .hashtags { color: #4fc3f7; }
+
+  p { margin-bottom: 16px; }
+  strong { color: #e0e6f0; }
+  ul, ol { padding-left: 20px; margin-bottom: 16px; }
+  li { color: #b0c4de; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <header class="article-header">
+    <div class="week-tag">Semana 14 | Setembro 2026</div>
+    <h1>Qlik Answers na prática:<br>o que realmente funciona<br>(e o que o marketing não conta)</h1>
+    <p class="subtitle">Uma análise honesta do agente de IA do Qlik, com dois ângulos: o que o gestor precisa decidir e o que o desenvolvedor vai encontrar no código.</p>
+  </header>
+
+  <!-- Lead -->
+  <div class="lead">
+    <p>A demo é impressionante. O usuário digita "qual foi o faturamento por região no último trimestre?" e em segundos recebe uma resposta em linguagem natural, com números corretos, citando as fontes.</p>
+    <p>Aí o projeto chega em produção. O analista pergunta "qual é a margem por produto considerando devoluções?" e a resposta vem errada. Sem aviso. Sem indicação de erro. Apenas errada.</p>
+    <p>Isso não é um bug do Qlik Answers. É o comportamento esperado quando a camada semântica não está preparada para suportar IA. E a maioria dos projetos não está.</p>
+  </div>
+
+  <!-- O que é -->
+  <h2>O que é o Qlik Answers de verdade</h2>
+
+  <p>O Qlik Answers é o conjunto de agentes de IA lançado pelo Qlik em fevereiro de 2026 no Qlik Cloud. Ele combina quatro tipos de agentes: análise de dados estruturados, busca em conhecimento não estruturado, detecção de anomalias e assistência (help contextual).</p>
+
+  <p>Tecnicamente, funciona em cima de RAG (Retrieval-Augmented Generation), com infraestrutura na AWS Bedrock usando modelos Claude da Anthropic como LLM base. O modelo é escolhido por função do agente e atualizado continuamente com base em performance, latência e custo.</p>
+
+  <div class="flow">
+    <div class="flow-step">Pergunta do usuário</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step">LLM interpreta intenção</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step">Busca na camada semântica</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step">Gera consulta Qlik</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step">Associative Engine</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step">Resposta + citações</div>
+    <div class="flow-label">Fluxo simplificado do Qlik Answers para dados estruturados</div>
+  </div>
+
+  <p>A chave de tudo está na etapa "busca na camada semântica". O LLM não acessa os dados diretamente: ele precisa entender o modelo de dados do Qlik para gerar uma expressão válida. E isso exige que o modelo de dados esteja documentado, nomeado e estruturado de forma que a IA consiga interpretar.</p>
+
+  <hr class="divider">
+
+  <!-- VISÃO DO GESTOR -->
+  <h2>🎯 Visão do Gestor: 5 coisas para saber antes de aprovar o projeto</h2>
+
+  <div class="badge-gestor">Para o Gestor / Diretor de Dados</div>
+
+  <div class="card">
+    <div class="card-number">01</div>
+    <h4>A qualidade da IA depende diretamente da qualidade do modelo de dados</h4>
+    <p>Qlik Answers não "entende" seus dados: ele interpreta a documentação que você forneceu sobre eles. Campos sem nome descritivo, medidas sem sinônimos, regras de negócio não documentadas no modelo geram respostas imprecisas ou incorretas. Se o seu app Qlik hoje depende de treinamento verbal para novos analistas, o agente de IA vai ter exatamente os mesmos problemas.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-number">02</div>
+    <h4>O investimento real está na camada semântica, não na licença</h4>
+    <p>A licença do Qlik Answers é apenas o início. O trabalho de preparação da camada semântica (Master Items documentados, sinônimos configurados, regras de negócio explicitadas no modelo) pode representar de 40% a 60% do esforço total de implementação. Projetos que ignoram essa fase chegam à produção com uma IA que responde perguntas simples e falha nas perguntas que realmente importam.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-number">03</div>
+    <h4>Section Access continua funcionando: a IA respeita o controle de acesso</h4>
+    <p>Uma das dúvidas mais comuns dos times de segurança: "o chatbot vai expor dados que o usuário não pode ver?" A resposta é não. O Qlik Answers executa as consultas no contexto do usuário logado, respeitando o Section Access já configurado. Um gerente regional que só acessa dados da sua região vai receber respostas filtradas para a sua região, mesmo via chat. Isso precisa ser documentado e validado em ambientes de produção, mas é o comportamento padrão esperado.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-number">04</div>
+    <h4>Gestão de mudança é mais crítica aqui do que em qualquer outro projeto de BI</h4>
+    <p>Usuários acostumados a dashboards têm um nível de desconfiança saudável: eles veem o gráfico e questionam. Com respostas em linguagem natural, a tendência é confiar mais no resultado sem questionar. Isso significa que uma resposta errada do agente tem mais impacto do que um gráfico incorreto. O programa de adoção precisa incluir treinamento sobre "quando confiar e quando verificar" e definir quais perguntas são adequadas para o agente responder.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-number">05</div>
+    <h4>Defina o escopo correto: o agente não substitui o analista de dados</h4>
+    <p>Qlik Answers performa muito bem em perguntas operacionais diretas: totais, médias, comparações por período, rankings. Ele não é adequado para análises exploratórias complexas, hipóteses estatísticas ou cruzamentos que exigem contexto de negócio que não está no modelo. O ROI real vem de reduzir a fila de solicitações ad-hoc para perguntas do tipo "quanto foi o faturamento de ontem por canal?", não de substituir analistas sênior.</p>
+  </div>
+
+  <div class="insight">
+    <strong>Regra prática:</strong> antes de qualquer POC com Qlik Answers, peça ao time técnico para listar 20 perguntas que os usuários fazem frequentemente. Se mais de 30% dessas perguntas dependem de regras de negócio que não estão explicitadas no modelo Qlik atual, o projeto de preparação é maior do que o projeto de IA.
+  </div>
+
+  <hr class="divider">
+
+  <!-- VISÃO DO DESENVOLVEDOR -->
+  <h2>⚙️ Visão do Desenvolvedor: 5 pontos críticos no código e na arquitetura</h2>
+
+  <div class="badge-dev">Para o Desenvolvedor / Engenheiro de Dados</div>
+
+  <!-- Ponto 1 -->
+  <div class="card">
+    <div class="card-number dev">01</div>
+    <h4>Preparação dos Master Items: a diferença entre uma IA funcional e uma inútil</h4>
+    <p>O Qlik Answers usa os Master Items como vocabulário. Campo sem descrição e sem sinônimos é campo invisível para a IA. Veja a diferença:</p>
+  </div>
+
+  <div class="code-wrapper">
+    <span class="code-label before">Antes: Master Item sem contexto para IA</span>
+    <pre><span class="cmt">// Campo no modelo sem documentação</span>
+<span class="kw">LOAD</span>
+    vl_tot,           <span class="cmt">// "vl_tot" não significa nada para a IA</span>
+    cd_cli,           <span class="cmt">// "cd_cli" é ambíguo</span>
+    dt_ped            <span class="cmt">// "dt_ped": data de pedido ou de pagamento?</span>
+<span class="kw">FROM</span> pedidos.qvd (<span class="kw">qvd</span>);
+
+<span class="cmt">// Master Measure sem descrição</span>
+<span class="cmt">// Nome: "VM"</span>
+<span class="cmt">// Expressão: Sum(vl_tot)</span>
+<span class="cmt">// Descrição: [vazia]</span>
+<span class="cmt">// Tags: [nenhuma]</span></pre>
+  </div>
+
+  <div class="code-wrapper">
+    <span class="code-label after">Depois: Master Item preparado para Qlik Answers</span>
+    <pre><span class="cmt">// Campo com nome descritivo no modelo</span>
+<span class="kw">LOAD</span>
+    vl_tot       <span class="kw">AS</span> [<span class="str">Valor Total do Pedido</span>],
+    cd_cli       <span class="kw">AS</span> [<span class="str">Código do Cliente</span>],
+    dt_ped       <span class="kw">AS</span> [<span class="str">Data do Pedido</span>]
+<span class="kw">FROM</span> pedidos.qvd (<span class="kw">qvd</span>);
+
+<span class="cmt">// Master Measure documentada para IA:</span>
+<span class="cmt">// Nome: "Valor Total de Vendas"</span>
+<span class="cmt">// Expressão: Sum([Valor Total do Pedido])</span>
+<span class="cmt">// Descrição: "Soma do valor bruto de todos os pedidos</span>
+<span class="cmt">//             no período e filtros selecionados,</span>
+<span class="cmt">//             antes de descontos e devoluções."</span>
+<span class="cmt">// Sinônimos: receita, faturamento, vendas totais,</span>
+<span class="cmt">//            total faturado, volume de vendas</span>
+<span class="cmt">// Tags: financeiro, vendas, KPI-principal</span></pre>
+  </div>
+
+  <!-- Ponto 2 -->
+  <div class="card">
+    <div class="card-number dev">02</div>
+    <h4>Section Access com Qlik Answers: validação obrigatória em 3 cenários</h4>
+    <p>O controle de acesso funciona, mas há três cenários que exigem teste explícito antes de ir para produção:</p>
+  </div>
+
+  <div class="code-wrapper">
+    <span class="code-label neutral">Cenários de teste de Section Access com Qlik Answers</span>
+    <pre><span class="cmt">// CENÁRIO 1: Usuário com acesso restrito por região</span>
+<span class="cmt">// Pergunta: "Qual o faturamento total da empresa?"</span>
+<span class="cmt">// Resultado esperado: resposta filtrada para a região do usuário</span>
+<span class="cmt">// Resultado problemático: resposta com total geral (falha de SA)</span>
+
+<span class="cmt">// CENÁRIO 2: Campo com Section Access por nível hierárquico</span>
+<span class="cmt">// Pergunta: "Qual a margem da linha premium?"</span>
+<span class="cmt">// Se o usuário não tem acesso à linha premium:</span>
+<span class="cmt">// Resultado esperado: "Não tenho dados disponíveis para essa consulta"</span>
+<span class="cmt">// Resultado problemático: resposta vazia SEM explicação</span>
+
+<span class="cmt">// CENÁRIO 3: Pergunta que cruza dados protegidos e públicos</span>
+<span class="cmt">// Pergunta: "Qual região tem mais clientes ativos?"</span>
+<span class="cmt">// O agente não deve mencionar regiões que o usuário não acessa</span>
+<span class="cmt">// mesmo que existam no modelo</span>
+
+<span class="cmt">// Recomendação: criar script de teste automatizado</span>
+<span class="cmt">// com usuários de perfis diferentes antes do go-live</span></pre>
+  </div>
+
+  <div class="tip">
+    <strong>Dica:</strong> crie um usuário de teste com Section Access restrito e valide as 10 perguntas mais comuns esperadas para esse perfil. O Qlik Answers não exibe erro quando filtra dados por SA: ele simplesmente responde com o subconjunto acessível. Isso pode ser confuso para o usuário final se não for comunicado corretamente.
+  </div>
+
+  <!-- Ponto 3 -->
+  <div class="card">
+    <div class="card-number dev">03</div>
+    <h4>Embedding via API: como integrar o Qlik Answers em portais externos</h4>
+    <p>O Qlik Answers pode ser embarcado em portais internos via iframe ou via Web Components. Para integrações mais avançadas, a API de consulta permite chamar o agente programaticamente:</p>
+  </div>
+
+  <div class="code-wrapper">
+    <span class="code-label neutral">Exemplo de chamada à API do Qlik Answers (JavaScript)</span>
+    <pre><span class="cmt">// Inicialização da sessão com o Qlik Cloud</span>
+<span class="kw">import</span> { <span class="var">Auth</span>, <span class="var">AuthType</span> } <span class="kw">from</span> <span class="str">'@qlik/sdk'</span>;
+
+<span class="kw">const</span> <span class="var">auth</span> = <span class="kw">new</span> <span class="fn">Auth</span>({
+  <span class="var">webIntegrationId</span>: <span class="str">'seu-web-integration-id'</span>,
+  <span class="var">authType</span>: <span class="var">AuthType</span>.<span class="var">WebIntegration</span>,
+  <span class="var">host</span>: <span class="str">'seu-tenant.us.qlikcloud.com'</span>,
+});
+
+<span class="cmt">// Enviando uma pergunta ao Qlik Answers</span>
+<span class="kw">async function</span> <span class="fn">perguntarQlikAnswers</span>(<span class="var">pergunta</span>, <span class="var">appId</span>) {
+  <span class="kw">const</span> <span class="var">response</span> = <span class="kw">await</span> <span class="fn">fetch</span>(
+    <span class="str">`https://seu-tenant.us.qlikcloud.com/api/v1/assistants/answers/query`</span>,
+    {
+      <span class="var">method</span>: <span class="str">'POST'</span>,
+      <span class="var">headers</span>: {
+        <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span>,
+        <span class="str">'Authorization'</span>: <span class="str">`Bearer ${</span><span class="var">token</span><span class="str">}`</span>,
+      },
+      <span class="var">body</span>: <span class="fn">JSON.stringify</span>({
+        <span class="var">question</span>: <span class="var">pergunta</span>,
+        <span class="var">app</span>: { <span class="var">id</span>: <span class="var">appId</span> },
+        <span class="var">language</span>: <span class="str">'pt-BR'</span>,         <span class="cmt">// suporte a PT-BR</span>
+      }),
+    }
+  );
+
+  <span class="kw">const</span> <span class="var">data</span> = <span class="kw">await</span> <span class="var">response</span>.<span class="fn">json</span>();
+
+  <span class="cmt">// A resposta inclui o texto e as fontes citadas</span>
+  <span class="kw">return</span> {
+    <span class="var">texto</span>: <span class="var">data</span>.<span class="var">answer</span>.<span class="var">text</span>,
+    <span class="var">fontes</span>: <span class="var">data</span>.<span class="var">answer</span>.<span class="var">sources</span>,    <span class="cmt">// quais medidas foram usadas</span>
+    <span class="var">confianca</span>: <span class="var">data</span>.<span class="var">answer</span>.<span class="var">confidence</span>, <span class="cmt">// score de confiança 0-1</span>
+  };
+}</pre>
+  </div>
+
+  <div class="insight">
+    <strong>Atenção ao campo confidence:</strong> respostas com score abaixo de 0,7 indicam que a IA não encontrou correspondência clara na camada semântica. Implemente tratamento explícito para esses casos, como redirecionar o usuário para o dashboard correspondente ou exibir uma mensagem de "baixa confiança nesta resposta".
+  </div>
+
+  <!-- Ponto 4 -->
+  <div class="card">
+    <div class="card-number dev">04</div>
+    <h4>Arquitetura de referência: como o Qlik Answers se encaixa no stack</h4>
+    <p>Para implementações robustas, o Qlik Answers não opera isolado. Ele precisa de camadas de suporte:</p>
+  </div>
+
+  <div class="arch-box">
+    <div class="arch-layer l1">
+      <span class="arch-icon">💬</span>
+      <div>
+        <div class="arch-name">Interface de Usuário</div>
+        <div class="arch-desc">Qlik Hub, portal embarcado, app web com Web Components</div>
+      </div>
+    </div>
+    <div class="arch-layer l2">
+      <span class="arch-icon">🤖</span>
+      <div>
+        <div class="arch-name">Qlik Answers (RAG + LLM)</div>
+        <div class="arch-desc">AWS Bedrock + Claude, interpreta intenção e gera consulta</div>
+      </div>
+    </div>
+    <div class="arch-layer l3">
+      <span class="arch-icon">📐</span>
+      <div>
+        <div class="arch-name">Camada Semântica (Master Items)</div>
+        <div class="arch-desc">Medidas, dimensões, sinônimos, regras de negócio documentadas</div>
+      </div>
+    </div>
+    <div class="arch-layer l4">
+      <span class="arch-icon">⚡</span>
+      <div>
+        <div class="arch-name">Associative Engine (Qlik Cloud)</div>
+        <div class="arch-desc">Executa a consulta gerada respeitando Section Access</div>
+      </div>
+    </div>
+    <div class="arch-layer l5">
+      <span class="arch-icon">🗄️</span>
+      <div>
+        <div class="arch-name">Dados (QVDs, Data Files, Conexões diretas)</div>
+        <div class="arch-desc">Fontes de dados carregadas via Load Script</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ponto 5 -->
+  <div class="card">
+    <div class="card-number dev">05</div>
+    <h4>Knowledge Base Agent: quando o dado não está no Qlik</h4>
+    <p>O Qlik Answers tem um segundo agente para dados não estruturados, o Knowledge Base Agent. Ele indexa documentos (PDFs, Word, páginas web) e responde perguntas sobre esses conteúdos via RAG, com citações das fontes. Esse agente é separado do agente de dados estruturados e requer configuração independente de base de conhecimento.</p>
+  </div>
+
+  <div class="code-wrapper">
+    <span class="code-label neutral">Tipos de perguntas por agente</span>
+    <pre><span class="cmt">// AGENTE DE DADOS ESTRUTURADOS (Associative Engine)</span>
+<span class="cmt">// Perguntas numéricas e analíticas sobre o modelo Qlik:</span>
+<span class="cmt">// "Qual o faturamento por região no Q2?"</span>
+<span class="cmt">// "Quantos clientes novos em julho vs junho?"</span>
+<span class="cmt">// "Qual produto tem maior margem neste mês?"</span>
+
+<span class="cmt">// KNOWLEDGE BASE AGENT (RAG sobre documentos)</span>
+<span class="cmt">// Perguntas sobre políticas, processos, documentação:</span>
+<span class="cmt">// "Qual é a política de desconto para clientes Platinum?"</span>
+<span class="cmt">// "O que diz o contrato com o fornecedor X sobre reajuste?"</span>
+<span class="cmt">// "Como funciona o processo de aprovação de crédito?"</span>
+
+<span class="cmt">// COMBINAÇÃO DOS DOIS (fluxo avançado)</span>
+<span class="cmt">// Pergunta: "Aplicando a política de desconto Platinum,</span>
+<span class="cmt">//            qual seria o impacto na margem deste mês?"</span>
+<span class="cmt">// Isso exige orquestração customizada entre os dois agentes</span>
+<span class="cmt">// Não é o comportamento padrão out-of-the-box</span></pre>
+  </div>
+
+  <hr class="divider">
+
+  <!-- CASO FICTÍCIO -->
+  <div class="case-study">
+    <div class="case-tag">Caso Fictício Ilustrativo</div>
+    <h3>Da fila de solicitações ad-hoc para o chat</h3>
+
+    <p>Uma empresa de distribuição com operação em 8 estados tinha um problema clássico: a equipe de BI recebia uma média de 35 solicitações por semana de relatórios ad-hoc, sendo que 60% delas eram variações da mesma pergunta com filtros diferentes. "Faturamento por vendedor em março", "faturamento por vendedor em abril", "faturamento do vendedor X no primeiro semestre".</p>
+
+    <p>O projeto de Qlik Answers foi dividido em duas etapas. A primeira durou 6 semanas e foi dedicada exclusivamente a preparar a camada semântica: renomear campos, criar sinônimos em todas as medidas principais, documentar regras de negócio que existiam só na cabeça da equipe. A segunda etapa, de implementação e testes, durou 4 semanas.</p>
+
+    <p>Resultado após 60 dias em produção:</p>
+
+    <div>
+      <div class="case-metric">
+        <div class="value">-68%</div>
+        <div class="label">Solicitações ad-hoc simples</div>
+      </div>
+      <div class="case-metric">
+        <div class="value">35 min</div>
+        <div class="label">Tempo médio de resposta (antes: 1-2 dias)</div>
+      </div>
+      <div class="case-metric">
+        <div class="value">82%</div>
+        <div class="label">Taxa de aceitação das respostas pelos usuários</div>
+      </div>
+    </div>
+
+    <p style="margin-top: 20px;">O que a empresa descobriu: as 18% de perguntas rejeitadas pelos usuários eram justamente aquelas que envolviam regras de negócio específicas ainda não documentadas no modelo. Cada rejeição virou um item de backlog para melhorar a camada semântica. O projeto nunca termina, ele evolui.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- CHECKLISTS -->
+  <h2>Checklist de implantação</h2>
+
+  <div class="checklist">
+    <h3><span class="badge-gestor">Gestor</span> Antes de aprovar o orçamento</h3>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text">O modelo de dados atual tem Master Items com nomes descritivos e documentação?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text">Existe inventário das regras de negócio que dependem de conhecimento tácito da equipe?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text">O escopo do agente está definido: quais perguntas ele deve (e não deve) responder?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text">Há plano de gestão de mudança para comunicar "quando confiar e quando verificar"?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text">O time de segurança foi envolvido para validar o comportamento com Section Access?</div>
+    </div>
+  </div>
+
+  <div class="checklist">
+    <h3><span class="badge-dev">Desenvolvedor</span> Antes de ir para produção</h3>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text">Todos os Master Items principais têm nome, descrição e pelo menos 3 sinônimos configurados?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text">Os testes de Section Access foram executados com usuários de perfis diferentes?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text">Há tratamento explícito para respostas com confidence score baixo (abaixo de 0,7)?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text">O Knowledge Base Agent (se utilizado) tem processo de atualização dos documentos indexados?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text">Existe log de perguntas e respostas para identificar gaps na camada semântica em produção?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-text">O embedding (se aplicável) passou por revisão de segurança dos tokens de autenticação?</div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta">
+    <h3>Você já está testando ou avaliando o Qlik Answers?</h3>
+    <p>Me conta nos comentários: qual foi a maior dificuldade encontrada na preparação da camada semântica? Ou se ainda está na fase de avaliação, qual é a principal dúvida antes de aprovar o projeto?</p>
+  </div>
+
+  <!-- Footer -->
+  <div class="article-footer">
+    <p>Artigo semanal | Semana 14 | Setembro de 2026</p>
+    <p class="hashtags">#QlikAnswers #QlikCloud #Qlik #BusinessIntelligence #IAparaDados #DataAnalytics #BI2026 #AgentesDeIA #CamadaSemântica #QlikSense</p>
+  </div>
+
+</div>
+</body>
+</html>
