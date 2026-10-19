@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Semantic Layer in Qlik Cloud: The Missing Rail for AI Agents to Actually Work</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #0a1628;
+    color: #e2e8f0;
+    line-height: 1.75;
+    font-size: 17px;
+  }
+  .hero {
+    background: linear-gradient(135deg, #0a1628 0%, #0d2144 50%, #0a1628 100%);
+    border-bottom: 1px solid #1e3a5f;
+    padding: 60px 0 48px;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: #0d47a1;
+    color: #64b5f6;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 18px;
+    border-radius: 20px;
+    border: 1px solid #1565c0;
+    margin-bottom: 28px;
+  }
+  .hero h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #ffffff;
+    max-width: 820px;
+    margin: 0 auto 22px;
+    line-height: 1.25;
+    letter-spacing: -0.5px;
+  }
+  .hero h1 span { color: #42a5f5; }
+  .hero-lead {
+    font-size: 1.12rem;
+    color: #90caf9;
+    max-width: 680px;
+    margin: 0 auto 30px;
+    line-height: 1.65;
+  }
+  .hero-meta {
+    font-size: 0.82rem;
+    color: #546e7a;
+    letter-spacing: 0.5px;
+  }
+  .container { max-width: 820px; margin: 0 auto; padding: 0 24px; }
+  section { padding: 52px 0; border-bottom: 1px solid #1a2d42; }
+  section:last-child { border-bottom: none; }
+  h2 {
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 22px;
+    letter-spacing: -0.3px;
+  }
+  h3 {
+    font-size: 1.12rem;
+    font-weight: 700;
+    color: #90caf9;
+    margin: 28px 0 12px;
+  }
+  p { margin-bottom: 18px; color: #b0bec5; }
+  strong { color: #e2e8f0; }
+
+  /* Audience cards */
+  .audience-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 28px 0;
+  }
+  .audience-card {
+    background: #0d2144;
+    border: 1px solid #1e3a5f;
+    border-radius: 10px;
+    padding: 20px 22px;
+  }
+  .audience-card .label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #42a5f5;
+    margin-bottom: 8px;
+  }
+  .audience-card p {
+    font-size: 0.9rem;
+    color: #90caf9;
+    margin: 0;
+    line-height: 1.55;
+  }
+
+  /* Diagram */
+  .arch-diagram {
+    background: #060f1e;
+    border: 1px solid #1e3a5f;
+    border-radius: 12px;
+    padding: 32px 24px;
+    margin: 28px 0;
+    text-align: center;
+  }
+  .arch-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .arch-node {
+    background: #0d2144;
+    border: 1px solid #1e3a5f;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    white-space: nowrap;
+  }
+  .arch-node.highlight {
+    background: #0d47a1;
+    border-color: #1565c0;
+    color: #bbdefb;
+  }
+  .arch-node.ai {
+    background: #1a237e;
+    border-color: #283593;
+    color: #c5cae9;
+  }
+  .arch-node.semantic {
+    background: #006064;
+    border-color: #00838f;
+    color: #b2ebf2;
+    font-size: 0.88rem;
+    font-weight: 700;
+    padding: 12px 22px;
+  }
+  .arch-arrow {
+    color: #42a5f5;
+    font-size: 1.1rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .arch-down {
+    color: #42a5f5;
+    font-size: 1.3rem;
+    margin: 4px 0;
+  }
+  .arch-label {
+    font-size: 0.72rem;
+    color: #546e7a;
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .arch-split {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 10px;
+  }
+  .arch-branch {
+    text-align: center;
+  }
+  .arch-branch-line {
+    font-size: 0.75rem;
+    color: #546e7a;
+    margin-bottom: 6px;
+  }
+
+  /* Code blocks */
+  .code-block {
+    background: #060f1e;
+    border: 1px solid #1e3a5f;
+    border-radius: 10px;
+    padding: 22px 24px;
+    margin: 20px 0;
+    overflow-x: auto;
+    position: relative;
+  }
+  .code-block .code-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #42a5f5;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .code-block .code-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #1e3a5f;
+  }
+  pre {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.83rem;
+    line-height: 1.7;
+    white-space: pre;
+    color: #b0bec5;
+    margin: 0;
+  }
+  .c-comment { color: #546e7a; }
+  .c-keyword { color: #42a5f5; }
+  .c-string { color: #80cbc4; }
+  .c-field { color: #ce93d8; }
+  .c-value { color: #a5d6a7; }
+  .c-func { color: #ffcc02; }
+
+  /* Before/After */
+  .before-after {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .before-after .panel-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .before-after .panel-label.before { color: #ef9a9a; }
+  .before-after .panel-label.after { color: #a5d6a7; }
+  .before-panel {
+    background: #1a0a0a;
+    border: 1px solid #4e1717;
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .after-panel {
+    background: #0a1a0a;
+    border: 1px solid #1b4332;
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .before-panel pre, .after-panel pre { font-size: 0.77rem; }
+  .result-tag {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-top: 12px;
+  }
+  .result-tag.bad { background: #4e1717; color: #ef9a9a; }
+  .result-tag.good { background: #1b4332; color: #a5d6a7; }
+
+  /* Feature cards */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 24px 0;
+  }
+  .feature-card {
+    background: #0d2144;
+    border: 1px solid #1e3a5f;
+    border-radius: 10px;
+    padding: 20px 20px;
+  }
+  .feature-card .icon {
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+  }
+  .feature-card h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 6px;
+  }
+  .feature-card p {
+    font-size: 0.85rem;
+    color: #78909c;
+    margin: 0;
+    line-height: 1.55;
+  }
+
+  /* Pitfall list */
+  .pitfall-list { margin: 20px 0; }
+  .pitfall-item {
+    display: flex;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid #1a2d42;
+  }
+  .pitfall-item:last-child { border-bottom: none; }
+  .pitfall-num {
+    background: #b71c1c;
+    color: #ffcdd2;
+    font-size: 0.75rem;
+    font-weight: 800;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .pitfall-content h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ef9a9a;
+    margin-bottom: 5px;
+  }
+  .pitfall-content p {
+    font-size: 0.87rem;
+    color: #78909c;
+    margin: 0;
+    line-height: 1.55;
+  }
+
+  /* Checklist */
+  .checklist { margin: 20px 0; }
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+  }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    background: #0d47a1;
+    border: 2px solid #1565c0;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #42a5f5;
+    font-size: 0.75rem;
+  }
+  .check-text {
+    font-size: 0.92rem;
+    color: #90caf9;
+  }
+
+  /* Warn box */
+  .warn-box {
+    background: #1a1200;
+    border: 1px solid #f57f17;
+    border-left: 4px solid #fb8c00;
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin: 24px 0;
+  }
+  .warn-box .warn-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fb8c00;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .warn-box p {
+    font-size: 0.9rem;
+    color: #ffe082;
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* Metric cards */
+  .metric-row {
+    display: flex;
+    gap: 14px;
+    margin: 24px 0;
+    flex-wrap: wrap;
+  }
+  .metric-card {
+    flex: 1;
+    min-width: 160px;
+    background: #060f1e;
+    border: 1px solid #1e3a5f;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+  }
+  .metric-card .metric-val {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #42a5f5;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .metric-card .metric-label {
+    font-size: 0.78rem;
+    color: #546e7a;
+    letter-spacing: 0.5px;
+  }
+
+  /* CTA */
+  .cta-section {
+    background: linear-gradient(135deg, #0d2144 0%, #0d47a1 100%);
+    border: 1px solid #1565c0;
+    border-radius: 14px;
+    padding: 40px 36px;
+    text-align: center;
+    margin: 48px 0 0;
+  }
+  .cta-section h2 { color: #ffffff; margin-bottom: 14px; }
+  .cta-section p { color: #90caf9; margin-bottom: 24px; font-size: 1.02rem; }
+  .cta-tag {
+    display: inline-block;
+    background: #1a237e;
+    border: 1px solid #3949ab;
+    color: #9fa8da;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    margin: 4px;
+  }
+  .hashtags {
+    margin-top: 28px;
+    color: #42a5f5;
+    font-size: 0.8rem;
+    line-height: 2;
+    opacity: 0.75;
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="container">
+    <div class="hero-badge">Week 16 &middot; Qlik Cloud &middot; AI Architecture</div>
+    <h1>Semantic Layer in Qlik Cloud: <span>The Missing Rail for AI Agents to Actually Work</span></h1>
+    <p class="hero-lead">
+      Everyone is talking about AI Agents for data. Few are talking about what stops those agents from working well.
+      The problem is almost always the same: the agent queried the wrong table, used the wrong field, and returned a number that does not exist.
+    </p>
+    <div class="hero-meta">Rafael Veloso &middot; BI Specialist &middot; October 2026</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Who this is for -->
+  <section>
+    <h2>Who This Article Is For</h2>
+    <div class="audience-grid">
+      <div class="audience-card">
+        <div class="label">BI Developer / Qlik</div>
+        <p>You have already used Qlik Cloud's Business Logic but still haven't understood why it matters for Qlik Answers and AI agents. This article closes that gap with practical examples.</p>
+      </div>
+      <div class="audience-card">
+        <div class="label">Analytics Engineer</div>
+        <p>You have already defined metrics in the dbt Semantic Layer and want to know how those definitions reach Qlik Cloud and feed AI Agents with the right context.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- The Problem -->
+  <section>
+    <h2>The Problem That Kills the AI Agent Before It Starts</h2>
+    <p>
+      Imagine you connect an AI Agent to your data warehouse. The agent has access to all the tables.
+      Someone asks: <strong>"What was the net revenue last month?"</strong>
+    </p>
+    <p>
+      The agent looks at the available tables and finds: <code>fct_ord_v3</code>, <code>fct_ord_legacy</code>, <code>ord_all_regions_tmp</code>.
+      It doesn't know which one to use. It doesn't know if <code>val_liquido</code> or <code>net_revenue_usd</code> is the correct field.
+      It doesn't know if the "net" logic already deducts returns or not.
+    </p>
+    <p>
+      Result: the agent guesses. And it probably gets it wrong.
+    </p>
+
+    <div class="before-after">
+      <div class="before-panel">
+        <div class="panel-label before">Without semantic layer</div>
+        <pre><span class="c-comment">-- What the agent sees:</span>
+<span class="c-field">fct_ord_v3</span>
+<span class="c-field">fct_ord_legacy</span>
+<span class="c-field">ord_all_regions_tmp</span>
+
+<span class="c-comment">-- Available fields:</span>
+<span class="c-field">val_liquido</span>
+<span class="c-field">net_revenue_usd</span>
+<span class="c-field">receita_bruta</span>
+<span class="c-field">valor_final_v2</span>
+
+<span class="c-comment">-- Agent decision: guesses.</span></pre>
+        <span class="result-tag bad">Inaccurate or wrong answer</span>
+      </div>
+      <div class="after-panel">
+        <div class="panel-label after">With semantic layer</div>
+        <pre><span class="c-comment">-- What the agent sees:</span>
+<span class="c-keyword">MEASURE:</span>  <span class="c-value">Net Revenue</span>
+<span class="c-keyword">Source:</span>   <span class="c-string">fct_ord_v3.val_liquido</span>
+<span class="c-keyword">Filter:</span>   <span class="c-string">status NOT IN ('cancelled')</span>
+<span class="c-keyword">Description:</span>
+  <span class="c-string">Revenue after returns.</span>
+  <span class="c-string">Excludes cancelled orders.</span>
+
+<span class="c-comment">-- Agent decision: precise.</span></pre>
+        <span class="result-tag good">Reliable, governed answer</span>
+      </div>
+    </div>
+
+    <p>
+      The difference is not in the AI Agent. It is in <strong>what the agent can see</strong> before answering.
+      And that is exactly what the semantic layer solves.
+    </p>
+  </section>
+
+  <!-- What is semantic layer -->
+  <section>
+    <h2>What Is the Semantic Layer in the Qlik Context</h2>
+    <p>
+      In Qlik Cloud, the semantic layer is not a separate product. It is a set of configurations
+      that you already have available and that transforms technical names into business context.
+    </p>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="icon">📐</div>
+        <h4>Master Dimensions</h4>
+        <p>Curated dimensions with a friendly name, description, and classification. When an agent searches for "Region", it finds the right dimension, not the raw field <code>cd_reg_v2</code>.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📊</div>
+        <h4>Master Measures</h4>
+        <p>Metrics with an expression, format, and description. "Net Revenue" is defined once and used in every chart and by every agent.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🔗</div>
+        <h4>Business Logic</h4>
+        <p>Configuration that defines how fields relate, which are measures vs. dimensions, and how to group fields into business concepts. It is the "vocabulary" Qlik Answers reads.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🤖</div>
+        <h4>Logical Model</h4>
+        <p>The model Qlik Answers indexes to answer natural-language questions. Only fields with correct classification and active visibility are included.</p>
+      </div>
+    </div>
+
+    <p>
+      These four elements together form the Qlik Cloud semantic layer. Each is configurable.
+      None requires additional infrastructure.
+    </p>
+  </section>
+
+  <!-- Architecture -->
+  <section>
+    <h2>Architecture: dbt + Qlik + AI Agents</h2>
+    <p>
+      When you connect dbt to Qlik Cloud (as we covered in Week 15), the semantic layer sits between
+      both sides: the transformed data arriving from the warehouse and the AI agents that will consume it.
+    </p>
+
+    <div class="arch-diagram">
+      <div class="arch-row">
+        <div class="arch-node">Raw sources</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node highlight">dbt (models + metrics)</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node">Data Warehouse</div>
+      </div>
+      <div style="text-align:center; margin: 8px 0;">
+        <div class="arch-down">↓</div>
+        <div class="arch-label">QVD Layer (lean load script)</div>
+        <div class="arch-down">↓</div>
+      </div>
+      <div class="arch-row">
+        <div class="arch-node semantic">Qlik Cloud Semantic Layer (Business Logic + Master Items + Logical Model)</div>
+      </div>
+      <div class="arch-split">
+        <div class="arch-branch">
+          <div class="arch-down">↓</div>
+          <div class="arch-branch-line">traditional queries</div>
+          <div class="arch-node">Qlik Dashboards</div>
+        </div>
+        <div class="arch-branch">
+          <div class="arch-down">↓</div>
+          <div class="arch-branch-line">natural language</div>
+          <div class="arch-node ai">AI Agents (Qlik Answers)</div>
+        </div>
+      </div>
+    </div>
+
+    <p>
+      Notice that dashboards and AI Agents consume the same semantic model.
+      This guarantees that the "Net Revenue" on the dashboard is identical to the "Net Revenue" the agent calculates.
+      <strong>A single source of truth for humans and machines.</strong>
+    </p>
+  </section>
+
+  <!-- Business Logic in practice -->
+  <section>
+    <h2>Qlik Business Logic in Practice</h2>
+    <p>
+      Business Logic is configured via the UI in Qlik Cloud (app menu), but you can also
+      export and version the configuration as JSON. Here is what each section controls:
+    </p>
+
+    <div class="code-block">
+      <div class="code-label">business-logic-config.json (simplified structure)</div>
+      <pre><span class="c-comment">// Field classification</span>
+{
+  <span class="c-field">"fieldAttributes"</span>: [
+    {
+      <span class="c-field">"name"</span>: <span class="c-string">"val_liquido"</span>,
+      <span class="c-field">"businessName"</span>: <span class="c-string">"Net Revenue"</span>,
+      <span class="c-field">"description"</span>: <span class="c-string">"Revenue after returns and cancellations"</span>,
+      <span class="c-field">"type"</span>: <span class="c-string">"measure"</span>,
+      <span class="c-field">"visibility"</span>: <span class="c-string">"visible"</span>,
+      <span class="c-field">"defaultAggregation"</span>: <span class="c-string">"Sum"</span>
+    },
+    {
+      <span class="c-field">"name"</span>: <span class="c-string">"nm_regiao"</span>,
+      <span class="c-field">"businessName"</span>: <span class="c-string">"Region"</span>,
+      <span class="c-field">"description"</span>: <span class="c-string">"Geographic region of the order"</span>,
+      <span class="c-field">"type"</span>: <span class="c-string">"dimension"</span>,
+      <span class="c-field">"visibility"</span>: <span class="c-string">"visible"</span>
+    },
+    {
+      <span class="c-field">"name"</span>: <span class="c-string">"cd_interno_produto"</span>,
+      <span class="c-field">"visibility"</span>: <span class="c-string">"hidden"</span>
+      <span class="c-comment">// internal fields stay hidden from agents</span>
+    }
+  ],
+
+  <span class="c-comment">// Concept groups</span>
+  <span class="c-field">"conceptGroups"</span>: [
+    {
+      <span class="c-field">"name"</span>: <span class="c-string">"Financial"</span>,
+      <span class="c-field">"fields"</span>: [
+        <span class="c-string">"val_liquido"</span>,
+        <span class="c-string">"val_bruto"</span>,
+        <span class="c-string">"val_devolvido"</span>
+      ]
+    }
+  ]
+}</pre>
+    </div>
+
+    <h3>What happens without this configuration</h3>
+    <p>
+      Qlik Answers indexes <strong>all fields</strong> in the app by default, including technical keys,
+      internal flags, and temporary columns. The AI agent gets confused by names like
+      <code>flg_ativo_v2</code>, <code>dt_carga_etl</code>, <code>cd_hash_linha</code>.
+      Fields that make no sense for business questions should never reach the semantic model.
+    </p>
+
+    <div class="warn-box">
+      <div class="warn-label">Most common mistake</div>
+      <p>
+        Enabling Qlik Answers before configuring Business Logic. The agent will index everything, including
+        technical fields it cannot interpret. The result is imprecise answers or questions Qlik Answers
+        "cannot answer" even with the right data in the app. Configure Business Logic first. Always.
+      </p>
+    </div>
+  </section>
+
+  <!-- Master Items -->
+  <section>
+    <h2>Master Items as the Contract Between BI and AI</h2>
+    <p>
+      Master Dimensions and Master Measures are the most visible layer of semantics in Qlik.
+      When you create a Master Measure, you define the expression once and it becomes available for:
+    </p>
+    <p>Dashboards built by any analyst, Qlik Answers when answering natural-language questions, and future integrations with external agents via API.</p>
+
+    <div class="code-block">
+      <div class="code-label">Creating a Master Measure via automation (JSON-RPC)</div>
+      <pre><span class="c-comment">// Via Qlik Engine API</span>
+{
+  <span class="c-field">"method"</span>: <span class="c-string">"CreateMeasure"</span>,
+  <span class="c-field">"params"</span>: {
+    <span class="c-field">"qProp"</span>: {
+      <span class="c-field">"qInfo"</span>: {
+        <span class="c-field">"qType"</span>: <span class="c-string">"measure"</span>
+      },
+      <span class="c-field">"qMeasure"</span>: {
+        <span class="c-field">"qLabel"</span>: <span class="c-string">"Net Revenue"</span>,
+        <span class="c-field">"qDef"</span>: <span class="c-string">"Sum({&lt;order_status-={'Cancelled','Returned'}&gt;} val_liquido)"</span>,
+        <span class="c-field">"qDescription"</span>: <span class="c-string">"Revenue excluding cancelled and returned orders"</span>
+      },
+      <span class="c-field">"qMetaDef"</span>: {
+        <span class="c-field">"tags"</span>: [<span class="c-string">"financial"</span>, <span class="c-string">"kpi"</span>]
+      }
+    }
+  }
+}</pre>
+    </div>
+
+    <p>
+      When Qlik Answers receives the question "What was net revenue in October?",
+      it looks in the Logical Model for the measure labeled "Net Revenue" and executes exactly that expression.
+      It doesn't improvise. It doesn't recalculate differently. It uses what you defined.
+    </p>
+  </section>
+
+  <!-- dbt Semantic Layer -->
+  <section>
+    <h2>dbt Semantic Layer as the Source of Truth Before Qlik</h2>
+    <p>
+      If you already use dbt (as we covered in Week 15), you can go one step further:
+      define metrics in dbt with MetricFlow and use the warehouse as a bridge to Qlik.
+      The advantage is that definitions live in one place, versioned in Git.
+    </p>
+
+    <div class="code-block">
+      <div class="code-label">dbt/models/marts/schema.yml (metric definition)</div>
+      <pre><span class="c-keyword">semantic_models</span>:
+  - <span class="c-field">name</span>: <span class="c-string">orders</span>
+    <span class="c-field">description</span>: <span class="c-string">Semantic model for orders</span>
+    <span class="c-field">model</span>: <span class="c-string">ref('mart_orders')</span>
+    <span class="c-field">defaults</span>:
+      <span class="c-field">agg_time_dimension</span>: <span class="c-string">order_date</span>
+
+    <span class="c-field">entities</span>:
+      - <span class="c-field">name</span>: <span class="c-string">order</span>
+        <span class="c-field">type</span>: <span class="c-string">primary</span>
+        <span class="c-field">expr</span>: <span class="c-string">order_id</span>
+
+    <span class="c-field">dimensions</span>:
+      - <span class="c-field">name</span>: <span class="c-string">region</span>
+        <span class="c-field">type</span>: <span class="c-string">categorical</span>
+        <span class="c-field">expr</span>: <span class="c-string">nm_regiao</span>
+      - <span class="c-field">name</span>: <span class="c-string">order_date</span>
+        <span class="c-field">type</span>: <span class="c-string">time</span>
+        <span class="c-field">type_params</span>:
+          <span class="c-field">time_granularity</span>: <span class="c-string">day</span>
+
+    <span class="c-field">measures</span>:
+      - <span class="c-field">name</span>: <span class="c-string">net_revenue</span>
+        <span class="c-field">description</span>: <span class="c-string">Revenue after cancellations and returns</span>
+        <span class="c-field">agg</span>: <span class="c-string">sum</span>
+        <span class="c-field">expr</span>: <span class="c-string">total_order_value</span>
+        <span class="c-field">create_metric</span>: <span class="c-string">true</span>
+
+<span class="c-keyword">metrics</span>:
+  - <span class="c-field">name</span>: <span class="c-string">net_revenue</span>
+    <span class="c-field">label</span>: <span class="c-string">Net Revenue</span>
+    <span class="c-field">description</span>: <span class="c-string">Primary revenue KPI</span>
+    <span class="c-field">type</span>: <span class="c-string">simple</span>
+    <span class="c-field">type_params</span>:
+      <span class="c-field">measure</span>: <span class="c-string">net_revenue</span>
+    <span class="c-field">filter</span>: <span class="c-string">{{ Dimension('order__status') }} not in ('Cancelled', 'Returned')</span></pre>
+    </div>
+
+    <p>
+      Qlik Cloud consumes this definition via QVD exported from the warehouse.
+      The load script (already lean after dbt) reads the result and populates the model.
+      Qlik's Business Logic maps the <code>net_revenue</code> field to the correct business name.
+    </p>
+
+    <h3>The complete flow in three lines</h3>
+    <div class="code-block">
+      <div class="code-label">Post-dbt load script (lean)</div>
+      <pre><span class="c-comment">// Qlik Cloud load script after dbt did the heavy lifting</span>
+
+<span class="c-keyword">MART_ORDERS</span>:
+<span class="c-func">LOAD</span>
+    <span class="c-field">order_id</span>            <span class="c-keyword">AS</span> <span class="c-string">[Order ID]</span>,
+    <span class="c-field">nm_regiao</span>           <span class="c-keyword">AS</span> <span class="c-string">[Region]</span>,
+    <span class="c-field">order_date</span>          <span class="c-keyword">AS</span> <span class="c-string">[Order Date]</span>,
+    <span class="c-field">net_revenue</span>         <span class="c-keyword">AS</span> <span class="c-string">[val_liquido]</span>
+<span class="c-keyword">FROM</span> <span class="c-string">[lib://QVD/mart_orders.qvd]</span>
+(qvd);
+<span class="c-comment">// Business Logic and Master Measures do the rest.</span>
+<span class="c-comment">// The agent queries "Net Revenue". It gets exactly that.</span></pre>
+    </div>
+  </section>
+
+  <!-- Pitfalls -->
+  <section>
+    <h2>4 Pitfalls When Configuring the Semantic Layer for AI Agents</h2>
+
+    <div class="pitfall-list">
+      <div class="pitfall-item">
+        <div class="pitfall-num">1</div>
+        <div class="pitfall-content">
+          <h4>Leaving technical fields visible in the Logical Model</h4>
+          <p>
+            Fields like <code>dt_carga_etl</code>, <code>sk_hash</code>, <code>flg_ativo</code>
+            have no meaning for business questions. If they stay visible, the agent will try them and fail.
+            Rule: if a business analyst doesn't use the field in a dashboard, the field should be <strong>hidden</strong> in Business Logic.
+          </p>
+        </div>
+      </div>
+
+      <div class="pitfall-item">
+        <div class="pitfall-num">2</div>
+        <div class="pitfall-content">
+          <h4>Having the same metric with different names</h4>
+          <p>
+            "Revenue", "Sales", and "Net Revenue" in the same app create ambiguity for the agent.
+            It doesn't know which to use and may mix them. Define <strong>a single canonical name</strong> for each metric
+            and use Business Logic synonyms to map variations.
+          </p>
+        </div>
+      </div>
+
+      <div class="pitfall-item">
+        <div class="pitfall-num">3</div>
+        <div class="pitfall-content">
+          <h4>Not classifying fields as measure or dimension</h4>
+          <p>
+            Without classification, Qlik Answers must infer by data type. Inference is error-prone: numeric ID fields
+            can become measures, dates can become incorrect dimensions. Explicit classification is
+            the difference between an agent that understands the model and one that guesses.
+          </p>
+        </div>
+      </div>
+
+      <div class="pitfall-item">
+        <div class="pitfall-num">4</div>
+        <div class="pitfall-content">
+          <h4>Ignoring the Logical Model Group</h4>
+          <p>
+            Master Items with correct visibility <strong>are not automatically indexed</strong> if they are not in a
+            Logical Model Group. This is the most silent error: Business Logic appears configured, but
+            Qlik Answers responds as if the data doesn't exist. Verify that the group is active and includes the right items.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results -->
+  <section>
+    <h2>What Changes in Practice</h2>
+    <p>
+      In a real app with more than 80 fields, configuring the semantic layer before enabling Qlik Answers
+      produced measurable results:
+    </p>
+
+    <div class="metric-row">
+      <div class="metric-card">
+        <div class="metric-val">87%</div>
+        <div class="metric-label">questions answered accurately by Qlik Answers</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val">23</div>
+        <div class="metric-label">visible fields (out of 80+ technical fields in the model)</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val">0</div>
+        <div class="metric-label">metric ambiguities reported by users</div>
+      </div>
+    </div>
+
+    <p>
+      The aggressive filter (23 fields out of 80+) was the most important decision.
+      Fewer options for the agent means less chance of wrong choices.
+      <strong>A good semantic layer is a lean semantic layer.</strong>
+    </p>
+  </section>
+
+  <!-- Checklist -->
+  <section>
+    <h2>Checklist: Semantic Layer Ready for AI Agents</h2>
+
+    <div class="checklist">
+      <div class="check-item">
+        <div class="check-box">✓</div>
+        <div class="check-text">All technical fields (keys, flags, hashes) are marked as <strong>hidden</strong> in Business Logic</div>
+      </div>
+      <div class="check-item">
+        <div class="check-box">✓</div>
+        <div class="check-text">Each measure has a <strong>businessName</strong> and <strong>description</strong> in business language</div>
+      </div>
+      <div class="check-item">
+        <div class="check-box">✓</div>
+        <div class="check-text">Dimensions and measures are explicitly classified (not inferred)</div>
+      </div>
+      <div class="check-item">
+        <div class="check-box">✓</div>
+        <div class="check-text">Logical Model Group created and active, containing the correct Master Items</div>
+      </div>
+      <div class="check-item">
+        <div class="check-box">✓</div>
+        <div class="check-text">No duplicate metric names in the same app</div>
+      </div>
+      <div class="check-item">
+        <div class="check-box">✓</div>
+        <div class="check-text">Synonyms configured for alternative business terms</div>
+      </div>
+      <div class="check-item">
+        <div class="check-box">✓</div>
+        <div class="check-text">Tested with at least 10 real questions before opening to users</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2>The Semantic Layer Is the Foundation. Not the Finish Line.</h2>
+    <p>
+      Before enabling any AI Agent on your data, ask: what is it going to see?
+      If the answer is "the raw warehouse tables", the agent will fail.
+      If the answer is "a governed semantic layer", the agent will succeed.
+    </p>
+    <p>
+      Qlik Answers, Copilot, external agents via API: all depend on the same principle.
+      <strong>Data without context is not knowledge. It is noise.</strong>
+    </p>
+
+    <div>
+      <span class="cta-tag">Connect and share if this was useful</span>
+      <span class="cta-tag">Qlik Cloud</span>
+      <span class="cta-tag">AI Agents</span>
+      <span class="cta-tag">Semantic BI</span>
+    </div>
+
+    <div class="hashtags">
+      #QlikCloud #QlikAnswers #SemanticLayer #AIAgents #AnalyticsEngineering
+      #DataEngineering #BusinessIntelligence #BI #dbt #DataGovernance
+      #ModernDataStack #AgenticAnalytics #DataProducts #QlikSense #DataOps
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
